@@ -28,7 +28,7 @@
     
     <a class="navbar-brand me-2" href="index.html">dataverifyr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -111,9 +111,9 @@
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">rules</span><span class="op">)</span></span>
 <span><span class="va">res</span></span>
 <span><span class="co">#&gt;             name                expr allow_na negate tests pass fail warn error             time</span></span>
-<span><span class="co">#&gt; 1: Rule for: mpg mpg &gt; 10 &amp; mpg &lt; 30    FALSE  FALSE    32   28    4            0.007985115 secs</span></span>
-<span><span class="co">#&gt; 2: Rule for: cyl    cyl %in% c(4, 8)    FALSE  FALSE    32   25    7            0.003337860 secs</span></span>
-<span><span class="co">#&gt; 3:  Rule for: vs     vs %in% c(0, 1)     TRUE  FALSE    32   32    0            0.000428915 secs</span></span>
+<span><span class="co">#&gt; 1: Rule for: mpg mpg &gt; 10 &amp; mpg &lt; 30    FALSE  FALSE    32   28    4            0.005684137 secs</span></span>
+<span><span class="co">#&gt; 2: Rule for: cyl    cyl %in% c(4, 8)    FALSE  FALSE    32   25    7            0.003256083 secs</span></span>
+<span><span class="co">#&gt; 3:  Rule for: vs     vs %in% c(0, 1)     TRUE  FALSE    32   32    0            0.000510931 secs</span></span>
 <span></span>
 <span><span class="co"># plot the results to get a better understanding of which rules are most often violated</span></span>
 <span><span class="fu"><a href="reference/plot_res.html">plot_res</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span></code></pre></div>
@@ -256,7 +256,7 @@
 <h3 id="id_2-create-rules-in-yaml">2 Create Rules in <code>yaml</code>
 <a class="anchor" aria-label="anchor" href="#id_2-create-rules-in-yaml"></a>
 </h3>
-<p>Next, we can create some rules that we want to see if our data conforms to. As we saw earlier, we can create the rules in R using the <code>rules()</code> and <code><a href="reference/ruleset.html">ruleset()</a></code> functions, there is however, the (in my case) preferred option to separate the code from the rules by writing the rules in a separate yaml file and read them into R.</p>
+<p>Next, we can create some rules that we want to see if our data conforms to. As we saw earlier, we can create the rules in R using the <code><a href="reference/rule.html">rule()</a></code> and <code><a href="reference/ruleset.html">ruleset()</a></code> functions, there is however, the (in my case) preferred option to separate the code from the rules by writing the rules in a separate yaml file and read them into R.</p>
 <p>First we display the hand-written contents of the <code>nyc_data_rules.yaml</code> file.</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">'Rule for: passenger_count'</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">expr</span><span class="kw">:</span><span class="at"> passenger_count &gt;= 0 &amp; passenger_count &lt;= 10</span></span>
@@ -296,8 +296,8 @@
 <span><span class="co">#&gt; # A tibble: 3 × 10</span></span>
 <span><span class="co">#&gt;   name                      expr              allow…¹ negate   tests    pass  fail warn  error time </span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;                     &lt;chr&gt;             &lt;lgl&gt;   &lt;lgl&gt;    &lt;int&gt;   &lt;int&gt; &lt;int&gt; &lt;chr&gt; &lt;chr&gt; &lt;drt&gt;</span></span>
-<span><span class="co">#&gt; 1 Rule for: passenger_count passenger_count … FALSE   FALSE  8760687 8760687     0 ""    ""    0.56…</span></span>
-<span><span class="co">#&gt; 2 Rule for: trip_distance   trip_distance &gt;=… FALSE   FALSE  8760687 8760686     1 ""    ""    0.43…</span></span>
+<span><span class="co">#&gt; 1 Rule for: passenger_count passenger_count … FALSE   FALSE  8760687 8760687     0 ""    ""    0.46…</span></span>
+<span><span class="co">#&gt; 2 Rule for: trip_distance   trip_distance &gt;=… FALSE   FALSE  8760687 8760686     1 ""    ""    0.41…</span></span>
 <span><span class="co">#&gt; 3 Rule for: payment_type    payment_type %in… FALSE   FALSE  8760687 8760687     0 ""    ""    0.36…</span></span>
 <span><span class="co">#&gt; # … with abbreviated variable name ¹​allow_na</span></span>
 <span></span>
@@ -345,9 +345,9 @@
 <span><span class="co">#&gt; # A tibble: 3 × 10</span></span>
 <span><span class="co">#&gt;   name          expr                allow_na negate tests  pass  fail warn  error time           </span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;         &lt;chr&gt;               &lt;lgl&gt;    &lt;lgl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt; &lt;drtn&gt;         </span></span>
-<span><span class="co">#&gt; 1 Rule for: mpg mpg &gt; 10 &amp; mpg &lt; 40 FALSE    FALSE     32    32     0 ""    ""    0.04341698 secs</span></span>
-<span><span class="co">#&gt; 2 Rule for: cyl cyl %in% c(4, 6, 8) FALSE    FALSE     32    32     0 ""    ""    0.03063011 secs</span></span>
-<span><span class="co">#&gt; 3 Rule for: vs  vs %in% c(0, 1)     TRUE     FALSE     32    32     0 ""    ""    0.03730798 secs</span></span>
+<span><span class="co">#&gt; 1 Rule for: mpg mpg &gt; 10 &amp; mpg &lt; 40 FALSE    FALSE     32    32     0 ""    ""    0.04303479 secs</span></span>
+<span><span class="co">#&gt; 2 Rule for: cyl cyl %in% c(4, 6, 8) FALSE    FALSE     32    32     0 ""    ""    0.02881193 secs</span></span>
+<span><span class="co">#&gt; 3 Rule for: vs  vs %in% c(0, 1)     TRUE     FALSE     32    32     0 ""    ""    0.02409101 secs</span></span>
 <span></span>
 <span><span class="co"># lastly disconnect from the database again</span></span>
 <span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span>, shutdown <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
@@ -399,8 +399,8 @@
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
 <li><a href="https://www.r-pkg.org/pkg/dataverifyr" class="external-link"><img src="https://www.r-pkg.org/badges/version/dataverifyr"></a></li>
-<li><a href="https://github.com/DavZim/dataverifyr/actions" class="external-link"><img src="https://github.com/DavZim/dataverifyr/workflows/R-CMD-check/badge.svg" alt="R-CMD-check"></a></li>
 <li><a href="https://www.r-pkg.org/pkg/dataverifyr" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/dataverifyr" alt="CRAN RStudio mirror downloads"></a></li>
+<li><a href="https://github.com/DavZim/dataverifyr/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/DavZim/dataverifyr/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></li>
 </ul>
 </div>
 
