@@ -6,9 +6,9 @@
 <!-- badges: start -->
 
 [![](https://www.r-pkg.org/badges/version/dataverifyr)](https://www.r-pkg.org/pkg/dataverifyr)
-[![R-CMD-check](https://github.com/DavZim/dataverifyr/workflows/R-CMD-check/badge.svg)](https://github.com/DavZim/dataverifyr/actions)
 [![CRAN RStudio mirror
 downloads](https://cranlogs.r-pkg.org/badges/dataverifyr)](https://www.r-pkg.org/pkg/dataverifyr)
+[![R-CMD-check](https://github.com/DavZim/dataverifyr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/DavZim/dataverifyr/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 The goal of `dataverifyr` is to allow a wide variety of flexible data
@@ -70,9 +70,9 @@ rules
 res <- check_data(mtcars, rules)
 res
 #>             name                expr allow_na negate tests pass fail warn error             time
-#> 1: Rule for: mpg mpg > 10 & mpg < 30    FALSE  FALSE    32   28    4            0.007985115 secs
-#> 2: Rule for: cyl    cyl %in% c(4, 8)    FALSE  FALSE    32   25    7            0.003337860 secs
-#> 3:  Rule for: vs     vs %in% c(0, 1)     TRUE  FALSE    32   32    0            0.000428915 secs
+#> 1: Rule for: mpg mpg > 10 & mpg < 30    FALSE  FALSE    32   28    4            0.005684137 secs
+#> 2: Rule for: cyl    cyl %in% c(4, 8)    FALSE  FALSE    32   25    7            0.003256083 secs
+#> 3:  Rule for: vs     vs %in% c(0, 1)     TRUE  FALSE    32   32    0            0.000510931 secs
 
 # plot the results to get a better understanding of which rules are most often violated
 plot_res(res)
@@ -167,7 +167,7 @@ Note that the above code is only used to get the data, the actual
 ### 2 Create Rules in `yaml`
 
 Next, we can create some rules that we want to see if our data conforms
-to. As we saw earlier, we can create the rules in R using the `rules()`
+to. As we saw earlier, we can create the rules in R using the `rule()`
 and `ruleset()` functions, there is however, the (in my case) preferred
 option to separate the code from the rules by writing the rules in a
 separate yaml file and read them into R.
@@ -219,8 +219,8 @@ res
 #> # A tibble: 3 × 10
 #>   name                      expr              allow…¹ negate   tests    pass  fail warn  error time 
 #>   <chr>                     <chr>             <lgl>   <lgl>    <int>   <int> <int> <chr> <chr> <drt>
-#> 1 Rule for: passenger_count passenger_count … FALSE   FALSE  8760687 8760687     0 ""    ""    0.56…
-#> 2 Rule for: trip_distance   trip_distance >=… FALSE   FALSE  8760687 8760686     1 ""    ""    0.43…
+#> 1 Rule for: passenger_count passenger_count … FALSE   FALSE  8760687 8760687     0 ""    ""    0.46…
+#> 2 Rule for: trip_distance   trip_distance >=… FALSE   FALSE  8760687 8760686     1 ""    ""    0.41…
 #> 3 Rule for: payment_type    payment_type %in… FALSE   FALSE  8760687 8760687     0 ""    ""    0.36…
 #> # … with abbreviated variable name ¹​allow_na
 
@@ -279,9 +279,9 @@ res
 #> # A tibble: 3 × 10
 #>   name          expr                allow_na negate tests  pass  fail warn  error time           
 #>   <chr>         <chr>               <lgl>    <lgl>  <dbl> <dbl> <dbl> <chr> <chr> <drtn>         
-#> 1 Rule for: mpg mpg > 10 & mpg < 40 FALSE    FALSE     32    32     0 ""    ""    0.04341698 secs
-#> 2 Rule for: cyl cyl %in% c(4, 6, 8) FALSE    FALSE     32    32     0 ""    ""    0.03063011 secs
-#> 3 Rule for: vs  vs %in% c(0, 1)     TRUE     FALSE     32    32     0 ""    ""    0.03730798 secs
+#> 1 Rule for: mpg mpg > 10 & mpg < 40 FALSE    FALSE     32    32     0 ""    ""    0.04303479 secs
+#> 2 Rule for: cyl cyl %in% c(4, 6, 8) FALSE    FALSE     32    32     0 ""    ""    0.02881193 secs
+#> 3 Rule for: vs  vs %in% c(0, 1)     TRUE     FALSE     32    32     0 ""    ""    0.02409101 secs
 
 # lastly disconnect from the database again
 dbDisconnect(con, shutdown = TRUE)

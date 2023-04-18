@@ -1,7 +1,7 @@
 Package: dataverifyr
 Type: Package
 Title: a lightweight, flexible, and fast data validation package that can handle all datasizes
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: c(
       person(given = "David",
              family = "Zimmermann-Kollenda",

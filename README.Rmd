@@ -18,7 +18,9 @@ options(pillar.sigfig = 5, width = 100)
 # dataverifyr - a lightweight, flexible, and fast data validation package that can handle all datasizes
 
 <!-- badges: start -->
-[![](https://www.r-pkg.org/badges/version/dataverifyr)](https://www.r-pkg.org/pkg/dataverifyr) [![R-CMD-check](https://github.com/DavZim/dataverifyr/workflows/R-CMD-check/badge.svg)](https://github.com/DavZim/dataverifyr/actions) [![CRAN RStudio mirror downloads](https://cranlogs.r-pkg.org/badges/dataverifyr)](https://www.r-pkg.org/pkg/dataverifyr)
+[![](https://www.r-pkg.org/badges/version/dataverifyr)](https://www.r-pkg.org/pkg/dataverifyr)
+[![CRAN RStudio mirror downloads](https://cranlogs.r-pkg.org/badges/dataverifyr)](https://www.r-pkg.org/pkg/dataverifyr)
+[![R-CMD-check](https://github.com/DavZim/dataverifyr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/DavZim/dataverifyr/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 The goal of `dataverifyr` is to allow a wide variety of flexible data validation checks.
@@ -129,7 +131,7 @@ Note that the above code is only used to get the data, the actual `dataverifyr` 
 ### 2 Create Rules in `yaml`
 
 Next, we can create some rules that we want to see if our data conforms to.
-As we saw earlier, we can create the rules in R using the `rules()` and `ruleset()` functions, there is however, the (in my case) preferred option to separate the code from the rules by writing the rules in a separate yaml file and read them into R.
+As we saw earlier, we can create the rules in R using the `rule()` and `ruleset()` functions, there is however, the (in my case) preferred option to separate the code from the rules by writing the rules in a separate yaml file and read them into R.
 
 First we display the hand-written contents of the `nyc_data_rules.yaml` file.
 ```{r, echo=FALSE, results="asis"}
