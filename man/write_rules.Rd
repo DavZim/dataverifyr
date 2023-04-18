@@ -22,11 +22,11 @@ Read and write rules to a yaml file
 }
 \section{Functions}{
 \itemize{
-\item \code{read_rules}: reads a ruleset back in
-}}
+\item \code{read_rules()}: reads a ruleset back in
 
+}}
 \examples{
-rr <- list(
+rr <- ruleset(
   rule(mpg > 10),
   rule(cyl \%in\% c(4, 6, 8))
 )

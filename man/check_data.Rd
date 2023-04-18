@@ -23,7 +23,7 @@ a data.frame-like object with one row for each rule and its results
 Checks if a dataset confirms to a given set of rules
 }
 \examples{
-rule_set <- list(
+rule_set <- ruleset(
   rule(mpg > 10),
   rule(cyl \%in\% c(4, 6)), # missing 8
   rule(qsec >= 14.5 & qsec <= 22.9)

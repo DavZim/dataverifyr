@@ -23,7 +23,7 @@ Sys.setenv(LANG = "en")
 <!-- badges: end -->
 
 The goal of `dataverifyr` is to allow a wide variety of flexible data validation checks.
-That means, you can specify the rules/expressions in a yaml file, load it into R and compare any arbitrary dataset against it. The package is built in such a way, that you can use `base-R`, `dplyr`, `data.table`, `arrow` (both as an `arrow_table` as well as an `open_dataset()` connection), but also any `DBI`-compliant database (currently tested with `RSQLite`).
+That means, you can specify the rules/expressions in a yaml file, load it into R and compare any arbitrary dataset against it. The package is built in such a way, that you can use `base-R`, `dplyr`, `data.table`, `arrow` (both as an `arrow_table` as well as an `open_dataset()` connection), but also any `DBI`-compliant database (currently tested with `RSQLite` and `duckdb`).
 
 The package is lightweight as all the heavy dependencies are Suggests-only, that means if you want to use `data.table` for the task, you don't need to install the other packages (`arrow`, `DBI`, etc) unless you explicitly tell R to do so when installing the package.
 
@@ -95,8 +95,8 @@ Note that they are automatically chosen based on filetype (eg, when giving a `dp
 | `Table`/`ArrowTabular` | [`arrow`](https://arrow.apache.org/docs/r/)         |  ✔️      | For example by using `arrow::arrow_table()`
 | `FileSystemDataset`    | [`arrow`](https://arrow.apache.org/docs/r/)         |  ✔️      | For on disk storage using `arrow::open_dataset()`, very good for large datasets. See example below.
 | `sqlite` | [`RSQLite`](https://rsqlite.r-dbi.org/)/[`DBI`](https://dbi.r-dbi.org/)  | ✔️     | Note that missing values are converted to `0`s when using sqlite by default ([c.f. this SO answer](https://stackoverflow.com/a/57746647/3048453)). |
-| `DuckDB` | [`duckdb`](https://duckdb.org/docs/api/r.html)  | ❌️ / ❓   | Not tested, but should work out-of-the-box through [`DBI`](https://dbi.r-dbi.org/) |
-| `postgreSQL` | [`RPostgres`](https://rpostgres.r-dbi.org/)  | ❌️ / ❓   | Not tested, but should work out-of-the-box through [`DBI`](https://dbi.r-dbi.org/) |
+| `DuckDB` | [`duckdb`](https://duckdb.org/docs/api/r.html)  | ✔️ |   |
+| `postgreSQL` | [`RPostgres`](https://rpostgres.r-dbi.org/)  | ❓ | Not tested, but should work out-of-the-box through [`DBI`](https://dbi.r-dbi.org/) |
 
 ## larger `arrow` example
 

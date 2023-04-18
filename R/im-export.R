@@ -7,7 +7,7 @@
 #' @export
 #'
 #' @examples
-#' rr <- list(
+#' rr <- ruleset(
 #'   rule(mpg > 10),
 #'   rule(cyl %in% c(4, 6, 8))
 #' )
@@ -15,7 +15,7 @@
 #' write_rules(rr, file)
 write_rules <- function(x, file) {
   # if a single rule is supplied: wrap it in a list...
-  if (class(x) == "rule") x <- list(x)
+  if (class(x) == "rule") x <- ruleset(x)
 
   ftype <- gsub(".*\\.([^.]+)$", "\\1", file)
   if (ftype %in% c("yml", "yaml")) {
@@ -40,6 +40,7 @@ read_rules <- function(file) {
     class(r) <- "rule"
     r
   })
+  class(res) <- "ruleset"
 
   # if a single rule was supplied: unpack it again
   if (length(res) == 1) res <- res[[1]]

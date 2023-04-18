@@ -12,7 +12,7 @@
 #' @export
 #'
 #' @examples
-#' rule_set <- list(
+#' rule_set <- ruleset(
 #'   rule(mpg > 10),
 #'   rule(cyl %in% c(4, 6)), # missing 8
 #'   rule(qsec >= 14.5 & qsec <= 22.9)
@@ -25,7 +25,7 @@ check_data <- function(x, rules, fail_on_warn = FALSE, fail_on_error = FALSE) {
   # if rules is a yaml file, read it in
   if (length(rules) == 1 && is.character(rules)) rules <- read_rules(rules)
   # treat single rule if needed
-  if (length(rules) == 1 && hasName(rules, "expr")) rules <- list(rules)
+  if (length(rules) == 1 && hasName(rules, "expr")) rules <- ruleset(rules)
 
   xname <- deparse(substitute(x))
   cc <- class(x)
@@ -86,7 +86,7 @@ has_pkg <- function(p) requireNamespace(p, quietly = TRUE)
 get_warnings <- function(code) {
   out <- c()
   suppressWarnings(withCallingHandlers(code, warning = function(c) out <<- c(out, conditionMessage(c))))
-  paste(unique(out), collapse = ", ")
+  strip_dplyr_errors(paste(unique(out), collapse = ", "))
 }
 
 # helper function that checks the rules given a specific type (~package)
@@ -132,6 +132,8 @@ check_ <- function(x, rules, type = c("base-r", "dplyr", "data.table", "collecti
     }
     warns <- ""
     err <- ""
+    oc <- Sys.getenv("NO_COLOR") # to turn off colors in errors/warnings
+    Sys.setenv(NO_COLOR = "OFF")
     pos <- tryCatch({
       warns <- get_warnings({
         if (type == "base-r") {
@@ -156,6 +158,8 @@ check_ <- function(x, rules, type = c("base-r", "dplyr", "data.table", "collecti
       strip_dplyr_errors(conditionMessage(err))
     })
 
+    Sys.setenv("NO_COLOR" = oc) # to turn on colors in errors/warnings
+
     if (is.character(pos)) {
       err <- pos
       pos <- 0
@@ -179,13 +183,15 @@ check_ <- function(x, rules, type = c("base-r", "dplyr", "data.table", "collecti
 # strips a dplyr/cli error message of its formatting
 # x <- "\033[37;48;5;19m\033[38;5;232mProblem while computing ... .\033[39m\n\033[1mCaused by error in xxx:\033[22m\n\033[33m!\033[39m object 'does_not_exist' not found\033[39;49m"
 # x <- "Problem while computing `..1 = eval(parse(text = e))`.\nCaused by error in `does_not_exist %in% c(\"a\", \"b\", \"c\")`:\n! object 'does_not_exist' not found"
+# x <- "\033[38;5;232mThere were 2 warnings in `dplyr::filter()`.\nThe first warning was:\033[39m\n\033[38;5;232m\033[36mℹ\033[38;5;232m In argument: `as.numeric(hp) > 0 & as.numeric(hp) < 400`.\033[39m\nCaused by warning:\n\033[33m!\033[39m NAs introduced by coercion\n\033[38;5;232m\033[36mℹ\033[38;5;232m Run \033]8;;ide:run:dplyr::last_dplyr_warnings()\adplyr::last_dplyr_warnings()\033]8;;\a to see the 1 remaining warning.\033[39m"
 strip_dplyr_errors <- function(x) {
   if (substr(x, 1, 1) == "\033") {
     r <- gsub("\033.*\033\\[33m\\!\033\\[39m ", "", x)
     r <- gsub("\033.*$", "", r)
   } else {
     # testthat automatically turns off the colorful errors...
-    r <- gsub(".*\n\\! ", "", x)
+    r <- gsub(".*\\n\\! ", "", x)
+    r <- gsub("i Run.*$", "", r) # remove multiline warnings
   }
-  r
+  gsub("\\n$", "", r)
 }

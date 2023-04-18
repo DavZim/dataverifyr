@@ -24,9 +24,9 @@ Creates a set of rules
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{print}: Prints a ruleset
-}}
+\item \code{print(ruleset)}: Prints a ruleset
 
+}}
 \examples{
 r1 <- rule(mpg > 10)
 r2 <- rule(mpg < 20)

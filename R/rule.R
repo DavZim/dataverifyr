@@ -71,7 +71,7 @@ print.rule <- function(x, ...) {
 # small helper function to extract the symbols (var names) from an expression
 # (given as string)
 get_symbols <- function(expr) {
-  vv <- getParseData(parse(text = expr))
+  vv <- getParseData(parse(text = expr, keep.source = TRUE))
   unique(vv[vv$token == "SYMBOL", "text"])
 }
 

@@ -6,10 +6,10 @@ data$hp[4] <- "asd"
 data$disp[c(1, 5)] <- NA
 
 rules <- ruleset(
-  rule(mpg > 10, "r1"),
-  rule(cyl %in% c(4, 6, 8), "r2"),
+  rule(cyl %in% c(4, 6, 8), "r1"),
+  rule(mpg < 10 & mpg > 34, "r2", negate = TRUE),
   rule(disp > 100, "r3", allow_na = TRUE), # data validation "fails"
-  rule(as.numeric(hp) > 0 & as.numeric(hp) < 200, "r4", negate = TRUE), # creates warning
+  rule(as.numeric(hp) > 0 & as.numeric(hp) < 400, "r4"), # creates warning + 1 NA
   rule(does_not_exist %in% c("a", "b", "c"), "r5") # creates a stop
 )
 
@@ -17,12 +17,13 @@ test_that("base-r check_ works", {
   res <- check_(data, rules, type = "base-r")
 
   expect_equal(class(res), "data.frame")
+  print(res)
   exp <- data.frame(
     name = c("r1", "r2", "r3", "r4", "r5"),
     expr = vapply(rules, function(r) r$expr, character(1)),
     tests = 32,
-    pass = c(32, 32, 27, 30, 0),
-    fail = c(0, 0, 5, 2, 32),
+    pass = c(32, 32, 27, 31, 0),
+    fail = c(0, 0, 5, 1, 32),
     warn = c("", "", "", "NAs introduced by coercion", ""),
     error = c("", "", "", "", "object 'does_not_exist' not found")
   )
@@ -41,8 +42,8 @@ test_that("dplyr check_ works", {
     name = c("r1", "r2", "r3", "r4", "r5"),
     expr = vapply(rules, function(r) r$expr, character(1)),
     tests = 32,
-    pass = c(32, 32, 27, 30, 0),
-    fail = c(0, 0, 5, 2, 32),
+    pass = c(32, 32, 27, 31, 0),
+    fail = c(0, 0, 5, 1, 32),
     warn = c("", "", "", "NAs introduced by coercion", ""),
     error = c("", "", "", "", "object 'does_not_exist' not found")
   )
@@ -61,8 +62,8 @@ test_that("data.table check_ works", {
     name = c("r1", "r2", "r3", "r4", "r5"),
     expr = vapply(rules, function(r) r$expr, character(1)),
     tests = 32,
-    pass = c(32, 32, 27, 30, 0),
-    fail = c(0, 0, 5, 2, 32),
+    pass = c(32, 32, 27, 31, 0),
+    fail = c(0, 0, 5, 1, 32),
     warn = c("", "", "", "NAs introduced by coercion", ""),
     error = c("", "", "", "", "Object 'does_not_exist' not found amongst mpg, cyl, disp, hp, drat and 6 more")
   )
@@ -114,8 +115,9 @@ test_that("arrow::open_dataset check_ works", {
 
 
 test_that("sqlite (RSQLite) check_ works", {
-  skip_if_not(requireNamespace("DBI", quietly = TRUE),
-              "DBI must be installed to test the functionality")
+  skip_if_not(requireNamespace("DBI", quietly = TRUE) |
+                requireNamespace("RSQLite", quietly = TRUE),
+              "DBI and RSQLite must be installed to test the functionality")
 
   con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
   on.exit(DBI::dbDisconnect(con))
@@ -130,11 +132,11 @@ test_that("sqlite (RSQLite) check_ works", {
     name = c("r1", "r2", "r3", "r4", "r5"),
     expr = vapply(rules, function(r) r$expr, character(1)),
     tests = 32,
-    pass = c(32, 32, 27, 30, 0),
-    fail = c(0, 0, 5, 2, 32),
-    warn = c("", "", "", "", ""), # note that DBI(?) silently converts the asd hp value to 0!
+    pass = c(32, 32, 27, 31, 0),
+    fail = c(0, 0, 5, 1, 32),
+    warn = c("", "", "", "", ""), # note that DBI(?) silently converts the 'asd' hp value to 0!
     # c.f. https://stackoverflow.com/a/57746647/3048453
-    error = c("", "", "", "", "no such column: does_not_exist")
+    error = c("", "", "", "", "Object `does_not_exist` not found.")
   )
   expect_equal(res |> dplyr::select(-time), exp)
 })

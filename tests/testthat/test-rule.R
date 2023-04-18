@@ -14,3 +14,16 @@ test_that("Basic rules work", {
                list(name = "Rule for: mpg", expr = "mpg > 10", allow_na = FALSE,
                     negate = FALSE, author = "me", date = Sys.Date()))
 })
+
+
+test_that("get_symbols works as expected", {
+  f <- function(x) deparse(substitute(x))
+  get_symbols <- dataverifyr:::get_symbols
+
+  expect_equal(get_symbols(f(mpg > 10)), "mpg")
+
+  expect_equal(
+    get_symbols(f(mpg > 10 & mpg <= 123 | is.na(cyl) & as.numeric(wt) > qsec)),
+    c("mpg", "cyl", "wt", "qsec")
+  )
+})

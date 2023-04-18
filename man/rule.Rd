@@ -38,9 +38,9 @@ Creates a single data rule
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{print}: Prints a rule
-}}
+\item \code{print(rule)}: Prints a rule
 
+}}
 \examples{
 r <- rule(mpg > 10)
 r
