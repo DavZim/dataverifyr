@@ -12,14 +12,13 @@ knitr::opts_chunk$set(
   out.width = "100%"
 )
 Sys.setenv(LANG = "en")
+options(pillar.sigfig = 5)
 ```
 
 # dataverifyr - a lightweight, flexible, and fast data validation package that can handle all datasizes
 
 <!-- badges: start -->
-
 [![](https://www.r-pkg.org/badges/version/dataverifyr)](https://www.r-pkg.org/pkg/dataverifyr) [![R-CMD-check](https://github.com/DavZim/dataverifyr/workflows/R-CMD-check/badge.svg)](https://github.com/DavZim/dataverifyr/actions) [![CRAN RStudio mirror downloads](https://cranlogs.r-pkg.org/badges/dataverifyr)](https://www.r-pkg.org/pkg/dataverifyr)
-
 <!-- badges: end -->
 
 The goal of `dataverifyr` is to allow a wide variety of flexible data validation checks.
@@ -77,14 +76,12 @@ cat(paste(readLines("example_rules.yaml"), collapse = "\n"))
 r2 <- read_rules("example_rules.yaml")
 identical(rules, r2)
 ```
-```{r, echo=FALSE}
-unlink("example_rules.yaml")
-```
+
 
 # Backends
 
 At the moment the following backends are supported.
-Note that they are automatically chosen based on filetype (eg, when giving a `dplyr::tbl()` pointing to an sqlite database, the package will automatically choose `DBI`/`dplyr` for the task) and package availability.
+Note that they are automatically chosen based on filetype (eg, when giving a `dplyr::tbl()` pointing to an `SQLite` database, the package will automatically choose `DBI`/`dplyr` for the task) and package availability.
 
 
 | Backend | Library | Status | Comment |
@@ -98,22 +95,20 @@ Note that they are automatically chosen based on filetype (eg, when giving a `dp
 | `DuckDB` | [`duckdb`](https://duckdb.org/docs/api/r.html)  | ✔️ |   |
 | `postgreSQL` | [`RPostgres`](https://rpostgres.r-dbi.org/)  | ❓ | Not tested, but should work out-of-the-box through [`DBI`](https://dbi.r-dbi.org/) |
 
-## larger `arrow` example
+
+## Larger Example using the `arrow` backend
 
 For a more involved example, using a different backend, let's say we have a larger dataset of taxi trips from NY (see also the official [datasource](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page)), that we have saved as a local arrow dataset (using parquet as a data format).
 
 
 ### 1 Download and Prepare Data
 
-First we prepare the data:
+First we prepare the data by downloading it and writing the dataset to `.parquet` files.
 
-```{r, echo=FALSE}
-options(pillar.sigfig = 5)
-```
 ```{r taxi1, eval=requireNamespace("arrow", quietly=TRUE), message=FALSE, warning=FALSE}
 library(arrow)
 url <- "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2018-01.parquet"
-file <- "yellow-taxi-2018-jan.parquet"
+file <- "yellow_tripdata_2018-01.parquet"
 if (!file.exists(file)) download.file(url, file, method = "curl")
 file.size(file) / 1e6 # in MB
 
@@ -125,22 +120,35 @@ names(d)
 # write the dataset to disk
 write_dataset(d, "nyc-taxi-data")
 ```
+Note that the above code is only used to get the data, the actual `dataverifyr` code is below.
 
-### 2 Create Rules
 
-Then we can create some rules that we want to see if our data conforms to.
-Ideally this would be done in the yaml-file directly to separate the execution code from the data, but for now we will do it here in R (replace the `rules` definition with `rules <- read_rules("myrules.yaml")` to load the rules from disk).
+### 2 Create Rules in `yaml`
 
-```{r taxi2, eval=requireNamespace("arrow", quietly=TRUE)}
-rules <- ruleset(
+Next, we can create some rules that we want to see if our data conforms to.
+As we saw earlier, we can create the rules in R using the `rules()` and `ruleset()` functions, there is however, the (in my case) preferred option to separate the code from the rules by writing the rules in a separate yaml file and read them into R.
+
+First we display the hand-written contents of the `nyc_data_rules.yaml` file.
+```{r, echo=FALSE, results="asis"}
+rs <- ruleset(
   rule(passenger_count >= 0 & passenger_count <= 10),
-  rule(trip_distance >= 0 & trip_distance <= 1000), # limit to reasonable distances
+  rule(trip_distance >= 0 & trip_distance <= 1000),
   rule(payment_type %in% c(0, 1, 2, 3, 4))
 )
+write_rules(rs, "nyc_data_rules.yaml")
+cat(paste(c("```yaml", readLines("nyc_data_rules.yaml"), "```"),
+          collapse = "\n"))
+```
+
+Then, we can load and display the rules:
+```{r taxi2, eval=requireNamespace("arrow", quietly=TRUE)}
+rules <- read_rules("nyc_data_rules.yaml")
 rules
 ```
 
-### 3 Check that the Data is Valid
+
+### 3 Verify that the Data matches the given Rules
+
 Now we can check if the data follows our rules or if we have unexpected data points:
 ```{r taxi3, eval=requireNamespace("arrow", quietly=TRUE)}
 # open the dataset 
@@ -160,17 +168,54 @@ ds |>
   dplyr::collect() |> 
   dplyr::select(tpep_pickup_datetime, tpep_dropoff_datetime, trip_distance)
 ```
-As we can see, there is probably a data error (a trip distance of 190k miles in 1 minute seems - ehm stellar...).
-```{r, echo=FALSE}
-unlink("nyc-taxi-data", recursive = TRUE)
-```
 
+As we can see, this is probably a data error (a trip distance of 190k miles in 1 minute seems - ehm stellar...).
+
+
+## Using a `DBI` Backend
+
+If you have a `SQLite` or `duckdb` database, you can use the package like this
+
+```{r duckdb, eval=requireNamespace("duckdb", quietly = TRUE) & requireNamespace("dplyr", quietly = TRUE) & requireNamespace("DBI", quietly = TRUE), message=FALSE, warning=FALSE}
+library(DBI)
+library(dplyr)
+
+# connect to a duckdb database
+con <- dbConnect(duckdb::duckdb("duckdb-database.duckdb"))
+# for demo purposes write the data once
+dbWriteTable(con, "mtcars", mtcars)
+
+# create a tbl connection, which can be used in the checks
+tbl <- tbl(con, "mtcars")
+
+# create rules
+rules <- ruleset(
+  rule(mpg > 10 & mpg < 40),
+  rule(cyl %in% c(4, 6, 8)),
+  rule(vs %in% c(0, 1), allow_na = TRUE)
+)
+
+# check rules
+res <- check_data(tbl, rules)
+res
+
+# lastly disconnect from the database again
+dbDisconnect(con, shutdown = TRUE)
+```
 
 
 # Alternative Data Validation R Libraries
 
-If this library is not what you are looking for, the following might be good alternatives:
+If this library is not what you are looking for, the following might be good alternatives to validate your data:
 
 - [`pointblank`](https://rich-iannone.github.io/pointblank/)
 - [`validate`](https://github.com/data-cleaning/validate)
 - [`data.validator`](https://github.com/Appsilon/data.validator)
+
+
+```{r cleanup, echo=FALSE}
+unlink("example_rules.yaml")
+unlink("nyc-taxi-data", recursive = TRUE)
+unlink("nyc_data_rules.yaml")
+unlink("duckdb-database.duckdb")
+```

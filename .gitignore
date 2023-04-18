@@ -3,6 +3,6 @@
 .RData
 .Ruserdata
 
-yellow-taxi-2018-jan.parquet
+*.parquet
 nyc-taxi-data/*
 

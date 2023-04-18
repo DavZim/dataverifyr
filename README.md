@@ -4,12 +4,7 @@
 # dataverifyr - a lightweight, flexible, and fast data validation package that can handle all datasizes
 
 <!-- badges: start -->
-
-[![](https://www.r-pkg.org/badges/version/dataverifyr)](https://www.r-pkg.org/pkg/dataverifyr)
-[![R-CMD-check](https://github.com/DavZim/dataverifyr/workflows/R-CMD-check/badge.svg)](https://github.com/DavZim/dataverifyr/actions)
-[![CRAN RStudio mirror
-downloads](https://cranlogs.r-pkg.org/badges/dataverifyr)](https://www.r-pkg.org/pkg/dataverifyr)
-
+# <!-- [![](https://www.r-pkg.org/badges/version/dataverifyr)](https://www.r-pkg.org/pkg/dataverifyr) [![R-CMD-check](https://github.com/DavZim/dataverifyr/workflows/R-CMD-check/badge.svg)](https://github.com/DavZim/dataverifyr/actions) [![CRAN RStudio mirror downloads](https://cranlogs.r-pkg.org/badges/dataverifyr)](https://www.r-pkg.org/pkg/dataverifyr)
 <!-- badges: end -->
 
 The goal of `dataverifyr` is to allow a wide variety of flexible data
@@ -18,7 +13,7 @@ a yaml file, load it into R and compare any arbitrary dataset against
 it. The package is built in such a way, that you can use `base-R`,
 `dplyr`, `data.table`, `arrow` (both as an `arrow_table` as well as an
 `open_dataset()` connection), but also any `DBI`-compliant database
-(currently tested with `RSQLite`).
+(currently tested with `RSQLite` and `duckdb`).
 
 The package is lightweight as all the heavy dependencies are
 Suggests-only, that means if you want to use `data.table` for the task,
@@ -63,37 +58,37 @@ rules <- ruleset(
 # print the rules
 rules
 #> <Verification Ruleset with 3 elements>
-#>   [1] 'Rule for: ' matching `mpg > 10 & mpg < 40` (allow_na: FALSE)
-#>   [2] 'Rule for: ' matching `cyl %in% c(4, 6, 8)` (allow_na: FALSE)
-#>   [3] 'Rule for: ' matching `vs %in% c(0, 1)` (allow_na: TRUE)
+#>   [1] 'Rule for: mpg' matching `mpg > 10 & mpg < 40` (allow_na: FALSE)
+#>   [2] 'Rule for: cyl' matching `cyl %in% c(4, 6, 8)` (allow_na: FALSE)
+#>   [3] 'Rule for: vs' matching `vs %in% c(0, 1)` (allow_na: TRUE)
 
 # check if the data matches our rules
 res <- check_data(mtcars, rules)
 res
-#>          name                expr tests pass fail warn
-#> 1: Rule for:  mpg > 10 & mpg < 40    32   32    0     
-#> 2: Rule for:  cyl %in% c(4, 6, 8)    32   32    0     
-#> 3: Rule for:      vs %in% c(0, 1)    32    0   32     
-#>                                             error             time
-#> 1:                                                0.004320860 secs
-#> 2:                                                0.003097057 secs
-#> 3: 0 arguments passed to 'is.na' which requires 1 0.007634878 secs
+#>             name                expr tests pass fail warn error
+#> 1: Rule for: mpg mpg > 10 & mpg < 40    32   32    0           
+#> 2: Rule for: cyl cyl %in% c(4, 6, 8)    32   32    0           
+#> 3:  Rule for: vs     vs %in% c(0, 1)    32   32    0           
+#>                 time
+#> 1: 0.0046658516 secs
+#> 2: 0.0028591156 secs
+#> 3: 0.0003590584 secs
 
 # save the rules to yml
 write_rules(rules, "example_rules.yaml")
 
 cat(paste(readLines("example_rules.yaml"), collapse = "\n"))
-#> - name: 'Rule for: '
+#> - name: 'Rule for: mpg'
 #>   expr: mpg > 10 & mpg < 40
 #>   allow_na: no
 #>   negate: no
 #>   index: 1
-#> - name: 'Rule for: '
+#> - name: 'Rule for: cyl'
 #>   expr: cyl %in% c(4, 6, 8)
 #>   allow_na: no
 #>   negate: no
 #>   index: 2
-#> - name: 'Rule for: '
+#> - name: 'Rule for: vs'
 #>   expr: vs %in% c(0, 1)
 #>   allow_na: yes
 #>   negate: no
@@ -101,28 +96,28 @@ cat(paste(readLines("example_rules.yaml"), collapse = "\n"))
 
 r2 <- read_rules("example_rules.yaml")
 identical(rules, r2)
-#> [1] FALSE
+#> [1] TRUE
 ```
 
 # Backends
 
 At the moment the following backends are supported. Note that they are
 automatically chosen based on filetype (eg, when giving a `dplyr::tbl()`
-pointing to an sqlite database, the package will automatically choose
+pointing to an `SQLite` database, the package will automatically choose
 `DBI`/`dplyr` for the task) and package availability.
 
-| Backend                | Library                                                                 | Status  | Comment                                                                                                                                            |
-|------------------------|-------------------------------------------------------------------------|---------|----------------------------------------------------------------------------------------------------------------------------------------------------|
-| `base-R`               | `base`                                                                  | ✔️      | When `data.table` or `dplyr` are installed, they are leveraged for higher performance, but if requried, the package works with base-r only         |
-| `dplyr`                | [`dplyr`](https://dplyr.tidyverse.org/)                                 | ✔️      |                                                                                                                                                    |
-| `data.table`           | [`data.table`](r-datatable.com)                                         | ✔️      | Used as the default when installed and no special data-format is given.                                                                            |
-| `Table`/`ArrowTabular` | [`arrow`](https://arrow.apache.org/docs/r/)                             | ✔️      | For example by using `arrow::arrow_table()`                                                                                                        |
-| `FileSystemDataset`    | [`arrow`](https://arrow.apache.org/docs/r/)                             | ✔️      | For on disk storage using `arrow::open_dataset()`, very good for large datasets. See example below.                                                |
-| `sqlite`               | [`RSQLite`](https://rsqlite.r-dbi.org/)/[`DBI`](https://dbi.r-dbi.org/) | ✔️      | Note that missing values are converted to `0`s when using sqlite by default ([c.f. this SO answer](https://stackoverflow.com/a/57746647/3048453)). |
-| `DuckDB`               | [`duckdb`](https://duckdb.org/docs/api/r.html)                          | ❌️ / ❓ | Not tested, but should work out-of-the-box through [`DBI`](https://dbi.r-dbi.org/)                                                                 |
-| `postgreSQL`           | [`RPostgres`](https://rpostgres.r-dbi.org/)                             | ❌️ / ❓ | Not tested, but should work out-of-the-box through [`DBI`](https://dbi.r-dbi.org/)                                                                 |
+| Backend                | Library                                                                 | Status | Comment                                                                                                                                            |
+|------------------------|-------------------------------------------------------------------------|--------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| `base-R`               | `base`                                                                  | ✔️     | When `data.table` or `dplyr` are installed, they are leveraged for higher performance, but if requried, the package works with base-r only         |
+| `dplyr`                | [`dplyr`](https://dplyr.tidyverse.org/)                                 | ✔️     |                                                                                                                                                    |
+| `data.table`           | [`data.table`](r-datatable.com)                                         | ✔️     | Used as the default when installed and no special data-format is given.                                                                            |
+| `Table`/`ArrowTabular` | [`arrow`](https://arrow.apache.org/docs/r/)                             | ✔️     | For example by using `arrow::arrow_table()`                                                                                                        |
+| `FileSystemDataset`    | [`arrow`](https://arrow.apache.org/docs/r/)                             | ✔️     | For on disk storage using `arrow::open_dataset()`, very good for large datasets. See example below.                                                |
+| `sqlite`               | [`RSQLite`](https://rsqlite.r-dbi.org/)/[`DBI`](https://dbi.r-dbi.org/) | ✔️     | Note that missing values are converted to `0`s when using sqlite by default ([c.f. this SO answer](https://stackoverflow.com/a/57746647/3048453)). |
+| `DuckDB`               | [`duckdb`](https://duckdb.org/docs/api/r.html)                          | ✔️     |                                                                                                                                                    |
+| `postgreSQL`           | [`RPostgres`](https://rpostgres.r-dbi.org/)                             | ❓     | Not tested, but should work out-of-the-box through [`DBI`](https://dbi.r-dbi.org/)                                                                 |
 
-## larger `arrow` example
+## Larger Example using the `arrow` backend
 
 For a more involved example, using a different backend, let’s say we
 have a larger dataset of taxi trips from NY (see also the official
@@ -132,12 +127,13 @@ format).
 
 ### 1 Download and Prepare Data
 
-First we prepare the data:
+First we prepare the data by downloading it and writing the dataset to
+`.parquet` files.
 
 ``` r
 library(arrow)
 url <- "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2018-01.parquet"
-file <- "yellow-taxi-2018-jan.parquet"
+file <- "yellow_tripdata_2018-01.parquet"
 if (!file.exists(file)) download.file(url, file, method = "curl")
 file.size(file) / 1e6 # in MB
 #> [1] 123.6685
@@ -159,28 +155,50 @@ names(d)
 write_dataset(d, "nyc-taxi-data")
 ```
 
-### 2 Create Rules
+Note that the above code is only used to get the data, the actual
+`dataverifyr` code is below.
 
-Then we can create some rules that we want to see if our data conforms
-to. Ideally this would be done in the yaml-file directly to separate the
-execution code from the data, but for now we will do it here in R
-(replace the `rules` definition with
-`rules <- read_rules("myrules.yaml")` to load the rules from disk).
+### 2 Create Rules in `yaml`
 
-``` r
-rules <- ruleset(
-  rule(passenger_count >= 0 & passenger_count <= 10),
-  rule(trip_distance >= 0 & trip_distance <= 1000), # limit to reasonable distances
-  rule(payment_type %in% c(0, 1, 2, 3, 4))
-)
-rules
-#> <Verification Ruleset with 3 elements>
-#>   [1] 'Rule for: ' matching `passenger_count >= 0 & passenger_count <= 10` (allow_na: FALSE)
-#>   [2] 'Rule for: ' matching `trip_distance >= 0 & trip_distance <= 1000` (allow_na: FALSE)
-#>   [3] 'Rule for: ' matching `payment_type %in% c(0, 1, 2, 3, 4)` (allow_na: FALSE)
+Next, we can create some rules that we want to see if our data conforms
+to. As we saw earlier, we can create the rules in R using the `rules()`
+and `ruleset()` functions, there is however, the (in my case) preferred
+option to separate the code from the rules by writing the rules in a
+separate yaml file and read them into R.
+
+First we display the hand-written contents of the `nyc_data_rules.yaml`
+file.
+
+``` yaml
+- name: 'Rule for: passenger_count'
+  expr: passenger_count >= 0 & passenger_count <= 10
+  allow_na: no
+  negate: no
+  index: 1
+- name: 'Rule for: trip_distance'
+  expr: trip_distance >= 0 & trip_distance <= 1000
+  allow_na: no
+  negate: no
+  index: 2
+- name: 'Rule for: payment_type'
+  expr: payment_type %in% c(0, 1, 2, 3, 4)
+  allow_na: no
+  negate: no
+  index: 3
 ```
 
-### 3 Check that the Data is Valid
+Then, we can load and display the rules:
+
+``` r
+rules <- read_rules("nyc_data_rules.yaml")
+rules
+#> <Verification Ruleset with 3 elements>
+#>   [1] 'Rule for: passenger_count' matching `passenger_count >= 0 & passenger_count <= 10` (allow_na: FALSE)
+#>   [2] 'Rule for: trip_distance' matching `trip_distance >= 0 & trip_distance <= 1000` (allow_na: FALSE)
+#>   [3] 'Rule for: payment_type' matching `payment_type %in% c(0, 1, 2, 3, 4)` (allow_na: FALSE)
+```
+
+### 3 Verify that the Data matches the given Rules
 
 Now we can check if the data follows our rules or if we have unexpected
 data points:
@@ -193,11 +211,11 @@ ds <- open_dataset("nyc-taxi-data/")
 res <- check_data(ds, rules)
 res
 #> # A tibble: 3 × 8
-#>   name         expr                        tests    pass  fail warn  error time 
-#>   <chr>        <chr>                       <int>   <int> <int> <chr> <chr> <drt>
-#> 1 "Rule for: " passenger_count >= 0 & p… 8760687 8760687     0 ""    ""    0.73…
-#> 2 "Rule for: " trip_distance >= 0 & tri… 8760687 8760686     1 ""    ""    0.48…
-#> 3 "Rule for: " payment_type %in% c(0, 1… 8760687 8760687     0 ""    ""    0.44…
+#>   name                      expr           tests    pass  fail warn  error time 
+#>   <chr>                     <chr>          <int>   <int> <int> <chr> <chr> <drt>
+#> 1 Rule for: passenger_count passenger_c… 8760687 8760687     0 ""    ""    0.50…
+#> 2 Rule for: trip_distance   trip_distan… 8760687 8760686     1 ""    ""    0.36…
+#> 3 Rule for: payment_type    payment_typ… 8760687 8760687     0 ""    ""    0.34…
 ```
 
 Using the power of `arrow`, we were able to scan 8+mln observations for
@@ -215,13 +233,51 @@ ds |>
 #> 1 2018-01-30 12:41:02  2018-01-30 12:42:09         189484.
 ```
 
-As we can see, there is probably a data error (a trip distance of 190k
+As we can see, this is probably a data error (a trip distance of 190k
 miles in 1 minute seems - ehm stellar…).
+
+## Using a `DBI` Backend
+
+If you have a `SQLite` or `duckdb` database, you can use the package
+like this
+
+``` r
+library(DBI)
+library(dplyr)
+
+# connect to a duckdb database
+con <- dbConnect(duckdb::duckdb("duckdb-database.duckdb"))
+# for demo purposes write the data once
+dbWriteTable(con, "mtcars", mtcars)
+
+# create a tbl connection, which can be used in the checks
+tbl <- tbl(con, "mtcars")
+
+# create rules
+rules <- ruleset(
+  rule(mpg > 10 & mpg < 40),
+  rule(cyl %in% c(4, 6, 8)),
+  rule(vs %in% c(0, 1), allow_na = TRUE)
+)
+
+# check rules
+res <- check_data(tbl, rules)
+res
+#> # A tibble: 3 × 8
+#>   name          expr                tests  pass  fail warn  error time         
+#>   <chr>         <chr>               <dbl> <dbl> <dbl> <chr> <chr> <drtn>       
+#> 1 Rule for: mpg mpg > 10 & mpg < 40    32    32     0 ""    ""    1.000144 secs
+#> 2 Rule for: cyl cyl %in% c(4, 6, 8)    32    32     0 ""    ""    0.176374 secs
+#> 3 Rule for: vs  vs %in% c(0, 1)        32    32     0 ""    ""    0.160871 secs
+
+# lastly disconnect from the database again
+dbDisconnect(con, shutdown = TRUE)
+```
 
 # Alternative Data Validation R Libraries
 
 If this library is not what you are looking for, the following might be
-good alternatives:
+good alternatives to validate your data:
 
 - [`pointblank`](https://rich-iannone.github.io/pointblank/)
 - [`validate`](https://github.com/data-cleaning/validate)

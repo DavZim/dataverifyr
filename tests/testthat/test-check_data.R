@@ -17,7 +17,6 @@ test_that("base-r check_ works", {
   res <- check_(data, rules, type = "base-r")
 
   expect_equal(class(res), "data.frame")
-  print(res)
   exp <- data.frame(
     name = c("r1", "r2", "r3", "r4", "r5"),
     expr = vapply(rules, function(r) r$expr, character(1)),
@@ -137,6 +136,35 @@ test_that("sqlite (RSQLite) check_ works", {
     warn = c("", "", "", "", ""), # note that DBI(?) silently converts the 'asd' hp value to 0!
     # c.f. https://stackoverflow.com/a/57746647/3048453
     error = c("", "", "", "", "Object `does_not_exist` not found.")
+  )
+  expect_equal(res |> dplyr::select(-time), exp)
+})
+
+
+test_that("duckdb check_ works", {
+  skip_if_not(requireNamespace("DBI", quietly = TRUE) |
+                requireNamespace("duckdb", quietly = TRUE),
+              "DBI and duckdb must be installed to test the functionality")
+
+  con <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  on.exit(DBI::dbDisconnect(con))
+  DBI::dbWriteTable(con, "data", data)
+
+  tbl <- dplyr::tbl(con, "data")
+
+  res <- check_(tbl, rules, type = "collectibles")
+
+  expect_equal(class(res), c("tbl_df", "tbl", "data.frame"))
+  exp <- dplyr::tibble(
+    name = c("r1", "r2", "r3", "r4", "r5"),
+    expr = vapply(rules, function(r) r$expr, character(1)),
+    tests = 32,
+    pass = c(32, 32, 27, 0, 0),
+    fail = c(0, 0, 5, 32, 32),
+    warn = c("", "", "", "", ""),
+    error = c("", "", "",
+              "rapi_execute: Failed to run query\nError: Conversion Error: Could not convert string \"asd\" to DECIMAL(18,3)",
+              "Object `does_not_exist` not found.")
   )
   expect_equal(res |> dplyr::select(-time), exp)
 })
