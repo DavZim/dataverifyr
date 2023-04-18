@@ -10,20 +10,20 @@
 #' @export
 #'
 #' @examples
-#' rule_set <- ruleset(
+#' rs <- ruleset(
 #'   rule(mpg > 10),
 #'   rule(cyl %in% c(4, 6)), # missing 8
 #'   rule(qsec >= 14.5 & qsec <= 22.9)
 #' )
-#' rule_set
+#' rs
 #'
-#' check_data(mtcars, rule_set)
+#' check_data(mtcars, rs)
 check_data <- function(x, rules, fail_on_warn = FALSE, fail_on_error = FALSE) {
 
   # if rules is a yaml file, read it in
   if (length(rules) == 1 && is.character(rules)) rules <- read_rules(rules)
   # treat single rule if needed
-  if (length(rules) == 1 && hasName(rules, "expr")) rules <- ruleset(rules)
+  if (hasName(rules, "expr")) rules <- ruleset(rules)
 
   xname <- deparse(substitute(x))
 

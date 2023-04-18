@@ -23,13 +23,13 @@ Filters a result dataset for the values that failed the verification
 }
 \examples{
 rules <- ruleset(
-rule(mpg > 10 & mpg < 30), # mpg goes up to 34
+  rule(mpg > 10 & mpg < 30), # mpg goes up to 34
   rule(cyl \%in\% c(4, 8)), # missing 6 cyl
   rule(vs \%in\% c(0, 1), allow_na = TRUE)
 )
 
 res <- check_data(mtcars, rules)
 
-err <- filter_errors(res, mtcars)
-err
+fails <- filter_fails(res, mtcars)
+fails
 }

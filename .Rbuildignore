@@ -3,4 +3,4 @@
 ^LICENSE\.md$
 ^README\.Rmd$
 ^nyc-taxi-data$
-^yellow-taxi.*.parquet$
+^.*.parquet$

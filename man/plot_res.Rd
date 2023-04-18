@@ -30,7 +30,7 @@ a base r plot
 Visualize the results of a data validation
 }
 \examples{
-rule_set <- ruleset(
+rs <- ruleset(
   rule(Ozone > 0 & Ozone < 120, allow_na = TRUE), # some mising values and > 120
   rule(Solar.R > 0, allow_na = TRUE),
   rule(Solar.R < 200, allow_na = TRUE),
@@ -38,6 +38,6 @@ rule_set <- ruleset(
   rule(Temp < 100)
 )
 
-res <- check_data(airquality, rule_set)
+res <- check_data(airquality, rs)
 plot_res(res)
 }

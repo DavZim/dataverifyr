@@ -85,7 +85,7 @@ get_symbols <- function(expr) {
 #' @examples
 #' r1 <- rule(mpg > 10)
 #' r2 <- rule(mpg < 20)
-#' rs <- rule_set(r1, r2)
+#' rs <- ruleset(r1, r2)
 #' rs
 #'
 #' rs <- ruleset(
