@@ -6,3 +6,4 @@
 *.parquet
 nyc-taxi-data/*
 
+docs

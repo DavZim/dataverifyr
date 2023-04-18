@@ -10,12 +10,11 @@ Authors@R: c(
 Description: The package allows you to define rules which can be applied to a
     dataset to check if the data conforms to your expectations.
 License: MIT + file LICENSE
-URL: https://github.com/DavZim/dataverifyr
+URL: https://github.com/DavZim/dataverifyr,
+    https://davzim.github.io/dataverifyr/
 BugReports: https://github.com/DavZim/dataverifyr/issues
-Encoding: UTF-8
-LazyData: true
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+Imports: 
+    yaml
 Suggests: 
     arrow,
     data.table,
@@ -26,5 +25,7 @@ Suggests:
     RSQLite,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
-Imports: 
-    yaml
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3

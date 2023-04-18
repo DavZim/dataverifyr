@@ -4,3 +4,7 @@
 ^README\.Rmd$
 ^nyc-taxi-data$
 ^.*.parquet$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^\.github$
