@@ -6,7 +6,7 @@
 \usage{
 plot_res(
   res,
-  main = "Verificatgion Results per Rule",
+  main = "Verification Results per Rule",
   colors = c(pass = "#308344", fail = "#E66820"),
   labels = TRUE,
   table = TRUE

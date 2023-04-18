@@ -68,7 +68,7 @@ rules
 res <- check_data(mtcars, rules)
 res
 
-# plot the results
+# plot the results to get a better understanding of which rules are most often violated
 plot_res(res)
 
 # save the rules to yml
@@ -160,15 +160,17 @@ ds <- open_dataset("nyc-taxi-data/")
 # perform the data validation check
 res <- check_data(ds, rules)
 res
+
+plot_res(res)
 ```
 
 Using the power of `arrow`, we were able to scan 8+mln observations for three rules in about 1.5 seconds (YMMV).
-As we can see from the results, there is one unexpected value, lets quickly investigate
+As we can see from the results, there is one unexpected value, lets quickly investigate using the [`filter_fails()`] function, which filters a dataset for the failed rule matches
 
 ```{r taxi4, eval=requireNamespace("arrow", quietly=TRUE)}
-ds |> 
-  dplyr::filter(trip_distance < 0 | trip_distance > 1000) |> 
-  dplyr::collect() |> 
+res |>
+  filter_fails(ds) |> 
+  # only select a couple of variables for brevity
   dplyr::select(tpep_pickup_datetime, tpep_dropoff_datetime, trip_distance)
 ```
 

@@ -20,6 +20,8 @@ test_that("base-r check_ works", {
   exp <- data.frame(
     name = c("r1", "r2", "r3", "r4", "r5"),
     expr = vapply(rules, function(r) r$expr, character(1)),
+    allow_na = c(FALSE, FALSE, TRUE, FALSE, FALSE),
+    negate = c(FALSE, TRUE, FALSE, FALSE, FALSE),
     tests = 32,
     pass = c(32, 32, 27, 31, 0),
     fail = c(0, 0, 5, 1, 32),
@@ -40,6 +42,8 @@ test_that("dplyr check_ works", {
   exp <- dplyr::tibble(
     name = c("r1", "r2", "r3", "r4", "r5"),
     expr = vapply(rules, function(r) r$expr, character(1)),
+    allow_na = c(FALSE, FALSE, TRUE, FALSE, FALSE),
+    negate = c(FALSE, TRUE, FALSE, FALSE, FALSE),
     tests = 32,
     pass = c(32, 32, 27, 31, 0),
     fail = c(0, 0, 5, 1, 32),
@@ -60,6 +64,8 @@ test_that("data.table check_ works", {
   exp <- data.table::data.table(
     name = c("r1", "r2", "r3", "r4", "r5"),
     expr = vapply(rules, function(r) r$expr, character(1)),
+    allow_na = c(FALSE, FALSE, TRUE, FALSE, FALSE),
+    negate = c(FALSE, TRUE, FALSE, FALSE, FALSE),
     tests = 32,
     pass = c(32, 32, 27, 31, 0),
     fail = c(0, 0, 5, 1, 32),
@@ -80,6 +86,8 @@ test_that("arrow::arrow_table check_ works", {
   exp <- dplyr::tibble(
     name = c("r1", "r2", "r3", "r4", "r5"),
     expr = vapply(rules, function(r) r$expr, character(1)),
+    allow_na = c(FALSE, FALSE, TRUE, FALSE, FALSE),
+    negate = c(FALSE, TRUE, FALSE, FALSE, FALSE),
     tests = 32,
     pass = c(32, 32, 27, 0, 0),
     fail = c(0, 0, 5, 32, 32),
@@ -103,6 +111,8 @@ test_that("arrow::open_dataset check_ works", {
   exp <- dplyr::tibble(
     name = c("r1", "r2", "r3", "r4", "r5"),
     expr = vapply(rules, function(r) r$expr, character(1)),
+    allow_na = c(FALSE, FALSE, TRUE, FALSE, FALSE),
+    negate = c(FALSE, TRUE, FALSE, FALSE, FALSE),
     tests = 32,
     pass = c(32, 32, 27, 0, 0),
     fail = c(0, 0, 5, 32, 32),
@@ -131,6 +141,8 @@ test_that("sqlite (RSQLite) check_ works", {
   exp <- dplyr::tibble(
     name = c("r1", "r2", "r3", "r4", "r5"),
     expr = vapply(rules, function(r) r$expr, character(1)),
+    allow_na = c(FALSE, FALSE, TRUE, FALSE, FALSE),
+    negate = c(FALSE, TRUE, FALSE, FALSE, FALSE),
     tests = 32,
     pass = c(32, 32, 27, 31, 0),
     fail = c(0, 0, 5, 1, 32),
@@ -163,6 +175,8 @@ test_that("duckdb check_ works", {
   exp <- dplyr::tibble(
     name = c("r1", "r2", "r3", "r4", "r5"),
     expr = vapply(rules, function(r) r$expr, character(1)),
+    allow_na = c(FALSE, FALSE, TRUE, FALSE, FALSE),
+    negate = c(FALSE, TRUE, FALSE, FALSE, FALSE),
     tests = 32,
     pass = c(32, 32, 27, 0, 0),
     fail = c(0, 0, 5, 32, 32),

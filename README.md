@@ -69,12 +69,12 @@ rules
 # check if the data matches our rules
 res <- check_data(mtcars, rules)
 res
-#>             name                expr tests pass fail warn error              time
-#> 1: Rule for: mpg mpg > 10 & mpg < 30    32   28    4            0.0053970814 secs
-#> 2: Rule for: cyl    cyl %in% c(4, 8)    32   25    7            0.0036909580 secs
-#> 3:  Rule for: vs     vs %in% c(0, 1)    32   32    0            0.0003919601 secs
+#>             name                expr allow_na negate tests pass fail warn error             time
+#> 1: Rule for: mpg mpg > 10 & mpg < 30    FALSE  FALSE    32   28    4            0.007985115 secs
+#> 2: Rule for: cyl    cyl %in% c(4, 8)    FALSE  FALSE    32   25    7            0.003337860 secs
+#> 3:  Rule for: vs     vs %in% c(0, 1)     TRUE  FALSE    32   32    0            0.000428915 secs
 
-# plot the results
+# plot the results to get a better understanding of which rules are most often violated
 plot_res(res)
 ```
 
@@ -216,22 +216,29 @@ ds <- open_dataset("nyc-taxi-data/")
 # perform the data validation check
 res <- check_data(ds, rules)
 res
-#> # A tibble: 3 × 8
-#>   name                      expr                               tests    pass  fail warn  error time 
-#>   <chr>                     <chr>                              <int>   <int> <int> <chr> <chr> <drt>
-#> 1 Rule for: passenger_count passenger_count >= 0 & passenge… 8760687 8760687     0 ""    ""    0.80…
-#> 2 Rule for: trip_distance   trip_distance >= 0 & trip_dista… 8760687 8760686     1 ""    ""    0.44…
-#> 3 Rule for: payment_type    payment_type %in% c(0, 1, 2, 3,… 8760687 8760687     0 ""    ""    0.36…
+#> # A tibble: 3 × 10
+#>   name                      expr              allow…¹ negate   tests    pass  fail warn  error time 
+#>   <chr>                     <chr>             <lgl>   <lgl>    <int>   <int> <int> <chr> <chr> <drt>
+#> 1 Rule for: passenger_count passenger_count … FALSE   FALSE  8760687 8760687     0 ""    ""    0.56…
+#> 2 Rule for: trip_distance   trip_distance >=… FALSE   FALSE  8760687 8760686     1 ""    ""    0.43…
+#> 3 Rule for: payment_type    payment_type %in… FALSE   FALSE  8760687 8760687     0 ""    ""    0.36…
+#> # … with abbreviated variable name ¹​allow_na
+
+plot_res(res)
 ```
+
+<img src="man/figures/README-taxi3-1.png" width="100%" />
 
 Using the power of `arrow`, we were able to scan 8+mln observations for
 three rules in about 1.5 seconds (YMMV). As we can see from the results,
-there is one unexpected value, lets quickly investigate
+there is one unexpected value, lets quickly investigate using the
+\[`filter_fails()`\] function, which filters a dataset for the failed
+rule matches
 
 ``` r
-ds |> 
-  dplyr::filter(trip_distance < 0 | trip_distance > 1000) |> 
-  dplyr::collect() |> 
+res |>
+  filter_fails(ds) |> 
+  # only select a couple of variables for brevity
   dplyr::select(tpep_pickup_datetime, tpep_dropoff_datetime, trip_distance)
 #> # A tibble: 1 × 3
 #>   tpep_pickup_datetime tpep_dropoff_datetime trip_distance
@@ -269,12 +276,12 @@ rules <- ruleset(
 # check rules
 res <- check_data(tbl, rules)
 res
-#> # A tibble: 3 × 8
-#>   name          expr                tests  pass  fail warn  error time           
-#>   <chr>         <chr>               <dbl> <dbl> <dbl> <chr> <chr> <drtn>         
-#> 1 Rule for: mpg mpg > 10 & mpg < 40    32    32     0 ""    ""    0.05177593 secs
-#> 2 Rule for: cyl cyl %in% c(4, 6, 8)    32    32     0 ""    ""    0.03678417 secs
-#> 3 Rule for: vs  vs %in% c(0, 1)        32    32     0 ""    ""    0.03052998 secs
+#> # A tibble: 3 × 10
+#>   name          expr                allow_na negate tests  pass  fail warn  error time           
+#>   <chr>         <chr>               <lgl>    <lgl>  <dbl> <dbl> <dbl> <chr> <chr> <drtn>         
+#> 1 Rule for: mpg mpg > 10 & mpg < 40 FALSE    FALSE     32    32     0 ""    ""    0.04341698 secs
+#> 2 Rule for: cyl cyl %in% c(4, 6, 8) FALSE    FALSE     32    32     0 ""    ""    0.03063011 secs
+#> 3 Rule for: vs  vs %in% c(0, 1)     TRUE     FALSE     32    32     0 ""    ""    0.03730798 secs
 
 # lastly disconnect from the database again
 dbDisconnect(con, shutdown = TRUE)

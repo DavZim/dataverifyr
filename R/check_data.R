@@ -26,38 +26,16 @@ check_data <- function(x, rules, fail_on_warn = FALSE, fail_on_error = FALSE) {
   if (length(rules) == 1 && hasName(rules, "expr")) rules <- ruleset(rules)
 
   xname <- deparse(substitute(x))
-  cc <- class(x)
 
-  if ("data.table" %in% cc) {
-    if (!has_pkg("data.table"))
-      stop("The data.table package needs to be installed in order to test a data.table OR you can convert the data to a data.frame first!")
-    type <- "data.table"
+  type <- detect_type(class(x))
 
-  } else if ("tibble" %in% cc) {
-    if (!has_pkg("dplyr"))
-      stop("The dplyr package needs to be installed in order to test a tibble OR you can convert the data to a data.frame first!")
-    type <- "dplyr"
-
-  } else if (length(cc) == 1 && cc == "data.frame") {
-
-    if (has_pkg("data.table")) {
-      type <- "data.table"
+  # make sure the input dataset has the right class
+  if (class(x)[[1]] == "data.frame") {
+    if (type == "data.table") {
       x <- data.table::as.data.table(x)
-    } else if (has_pkg("dplyr")) {
-      type <- "dplyr"
+    } else if (type == "dplyr") {
       x <- dplyr::as_tibble(x)
-    } else {
-      type <- "base-r"
     }
-
-  } else if (any(c("tbl_sql", "ArrowObject") %in% cc)) {
-
-    type <- "collectibles"
-
-  } else {
-    stop(sprintf(paste("Unknown class of x found: '%s'.",
-                       "x must be a data.frame/tibble/data.table or a tbl (SQL table) or ArrowObject."),
-                 paste(cc, collapse = ",  ")))
   }
 
   res <- check_(x, rules, type = type)
@@ -75,6 +53,40 @@ check_data <- function(x, rules, fail_on_warn = FALSE, fail_on_error = FALSE) {
   res
 }
 
+# helper function that detects which type the request should use:
+# returns either: base-r, data.table, collectibles (any DBI or arrow backend)
+detect_type <- function(cc) {
+  if ("data.table" %in% cc) {
+    if (!has_pkg("data.table"))
+      stop("The data.table package needs to be installed in order to test a data.table OR you can convert the data to a data.frame first!")
+    type <- "data.table"
+
+  } else if ("tibble" %in% cc) {
+    if (!has_pkg("dplyr"))
+      stop("The dplyr package needs to be installed in order to test a tibble OR you can convert the data to a data.frame first!")
+    type <- "dplyr"
+
+  } else if (length(cc) == 1 && cc == "data.frame") {
+
+    if (has_pkg("data.table")) {
+      type <- "data.table"
+    } else if (has_pkg("dplyr")) {
+      type <- "dplyr"
+    } else {
+      type <- "base-r"
+    }
+
+  } else if (any(c("tbl_sql", "ArrowObject") %in% cc)) {
+
+    type <- "collectibles"
+
+  } else {
+    stop(sprintf(paste("Unknown class of x found: '%s'.",
+                       "x must be a data.frame/tibble/data.table or a tbl (SQL table) or ArrowObject."),
+                 paste(cc, collapse = ",  ")))
+  }
+  type
+}
 
 # small helper to check if a package is installed
 has_pkg <- function(p) requireNamespace(p, quietly = TRUE)
@@ -117,7 +129,8 @@ check_ <- function(x, rules, type = c("base-r", "dplyr", "data.table", "collecti
     # add the is.na guards when allow_na = TRUE
     if ("allow_na" %in% names(r) && r$allow_na) {
       v <- get_symbols(e)
-      e <- paste(e, "|", paste("is.na(", v, ")", sep = "", collapse = " | "))
+      e <- paste("(", e, ")", "|", paste("is.na(", v, ")",
+                                         sep = "", collapse = " | "))
     }
 
 
@@ -134,22 +147,7 @@ check_ <- function(x, rules, type = c("base-r", "dplyr", "data.table", "collecti
     Sys.setenv(NO_COLOR = "OFF")
     pos <- tryCatch({
       warns <- get_warnings({
-        if (type == "base-r") {
-          # note that the nrow(with(x, x[eval(parse(text = e)), ]))
-          # includes NA rows and therefore returns the wrong number of rows
-          pos <- sum(with(x, eval(parse(text = e))), na.rm = TRUE)
-        } else if (type == "dplyr" | type == "collectibles") {
-          rr <- dplyr::filter(x, !!str2lang(e))
-          if (type == "collectibles") {
-            rr <- dplyr::collect(dplyr::summarise(rr, n = dplyr::n()))
-            pos <- dplyr::pull(rr, n)
-          } else {
-            pos <- nrow(rr)
-          }
-
-        } else if (type == "data.table") {
-          pos <- nrow(x[eval(parse(text = e)), ])
-        }
+        pos <- filter_data_(x, type, e)
       })
       pos
     }, error = function(err) {
@@ -166,6 +164,8 @@ check_ <- function(x, rules, type = c("base-r", "dplyr", "data.table", "collecti
     to_df(
       name = r$name,
       expr = r$expr,
+      allow_na = r$allow_na,
+      negate = r$negate,
       tests = nr,
       pass = pos,
       fail = nr - pos,
@@ -176,6 +176,35 @@ check_ <- function(x, rules, type = c("base-r", "dplyr", "data.table", "collecti
   })
 
   br(ll)
+}
+
+# internal helper function that filters a dataset x
+# when return_n = FALSE the data is returned, otherwise the number of rows
+filter_data_ <- function(x, type, e, return_n = TRUE) {
+  if (type == "base-r") {
+    # note that the nrow(with(x, x[eval(parse(text = e)), ]))
+    # includes NA rows and therefore returns the wrong number of rows
+    pos <- with(x, eval(parse(text = e)))
+    pos <- if (return_n) sum(pos, na.rm = TRUE) else x[pos, ]
+  } else if (type == "dplyr" | type == "collectibles") {
+    rr <- dplyr::filter(x, !!str2lang(e))
+    if (type == "collectibles") {
+      if (return_n) {
+        pos <- dplyr::pull(
+          dplyr::collect(dplyr::summarise(rr, n = dplyr::n())),
+          n
+        )
+      } else {
+        pos <- dplyr::collect(rr)
+      }
+    } else { # dplyr
+      pos <- if (return_n) nrow(rr) else rr
+    }
+  } else if (type == "data.table") {
+    pos <- x[eval(parse(text = e)), ]
+    if (return_n) pos <- nrow(pos)
+  }
+  pos
 }
 
 # strips a dplyr/cli error message of its formatting

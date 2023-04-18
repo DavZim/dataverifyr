@@ -47,13 +47,14 @@ plot_res <- function(res,
   if (labels) {
     # add pass rates
     p <- r$pass / r$tests
-    text(p / 2, bp, labels = sprintf("%.2f%% (%s)", 100 * p, pretty_val(r$pass)),
+    text(p / 2, bp, labels = sprintf("%s%% (%s)", round_down(100 * p),
+                                     pretty_val(r$pass)),
          cex = 0.75, col = "white")
 
     # add failure rate
     f <- r$fail / r$tests
     text(p[f != 0] + f[f != 0] / 2, bp[f != 0],
-         labels = sprintf("%.2f%% (%s)", 100 * f[f != 0],
+         labels = sprintf("%s%% (%s)", round_down(100 * f[f != 0]),
                           pretty_val(r$fail[f != 0])),
          cex = 0.75, col = "white")
   }
@@ -80,6 +81,10 @@ plot_res <- function(res,
   par(op)
 }
 
+# x <- 99.999999999 to 99.99
+round_down <- function(x, digits = 2) {
+  floor(x * 10^digits) / 10^digits
+}
 
 pretty_val <- function(x, digits = 2, digits_small = FALSE, align = TRUE) {
   brks <- c("bln" = 1e9, "mln" = 1e6, "k" = 1e3, " " = 1)
