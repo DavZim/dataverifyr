@@ -4,7 +4,7 @@
 # dataverifyr - a lightweight, flexible, and fast data validation package that can handle all datasizes
 
 <!-- badges: start -->
-# <!-- [![](https://www.r-pkg.org/badges/version/dataverifyr)](https://www.r-pkg.org/pkg/dataverifyr) [![R-CMD-check](https://github.com/DavZim/dataverifyr/workflows/R-CMD-check/badge.svg)](https://github.com/DavZim/dataverifyr/actions) [![CRAN RStudio mirror downloads](https://cranlogs.r-pkg.org/badges/dataverifyr)](https://www.r-pkg.org/pkg/dataverifyr)
+[![](https://www.r-pkg.org/badges/version/dataverifyr)](https://www.r-pkg.org/pkg/dataverifyr) [![R-CMD-check](https://github.com/DavZim/dataverifyr/workflows/R-CMD-check/badge.svg)](https://github.com/DavZim/dataverifyr/actions) [![CRAN RStudio mirror downloads](https://cranlogs.r-pkg.org/badges/dataverifyr)](https://www.r-pkg.org/pkg/dataverifyr)
 <!-- badges: end -->
 
 The goal of `dataverifyr` is to allow a wide variety of flexible data
@@ -114,7 +114,7 @@ pointing to an `SQLite` database, the package will automatically choose
 | `Table`/`ArrowTabular` | [`arrow`](https://arrow.apache.org/docs/r/)                             | ✔️     | For example by using `arrow::arrow_table()`                                                                                                        |
 | `FileSystemDataset`    | [`arrow`](https://arrow.apache.org/docs/r/)                             | ✔️     | For on disk storage using `arrow::open_dataset()`, very good for large datasets. See example below.                                                |
 | `sqlite`               | [`RSQLite`](https://rsqlite.r-dbi.org/)/[`DBI`](https://dbi.r-dbi.org/) | ✔️     | Note that missing values are converted to `0`s when using sqlite by default ([c.f. this SO answer](https://stackoverflow.com/a/57746647/3048453)). |
-| `DuckDB`               | [`duckdb`](https://duckdb.org/docs/api/r.html)                          | ✔️     |                                                                                                                                                    |
+| `DuckDB`               | [`duckdb`](https://duckdb.org/docs/api/r.html)/[`DBI`](https://dbi.r-dbi.org/)                           | ✔️     |                                                                                                                                                    |
 | `postgreSQL`           | [`RPostgres`](https://rpostgres.r-dbi.org/)                             | ❓     | Not tested, but should work out-of-the-box through [`DBI`](https://dbi.r-dbi.org/)                                                                 |
 
 ## Larger Example using the `arrow` backend
