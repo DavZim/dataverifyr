@@ -4,7 +4,11 @@
 # dataverifyr - a lightweight, flexible, and fast data validation package that can handle all datasizes
 
 <!-- badges: start -->
-[![](https://www.r-pkg.org/badges/version/dataverifyr)](https://www.r-pkg.org/pkg/dataverifyr) [![R-CMD-check](https://github.com/DavZim/dataverifyr/workflows/R-CMD-check/badge.svg)](https://github.com/DavZim/dataverifyr/actions) [![CRAN RStudio mirror downloads](https://cranlogs.r-pkg.org/badges/dataverifyr)](https://www.r-pkg.org/pkg/dataverifyr)
+
+[![](https://www.r-pkg.org/badges/version/dataverifyr)](https://www.r-pkg.org/pkg/dataverifyr)
+[![R-CMD-check](https://github.com/DavZim/dataverifyr/workflows/R-CMD-check/badge.svg)](https://github.com/DavZim/dataverifyr/actions)
+[![CRAN RStudio mirror
+downloads](https://cranlogs.r-pkg.org/badges/dataverifyr)](https://www.r-pkg.org/pkg/dataverifyr)
 <!-- badges: end -->
 
 The goal of `dataverifyr` is to allow a wide variety of flexible data
@@ -50,41 +54,45 @@ This is a basic example which shows you how to
 library(dataverifyr)
 
 rules <- ruleset(
-  rule(mpg > 10 & mpg < 40),
-  rule(cyl %in% c(4, 6, 8)),
+  rule(mpg > 10 & mpg < 30), # mpg goes up to 34
+  rule(cyl %in% c(4, 8)), # missing 6 cyl
   rule(vs %in% c(0, 1), allow_na = TRUE)
 )
 
 # print the rules
 rules
 #> <Verification Ruleset with 3 elements>
-#>   [1] 'Rule for: mpg' matching `mpg > 10 & mpg < 40` (allow_na: FALSE)
-#>   [2] 'Rule for: cyl' matching `cyl %in% c(4, 6, 8)` (allow_na: FALSE)
+#>   [1] 'Rule for: mpg' matching `mpg > 10 & mpg < 30` (allow_na: FALSE)
+#>   [2] 'Rule for: cyl' matching `cyl %in% c(4, 8)` (allow_na: FALSE)
 #>   [3] 'Rule for: vs' matching `vs %in% c(0, 1)` (allow_na: TRUE)
 
 # check if the data matches our rules
 res <- check_data(mtcars, rules)
 res
-#>             name                expr tests pass fail warn error
-#> 1: Rule for: mpg mpg > 10 & mpg < 40    32   32    0           
-#> 2: Rule for: cyl cyl %in% c(4, 6, 8)    32   32    0           
-#> 3:  Rule for: vs     vs %in% c(0, 1)    32   32    0           
-#>                 time
-#> 1: 0.0046658516 secs
-#> 2: 0.0028591156 secs
-#> 3: 0.0003590584 secs
+#>             name                expr tests pass fail warn error              time
+#> 1: Rule for: mpg mpg > 10 & mpg < 30    32   28    4            0.0053970814 secs
+#> 2: Rule for: cyl    cyl %in% c(4, 8)    32   25    7            0.0036909580 secs
+#> 3:  Rule for: vs     vs %in% c(0, 1)    32   32    0            0.0003919601 secs
+
+# plot the results
+plot_res(res)
+```
+
+<img src="man/figures/README-example-1.png" width="100%" />
+
+``` r
 
 # save the rules to yml
 write_rules(rules, "example_rules.yaml")
 
 cat(paste(readLines("example_rules.yaml"), collapse = "\n"))
 #> - name: 'Rule for: mpg'
-#>   expr: mpg > 10 & mpg < 40
+#>   expr: mpg > 10 & mpg < 30
 #>   allow_na: no
 #>   negate: no
 #>   index: 1
 #> - name: 'Rule for: cyl'
-#>   expr: cyl %in% c(4, 6, 8)
+#>   expr: cyl %in% c(4, 8)
 #>   allow_na: no
 #>   negate: no
 #>   index: 2
@@ -106,16 +114,16 @@ automatically chosen based on filetype (eg, when giving a `dplyr::tbl()`
 pointing to an `SQLite` database, the package will automatically choose
 `DBI`/`dplyr` for the task) and package availability.
 
-| Backend                | Library                                                                 | Status | Comment                                                                                                                                            |
-|------------------------|-------------------------------------------------------------------------|--------|----------------------------------------------------------------------------------------------------------------------------------------------------|
-| `base-R`               | `base`                                                                  | ✔️     | When `data.table` or `dplyr` are installed, they are leveraged for higher performance, but if requried, the package works with base-r only         |
-| `dplyr`                | [`dplyr`](https://dplyr.tidyverse.org/)                                 | ✔️     |                                                                                                                                                    |
-| `data.table`           | [`data.table`](r-datatable.com)                                         | ✔️     | Used as the default when installed and no special data-format is given.                                                                            |
-| `Table`/`ArrowTabular` | [`arrow`](https://arrow.apache.org/docs/r/)                             | ✔️     | For example by using `arrow::arrow_table()`                                                                                                        |
-| `FileSystemDataset`    | [`arrow`](https://arrow.apache.org/docs/r/)                             | ✔️     | For on disk storage using `arrow::open_dataset()`, very good for large datasets. See example below.                                                |
-| `sqlite`               | [`RSQLite`](https://rsqlite.r-dbi.org/)/[`DBI`](https://dbi.r-dbi.org/) | ✔️     | Note that missing values are converted to `0`s when using sqlite by default ([c.f. this SO answer](https://stackoverflow.com/a/57746647/3048453)). |
-| `DuckDB`               | [`duckdb`](https://duckdb.org/docs/api/r.html)/[`DBI`](https://dbi.r-dbi.org/)                           | ✔️     |                                                                                                                                                    |
-| `postgreSQL`           | [`RPostgres`](https://rpostgres.r-dbi.org/)                             | ❓     | Not tested, but should work out-of-the-box through [`DBI`](https://dbi.r-dbi.org/)                                                                 |
+| Backend                | Library                                                                        | Status | Comment                                                                                                                                            |
+|------------------------|--------------------------------------------------------------------------------|--------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| `base-R`               | `base`                                                                         | ✔️     | When `data.table` or `dplyr` are installed, they are leveraged for higher performance, but if requried, the package works with base-r only         |
+| `dplyr`                | [`dplyr`](https://dplyr.tidyverse.org/)                                        | ✔️     |                                                                                                                                                    |
+| `data.table`           | [`data.table`](r-datatable.com)                                                | ✔️     | Used as the default when installed and no special data-format is given.                                                                            |
+| `Table`/`ArrowTabular` | [`arrow`](https://arrow.apache.org/docs/r/)                                    | ✔️     | For example by using `arrow::arrow_table()`                                                                                                        |
+| `FileSystemDataset`    | [`arrow`](https://arrow.apache.org/docs/r/)                                    | ✔️     | For on disk storage using `arrow::open_dataset()`, very good for large datasets. See example below.                                                |
+| `sqlite`               | [`RSQLite`](https://rsqlite.r-dbi.org/)/[`DBI`](https://dbi.r-dbi.org/)        | ✔️     | Note that missing values are converted to `0`s when using sqlite by default ([c.f. this SO answer](https://stackoverflow.com/a/57746647/3048453)). |
+| `DuckDB`               | [`duckdb`](https://duckdb.org/docs/api/r.html)/[`DBI`](https://dbi.r-dbi.org/) | ✔️     |                                                                                                                                                    |
+| `postgreSQL`           | [`RPostgres`](https://rpostgres.r-dbi.org/)                                    | ❓     | Not tested, but should work out-of-the-box through [`DBI`](https://dbi.r-dbi.org/)                                                                 |
 
 ## Larger Example using the `arrow` backend
 
@@ -143,13 +151,11 @@ d <- read_parquet(file)
 dim(d)
 #> [1] 8760687      19
 names(d)
-#>  [1] "VendorID"              "tpep_pickup_datetime"  "tpep_dropoff_datetime"
-#>  [4] "passenger_count"       "trip_distance"         "RatecodeID"           
-#>  [7] "store_and_fwd_flag"    "PULocationID"          "DOLocationID"         
-#> [10] "payment_type"          "fare_amount"           "extra"                
-#> [13] "mta_tax"               "tip_amount"            "tolls_amount"         
-#> [16] "improvement_surcharge" "total_amount"          "congestion_surcharge" 
-#> [19] "airport_fee"
+#>  [1] "VendorID"              "tpep_pickup_datetime"  "tpep_dropoff_datetime" "passenger_count"      
+#>  [5] "trip_distance"         "RatecodeID"            "store_and_fwd_flag"    "PULocationID"         
+#>  [9] "DOLocationID"          "payment_type"          "fare_amount"           "extra"                
+#> [13] "mta_tax"               "tip_amount"            "tolls_amount"          "improvement_surcharge"
+#> [17] "total_amount"          "congestion_surcharge"  "airport_fee"
 
 # write the dataset to disk
 write_dataset(d, "nyc-taxi-data")
@@ -211,11 +217,11 @@ ds <- open_dataset("nyc-taxi-data/")
 res <- check_data(ds, rules)
 res
 #> # A tibble: 3 × 8
-#>   name                      expr           tests    pass  fail warn  error time 
-#>   <chr>                     <chr>          <int>   <int> <int> <chr> <chr> <drt>
-#> 1 Rule for: passenger_count passenger_c… 8760687 8760687     0 ""    ""    0.50…
-#> 2 Rule for: trip_distance   trip_distan… 8760687 8760686     1 ""    ""    0.36…
-#> 3 Rule for: payment_type    payment_typ… 8760687 8760687     0 ""    ""    0.34…
+#>   name                      expr                               tests    pass  fail warn  error time 
+#>   <chr>                     <chr>                              <int>   <int> <int> <chr> <chr> <drt>
+#> 1 Rule for: passenger_count passenger_count >= 0 & passenge… 8760687 8760687     0 ""    ""    0.80…
+#> 2 Rule for: trip_distance   trip_distance >= 0 & trip_dista… 8760687 8760686     1 ""    ""    0.44…
+#> 3 Rule for: payment_type    payment_type %in% c(0, 1, 2, 3,… 8760687 8760687     0 ""    ""    0.36…
 ```
 
 Using the power of `arrow`, we were able to scan 8+mln observations for
@@ -264,11 +270,11 @@ rules <- ruleset(
 res <- check_data(tbl, rules)
 res
 #> # A tibble: 3 × 8
-#>   name          expr                tests  pass  fail warn  error time         
-#>   <chr>         <chr>               <dbl> <dbl> <dbl> <chr> <chr> <drtn>       
-#> 1 Rule for: mpg mpg > 10 & mpg < 40    32    32     0 ""    ""    1.000144 secs
-#> 2 Rule for: cyl cyl %in% c(4, 6, 8)    32    32     0 ""    ""    0.176374 secs
-#> 3 Rule for: vs  vs %in% c(0, 1)        32    32     0 ""    ""    0.160871 secs
+#>   name          expr                tests  pass  fail warn  error time           
+#>   <chr>         <chr>               <dbl> <dbl> <dbl> <chr> <chr> <drtn>         
+#> 1 Rule for: mpg mpg > 10 & mpg < 40    32    32     0 ""    ""    0.05177593 secs
+#> 2 Rule for: cyl cyl %in% c(4, 6, 8)    32    32     0 ""    ""    0.03678417 secs
+#> 3 Rule for: vs  vs %in% c(0, 1)        32    32     0 ""    ""    0.03052998 secs
 
 # lastly disconnect from the database again
 dbDisconnect(con, shutdown = TRUE)

@@ -1,5 +1,3 @@
-.datatable.aware <- TRUE
-
 #' Checks if a dataset confirms to a given set of rules
 #'
 #' @param x a dataset, either a [`data.frame`], [`dplyr::tibble`], [`data.table::data.table`],

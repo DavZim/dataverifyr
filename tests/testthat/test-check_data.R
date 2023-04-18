@@ -115,8 +115,9 @@ test_that("arrow::open_dataset check_ works", {
 
 test_that("sqlite (RSQLite) check_ works", {
   skip_if_not(requireNamespace("DBI", quietly = TRUE) |
+                requireNamespace("dbplyr", quietly = TRUE) |
                 requireNamespace("RSQLite", quietly = TRUE),
-              "DBI and RSQLite must be installed to test the functionality")
+              "DBI, dbplyr, and RSQLite must be installed to test the functionality")
 
   con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
   on.exit(DBI::dbDisconnect(con))
@@ -133,21 +134,25 @@ test_that("sqlite (RSQLite) check_ works", {
     tests = 32,
     pass = c(32, 32, 27, 31, 0),
     fail = c(0, 0, 5, 1, 32),
-    warn = c("", "", "", "", ""), # note that DBI(?) silently converts the 'asd' hp value to 0!
+    warn = ""
+    # note that RSQLite silently converts the 'asd' hp value to 0!
     # c.f. https://stackoverflow.com/a/57746647/3048453
-    error = c("", "", "", "", "Object `does_not_exist` not found.")
   )
-  expect_equal(res |> dplyr::select(-time), exp)
+  expect_equal(res |> dplyr::select(-time, -error), exp)
+  # the error messages are unreliable as the wording changes over versions,
+  # test that there is some error message
+  expect_equal(nchar(res$error) > 0, c(FALSE, FALSE, FALSE, FALSE, TRUE))
 })
 
 
 test_that("duckdb check_ works", {
   skip_if_not(requireNamespace("DBI", quietly = TRUE) |
+                requireNamespace("dbplyr", quietly = TRUE) |
                 requireNamespace("duckdb", quietly = TRUE),
-              "DBI and duckdb must be installed to test the functionality")
+              "DBI, dplyr, and duckdb must be installed to test the functionality")
 
   con <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
-  on.exit(DBI::dbDisconnect(con))
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
   DBI::dbWriteTable(con, "data", data)
 
   tbl <- dplyr::tbl(con, "data")
@@ -161,10 +166,10 @@ test_that("duckdb check_ works", {
     tests = 32,
     pass = c(32, 32, 27, 0, 0),
     fail = c(0, 0, 5, 32, 32),
-    warn = c("", "", "", "", ""),
-    error = c("", "", "",
-              "rapi_execute: Failed to run query\nError: Conversion Error: Could not convert string \"asd\" to DECIMAL(18,3)",
-              "Object `does_not_exist` not found.")
+    warn = ""
   )
-  expect_equal(res |> dplyr::select(-time), exp)
+  expect_equal(res |> dplyr::select(-time, -error), exp)
+  # the error messages are unreliable as the wording changes over versions,
+  # test that there is some error message
+  expect_equal(nchar(res$error) > 0, c(FALSE, FALSE, FALSE, TRUE, TRUE))
 })

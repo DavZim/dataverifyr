@@ -1,6 +1,6 @@
 Package: dataverifyr
 Type: Package
-Title: Easy checks that your data is what you think it is
+Title: a lightweight, flexible, and fast data validation package that can handle all datasizes
 Version: 0.1.0
 Authors@R: c(
       person(given = "David",
@@ -19,6 +19,7 @@ Suggests:
     data.table,
     DBI,
     dplyr,
+    dbplyr,
     duckdb,
     RSQLite,
     testthat (>= 3.0.0)

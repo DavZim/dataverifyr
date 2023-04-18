@@ -12,7 +12,7 @@ knitr::opts_chunk$set(
   out.width = "100%"
 )
 Sys.setenv(LANG = "en")
-options(pillar.sigfig = 5)
+options(pillar.sigfig = 5, width = 100)
 ```
 
 # dataverifyr - a lightweight, flexible, and fast data validation package that can handle all datasizes
@@ -56,8 +56,8 @@ This is a basic example which shows you how to
 library(dataverifyr)
 
 rules <- ruleset(
-  rule(mpg > 10 & mpg < 40),
-  rule(cyl %in% c(4, 6, 8)),
+  rule(mpg > 10 & mpg < 30), # mpg goes up to 34
+  rule(cyl %in% c(4, 8)), # missing 6 cyl
   rule(vs %in% c(0, 1), allow_na = TRUE)
 )
 
@@ -67,6 +67,9 @@ rules
 # check if the data matches our rules
 res <- check_data(mtcars, rules)
 res
+
+# plot the results
+plot_res(res)
 
 # save the rules to yml
 write_rules(rules, "example_rules.yaml")
