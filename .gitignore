@@ -1,0 +1,8 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+yellow-taxi-2018-jan.parquet
+nyc-taxi-data/*
+

@@ -1,0 +1,26 @@
+Package: dataverifyr
+Type: Package
+Title: Easy checks that your data is what you think it is
+Version: 0.1.0
+Authors@R: c(
+      person(given = "David",
+             family = "Zimmermann-Kollenda",
+             role = c("aut","cre"),
+             email = "david_j_zimmermann@hotmail.com"))
+Description: The package allows you to define rules which can be applied to a
+    dataset to check if the data conforms to your expectations.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.0
+Suggests: 
+    arrow,
+    data.table,
+    DBI,
+    dplyr,
+    RSQLite,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Imports: 
+    yaml
