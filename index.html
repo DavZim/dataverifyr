@@ -5,20 +5,20 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="description" content="Allows you to define rules which can be applied to a
-    dataset to check if the data conforms to your expectations.
-    The package acts as a thin wraper around more powerful data backends such
-    as dplyr, data.table, arrow, and DBI, which do the heavy lifting.">
-<title>A Lightweight, Flexible, and Fast Data Validation Package that can Handle all Datasizes • dataverifyr</title>
+<meta name="description" content="Allows you to define rules which can be used to verify a given
+    dataset.
+    The package acts as a thin wrapper around more powerful data packages such
+    as dplyr, data.table, arrow, and DBI (SQL), which do the heavy lifting.">
+<title>A Lightweight, Flexible, and Fast Data Validation Package That Can Handle All Sizes of Data • dataverifyr</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.2.2/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
-<!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="A Lightweight, Flexible, and Fast Data Validation Package that can Handle all Datasizes">
-<meta property="og:description" content="Allows you to define rules which can be applied to a
-    dataset to check if the data conforms to your expectations.
-    The package acts as a thin wraper around more powerful data backends such
-    as dplyr, data.table, arrow, and DBI, which do the heavy lifting.">
+<!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="A Lightweight, Flexible, and Fast Data Validation Package That Can Handle All Sizes of Data">
+<meta property="og:description" content="Allows you to define rules which can be used to verify a given
+    dataset.
+    The package acts as a thin wrapper around more powerful data packages such
+    as dplyr, data.table, arrow, and DBI (SQL), which do the heavy lifting.">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -67,13 +67,16 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="dataverifyr---a-lightweight-flexible-and-fast-data-validation-package-that-can-handle-all-datasizes">dataverifyr - a lightweight, flexible, and fast data validation package that can handle all datasizes<a class="anchor" aria-label="anchor" href="#dataverifyr---a-lightweight-flexible-and-fast-data-validation-package-that-can-handle-all-datasizes"></a>
+<div class="page-header"><h1 id="dataverifyr---a-lightweight-flexible-and-fast-data-validation-package-that-can-handle-all-sizes-of-data">
+<code>dataverifyr</code> - A Lightweight, Flexible, and Fast Data Validation Package That Can Handle All Sizes of Data<a class="anchor" aria-label="anchor" href="#dataverifyr---a-lightweight-flexible-and-fast-data-validation-package-that-can-handle-all-sizes-of-data"></a>
 </h1></div>
 <!-- badges: start -->
 
-<p>The goal of <code>dataverifyr</code> is to allow a wide variety of flexible data validation checks. That means, you can specify the rules/expressions in a yaml file, load it into R and compare any arbitrary dataset against it. The package is built in such a way, that you can use <code>base-R</code>, <code>dplyr</code>, <code>data.table</code>, <code>arrow</code> (both as an <code>arrow_table</code> as well as an <code><a href="https://arrow.apache.org/docs/r/reference/open_dataset.html" class="external-link">open_dataset()</a></code> connection), but also any <code>DBI</code>-compliant database (currently tested with <code>RSQLite</code> and <code>duckdb</code>).</p>
-<p>The package is lightweight as all the heavy dependencies are Suggests-only, that means if you want to use <code>data.table</code> for the task, you don’t need to install the other packages (<code>arrow</code>, <code>DBI</code>, etc) unless you explicitly tell R to do so when installing the package.</p>
-<p>The backend for your analysis is automatically chosen based on the input dataset as well as the available packages. By using the underlying technologies and handing all evaluation of code to the backends, this package can deal with all datasizes the backends can deal with.</p>
+<!-- badges: end -->
+<p>The goal of <code>dataverifyr</code> is to allow a wide variety of flexible data validation checks (verifications). That means, you can specify a set of rules (R expressions) and compare any arbitrary dataset against it.</p>
+<p>The package is built in such a way, that it adapts to your type of data and choice of data package (data.frame, data.table, tibble, arrow, or SQL connection) and chooses the right data backend automatically, this is especially handy when large or complicated datasets are involved. That way, you can concentrate on writing the rules and making sure that your data is valid rather than spending time writing boilerplate code.</p>
+<p>The package is lightweight as all the heavy dependencies are Suggests-only, that means if you want to use <code>data.table</code> for the task, you don’t need to install the other packages (<code>arrow</code>, <code>DBI</code>, etc) unless you explicitly tell R to install all suggested packages as well when installing the package.</p>
+<p>The backend for your analysis is automatically chosen based on the type of input dataset as well as the available packages. By using the underlying technologies and handing over all evaluation of code to the backend, this package can deal with all sizes of data the backends can deal with.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -90,14 +93,15 @@
 </h2>
 <p>This is a basic example which shows you how to</p>
 <ol style="list-style-type: decimal">
-<li>create a rule-set manually</li>
+<li>create a rule set manually, consisting of R expressions</li>
 <li>check if a dataset matches all given rules</li>
-<li>save the rules to a yaml-file for better maintainability</li>
-<li>load the rules from disk again</li>
+<li>save and load the rules to a yaml-file for better maintainability</li>
 </ol>
+<p>Note that each rule is an R expression that is evaluated within the dataset. Our first rule, for example, states that we believe all values of the <code>mpg</code> variable are in the range 10 to 30 (exclusive).</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/DavZim/dataverifyr" class="external-link">dataverifyr</a></span><span class="op">)</span></span>
 <span></span>
+<span><span class="co"># define a rule set within our R code; alternatively in a yaml file</span></span>
 <span><span class="va">rules</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ruleset.html">ruleset</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="reference/rule.html">rule</a></span><span class="op">(</span><span class="va">mpg</span> <span class="op">&gt;</span> <span class="fl">10</span> <span class="op">&amp;</span> <span class="va">mpg</span> <span class="op">&lt;</span> <span class="fl">30</span><span class="op">)</span>, <span class="co"># mpg goes up to 34</span></span>
 <span>  <span class="fu"><a href="reference/rule.html">rule</a></span><span class="op">(</span><span class="va">cyl</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">8</span><span class="op">)</span><span class="op">)</span>, <span class="co"># missing 6 cyl</span></span>
@@ -114,126 +118,268 @@
 <span><span class="co"># check if the data matches our rules</span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">rules</span><span class="op">)</span></span>
 <span><span class="va">res</span></span>
-<span><span class="co">#&gt;             name                expr allow_na negate tests pass fail warn error             time</span></span>
-<span><span class="co">#&gt; 1: Rule for: mpg mpg &gt; 10 &amp; mpg &lt; 30    FALSE  FALSE    32   28    4            0.005684137 secs</span></span>
-<span><span class="co">#&gt; 2: Rule for: cyl    cyl %in% c(4, 8)    FALSE  FALSE    32   25    7            0.003256083 secs</span></span>
-<span><span class="co">#&gt; 3:  Rule for: vs     vs %in% c(0, 1)     TRUE  FALSE    32   32    0            0.000510931 secs</span></span>
-<span></span>
-<span><span class="co"># plot the results to get a better understanding of which rules are most often violated</span></span>
-<span><span class="fu"><a href="reference/plot_res.html">plot_res</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-example-1.png" width="100%"></p>
+<span><span class="co">#&gt;             name                expr allow_na negate tests pass fail warn error              time</span></span>
+<span><span class="co">#&gt; 1: Rule for: mpg mpg &gt; 10 &amp; mpg &lt; 30    FALSE  FALSE    32   28    4            0.0041229725 secs</span></span>
+<span><span class="co">#&gt; 2: Rule for: cyl    cyl %in% c(4, 8)    FALSE  FALSE    32   25    7            0.0026600361 secs</span></span>
+<span><span class="co">#&gt; 3:  Rule for: vs     vs %in% c(0, 1)     TRUE  FALSE    32   32    0            0.0003478527 secs</span></span></code></pre></div>
+<p>As we can see, our dataset <code>mtcars</code> does not conform to all of our rules. We have four fails (fail=rule is not met) for the first rule <code>mpg &gt; 10 &amp; mpg &lt; 30</code> (there are <code>mpg</code> values up to 33.9) and seven fails for the second rule <code>cyl %in% c(4, 8)</code> (there are <code>cyl</code> values of 6), while the third rule <code>vs %in% c(0, 1)</code> is always met.</p>
+<p>To see which values do not meet our expectations, use the <code><a href="reference/filter_fails.html">filter_fails()</a></code> function</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="co"># save the rules to yml</span></span>
-<span><span class="fu"><a href="reference/write_rules.html">write_rules</a></span><span class="op">(</span><span class="va">rules</span>, <span class="st">"example_rules.yaml"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/readLines.html" class="external-link">readLines</a></span><span class="op">(</span><span class="st">"example_rules.yaml"</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">"\n"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; - name: 'Rule for: mpg'</span></span>
-<span><span class="co">#&gt;   expr: mpg &gt; 10 &amp; mpg &lt; 30</span></span>
-<span><span class="co">#&gt;   allow_na: no</span></span>
-<span><span class="co">#&gt;   negate: no</span></span>
-<span><span class="co">#&gt;   index: 1</span></span>
-<span><span class="co">#&gt; - name: 'Rule for: cyl'</span></span>
-<span><span class="co">#&gt;   expr: cyl %in% c(4, 8)</span></span>
-<span><span class="co">#&gt;   allow_na: no</span></span>
-<span><span class="co">#&gt;   negate: no</span></span>
-<span><span class="co">#&gt;   index: 2</span></span>
-<span><span class="co">#&gt; - name: 'Rule for: vs'</span></span>
-<span><span class="co">#&gt;   expr: vs %in% c(0, 1)</span></span>
-<span><span class="co">#&gt;   allow_na: yes</span></span>
-<span><span class="co">#&gt;   negate: no</span></span>
-<span><span class="co">#&gt;   index: 3</span></span>
-<span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/filter_fails.html">filter_fails</a></span><span class="op">(</span><span class="va">res</span>, <span class="va">mtcars</span>, per_rule <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; $`mpg &gt; 10 &amp; mpg &lt; 30`</span></span>
+<span><span class="co">#&gt;     mpg cyl disp  hp drat    wt  qsec vs am gear carb</span></span>
+<span><span class="co">#&gt; 1: 32.4   4 78.7  66 4.08 2.200 19.47  1  1    4    1</span></span>
+<span><span class="co">#&gt; 2: 30.4   4 75.7  52 4.93 1.615 18.52  1  1    4    2</span></span>
+<span><span class="co">#&gt; 3: 33.9   4 71.1  65 4.22 1.835 19.90  1  1    4    1</span></span>
+<span><span class="co">#&gt; 4: 30.4   4 95.1 113 3.77 1.513 16.90  1  1    5    2</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $`cyl %in% c(4, 8)`</span></span>
+<span><span class="co">#&gt;     mpg cyl  disp  hp drat    wt  qsec vs am gear carb</span></span>
+<span><span class="co">#&gt; 1: 21.0   6 160.0 110 3.90 2.620 16.46  0  1    4    4</span></span>
+<span><span class="co">#&gt; 2: 21.0   6 160.0 110 3.90 2.875 17.02  0  1    4    4</span></span>
+<span><span class="co">#&gt; 3: 21.4   6 258.0 110 3.08 3.215 19.44  1  0    3    1</span></span>
+<span><span class="co">#&gt; 4: 18.1   6 225.0 105 2.76 3.460 20.22  1  0    3    1</span></span>
+<span><span class="co">#&gt; 5: 19.2   6 167.6 123 3.92 3.440 18.30  1  0    4    4</span></span>
+<span><span class="co">#&gt; 6: 17.8   6 167.6 123 3.92 3.440 18.90  1  0    4    4</span></span>
+<span><span class="co">#&gt; 7: 19.7   6 145.0 175 3.62 2.770 15.50  0  1    5    6</span></span></code></pre></div>
+<p>We can also visualize the results using the <code><a href="reference/plot_res.html">plot_res()</a></code> function.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/plot_res.html">plot_res</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-plotres-1.png" width="100%"></p>
+<p>Note that you can also save and load a ruleset to and from a <code>yaml</code> file</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/write_rules.html">write_rules</a></span><span class="op">(</span><span class="va">rules</span>, <span class="st">"example_rules.yaml"</span><span class="op">)</span></span>
 <span><span class="va">r2</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/write_rules.html">read_rules</a></span><span class="op">(</span><span class="st">"example_rules.yaml"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="va">rules</span>, <span class="va">r2</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<p>The resulting <code>example_rules.yaml</code> looks like this</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">'Rule for: mpg'</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">expr</span><span class="kw">:</span><span class="at"> mpg &gt; 10 &amp; mpg &lt; 30</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">allow_na</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">negate</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">index</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">'Rule for: cyl'</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">expr</span><span class="kw">:</span><span class="at"> cyl %in% c(4, 8)</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">allow_na</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">negate</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">index</span><span class="kw">:</span><span class="at"> </span><span class="dv">2</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">'Rule for: vs'</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">expr</span><span class="kw">:</span><span class="at"> vs %in% c(0, 1)</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">allow_na</span><span class="kw">:</span><span class="at"> </span><span class="ch">yes</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">negate</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">index</span><span class="kw">:</span><span class="at"> </span><span class="dv">3</span></span></code></pre></div>
 </div>
-</div>
-<div class="section level1">
-<h1 id="backends">Backends<a class="anchor" aria-label="anchor" href="#backends"></a>
-</h1>
-<p>At the moment the following backends are supported. Note that they are automatically chosen based on filetype (eg, when giving a <code><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">dplyr::tbl()</a></code> pointing to an <code>SQLite</code> database, the package will automatically choose <code>DBI</code>/<code>dplyr</code> for the task) and package availability.</p>
+<div class="section level2">
+<h2 id="backends">Backends<a class="anchor" aria-label="anchor" href="#backends"></a>
+</h2>
+<p>At the moment the following backends are supported. Note that they are automatically chosen based on data type and package availability. Eg, when the dataset is a <code><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">dplyr::tbl()</a></code> connected to an <code>SQLite</code> database, the package will automatically choose <code>RSQLite</code>/<code>DBI</code>/<code>dbplyr</code> for the task.</p>
 <table class="table">
-<colgroup>
-<col width="9%">
-<col width="30%">
-<col width="3%">
-<col width="56%">
-</colgroup>
-<thead><tr class="header">
-<th>Backend</th>
-<th>Library</th>
-<th>Status</th>
-<th>Comment</th>
-</tr></thead>
+<thead class="header">
+<th style="text-align:left;">
+Backend / Library
+</th>
+<th style="text-align:center;">
+Status
+</th>
+<th style="text-align:left;">
+Data Type
+</th>
+<th style="text-align:left;">
+Example Code
+</th>
+<th style="text-align:left;">
+Comment
+</th>
+</thead>
 <tbody>
 <tr class="odd">
-<td><code>base-R</code></td>
-<td><code>base</code></td>
-<td>✔️</td>
-<td>When <code>data.table</code> or <code>dplyr</code> are installed, they are leveraged for higher performance, but if requried, the package works with base-r only</td>
+<td style="text-align:left;">
+<p><code>base-R</code></p>
+</td>
+<td style="text-align:center;">
+✔️
+</td>
+<td style="text-align:left;">
+<p><code>data.frame</code></p>
+</td>
+<td style="text-align:left;">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">rs</span>, <span class="va">data</span><span class="op">)</span></span></code></pre></div>
+</td>
+<td style="text-align:left;">
+<p>When <code>data.table</code> or <code>dplyr</code> are available, they are used for faster speeds.</p>
+</td>
 </tr>
 <tr class="even">
-<td><code>dplyr</code></td>
-<td><a href="https://dplyr.tidyverse.org/" class="external-link"><code>dplyr</code></a></td>
-<td>✔️</td>
-<td></td>
+<td style="text-align:left;">
+<p><a href="https://dplyr.tidyverse.org/" class="external-link"><code>dplyr</code></a></p>
+</td>
+<td style="text-align:center;">
+✔️
+</td>
+<td style="text-align:left;">
+<p><code>tibble</code></p>
+</td>
+<td style="text-align:left;">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">rs</span>, <span class="va">data</span><span class="op">)</span></span></code></pre></div>
+</td>
+<td style="text-align:left;">
+</td>
 </tr>
 <tr class="odd">
-<td><code>data.table</code></td>
-<td><a href="r-datatable.com"><code>data.table</code></a></td>
-<td>✔️</td>
-<td>Used as the default when installed and no special data-format is given.</td>
+<td style="text-align:left;">
+<p><a href="rdatatable.com"><code>data.table</code></a></p>
+</td>
+<td style="text-align:center;">
+✔️
+</td>
+<td style="text-align:left;">
+<p><code>data.table</code></p>
+</td>
+<td style="text-align:left;">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-datatable.com" class="external-link">data.table</a></span><span class="op">)</span></span>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/data.table.html" class="external-link">data.table</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">rs</span>, <span class="va">data</span><span class="op">)</span></span></code></pre></div>
+</td>
+<td style="text-align:left;">
+</td>
 </tr>
 <tr class="even">
-<td>
-<code>Table</code>/<code>ArrowTabular</code>
+<td style="text-align:left;">
+<p><a href="https://arrow.apache.org/docs/r/" class="external-link"><code>arrow</code></a></p>
 </td>
-<td><a href="https://arrow.apache.org/docs/r/" class="external-link"><code>arrow</code></a></td>
-<td>✔️</td>
-<td>For example by using <code><a href="https://arrow.apache.org/docs/r/reference/Table.html" class="external-link">arrow::arrow_table()</a></code>
+<td style="text-align:center;">
+✔️
+</td>
+<td style="text-align:left;">
+<p><code>Table</code>, <code>ArrowTabular</code>, <code>ArrowObject</code></p>
+</td>
+<td style="text-align:left;">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/apache/arrow/" class="external-link">arrow</a></span><span class="op">)</span></span>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://arrow.apache.org/docs/r/reference/Table.html" class="external-link">arrow_table</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span></span>
+<span><span class="co"># Alternatively:</span></span>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://arrow.apache.org/docs/r/reference/read_parquet.html" class="external-link">read_parquet</a></span><span class="op">(</span></span>
+<span>  <span class="va">file</span>,</span>
+<span>  as_data_frame <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">rs</span>, <span class="va">data</span><span class="op">)</span></span></code></pre></div>
+</td>
+<td style="text-align:left;">
 </td>
 </tr>
 <tr class="odd">
-<td><code>FileSystemDataset</code></td>
-<td><a href="https://arrow.apache.org/docs/r/" class="external-link"><code>arrow</code></a></td>
-<td>✔️</td>
-<td>For on disk storage using <code><a href="https://arrow.apache.org/docs/r/reference/open_dataset.html" class="external-link">arrow::open_dataset()</a></code>, very good for large datasets. See example below.</td>
+<td style="text-align:left;">
+<p><a href="https://arrow.apache.org/docs/r/" class="external-link"><code>arrow</code></a></p>
+</td>
+<td style="text-align:center;">
+✔️
+</td>
+<td style="text-align:left;">
+<p><code>FileSystemDataset</code>, <code>Dataset</code>, <code>ArrowObject</code></p>
+</td>
+<td style="text-align:left;">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/apache/arrow/" class="external-link">arrow</a></span><span class="op">)</span></span>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://arrow.apache.org/docs/r/reference/open_dataset.html" class="external-link">open_dataset</a></span><span class="op">(</span><span class="va">dir</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">rs</span>, <span class="va">data</span><span class="op">)</span></span></code></pre></div>
+</td>
+<td style="text-align:left;">
+Especially handy for large datasets
+</td>
 </tr>
 <tr class="even">
-<td><code>sqlite</code></td>
-<td>
-<a href="https://rsqlite.r-dbi.org/" class="external-link"><code>RSQLite</code></a>/<a href="https://dbi.r-dbi.org/" class="external-link"><code>DBI</code></a>
+<td style="text-align:left;">
+<p><a href="https://rsqlite.r-dbi.org/" class="external-link"><code>RSQLite</code></a>, <a href="https://dbi.r-dbi.org/" class="external-link"><code>DBI</code></a>, and <a href="https://dbplyr.tidyverse.org/" class="external-link"><code>dbplyr</code></a></p>
 </td>
-<td>✔️</td>
-<td>Note that missing values are converted to <code>0</code>s when using sqlite by default (<a href="https://stackoverflow.com/a/57746647/3048453" class="external-link">c.f. this SO answer</a>).</td>
+<td style="text-align:center;">
+✔️
+</td>
+<td style="text-align:left;">
+<p><code>tbl_SQLiteConnection</code>, <code>tbl_dbi</code>, <code>tbl_sql</code>, <code>tbl_lazy</code>, <code>tbl</code></p>
+</td>
+<td style="text-align:left;">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dbi.r-dbi.org" class="external-link">DBI</a></span><span class="op">)</span></span>
+<span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">RSQLite</span><span class="fu">::</span><span class="fu"><a href="https://rsqlite.r-dbi.org/reference/SQLite.html" class="external-link">SQLite</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co"># dbWriteTable(con, tablename, data)</span></span>
+<span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">tbl</a></span><span class="op">(</span><span class="va">con</span>, <span class="va">tablename</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">rs</span>, <span class="va">tbl</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span></span></code></pre></div>
+</td>
+<td style="text-align:left;">
+<p>Note that missing values are converted to <code>0</code> when using sqlite by default (<a href="https://stackoverflow.com/a/57746647/3048453" class="external-link">c.f. this SO answer</a>)</p>
+</td>
 </tr>
 <tr class="odd">
-<td><code>DuckDB</code></td>
-<td>
-<a href="https://duckdb.org/docs/api/r.html" class="external-link"><code>duckdb</code></a>/<a href="https://dbi.r-dbi.org/" class="external-link"><code>DBI</code></a>
+<td style="text-align:left;">
+<p><a href="https://duckdb.org/docs/api/r.html" class="external-link"><code>duckdb</code></a>, <a href="https://dbi.r-dbi.org/" class="external-link"><code>DBI</code></a>, and <a href="https://dbplyr.tidyverse.org/" class="external-link"><code>dbplyr</code></a></p>
 </td>
-<td>✔️</td>
-<td></td>
+<td style="text-align:center;">
+✔️
+</td>
+<td style="text-align:left;">
+<p><code>tbl_duckdb_connection</code>, <code>tbl_dbi</code>, <code>tbl_sql</code>, <code>tbl_lazy</code>, <code>tbl</code></p>
+</td>
+<td style="text-align:left;">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dbi.r-dbi.org" class="external-link">DBI</a></span><span class="op">)</span></span>
+<span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/duckdb/man/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co"># dbWriteTable(con, tablename, data)</span></span>
+<span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">tbl</a></span><span class="op">(</span><span class="va">con</span>, <span class="va">tablename</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">rs</span>, <span class="va">tbl</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span>, shutdown <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+</td>
+<td style="text-align:left;">
+</td>
 </tr>
 <tr class="even">
-<td><code>postgreSQL</code></td>
-<td><a href="https://rpostgres.r-dbi.org/" class="external-link"><code>RPostgres</code></a></td>
-<td>❓</td>
-<td>Not tested, but should work out-of-the-box through <a href="https://dbi.r-dbi.org/" class="external-link"><code>DBI</code></a>
+<td style="text-align:left;">
+<p><a href="https://rpostgres.r-dbi.org/" class="external-link"><code>RPostgres</code></a>, <a href="https://dbi.r-dbi.org/" class="external-link"><code>DBI</code></a>, and <a href="https://dbplyr.tidyverse.org/" class="external-link"><code>dbplyr</code></a></p>
+</td>
+<td style="text-align:center;">
+❓
+</td>
+<td style="text-align:left;">
+<p><code>tbl_PqConnection</code>, <code>tbl_dbi</code>, <code>tbl_sql</code>, <code>tbl_lazy</code>, <code>tbl</code></p>
+</td>
+<td style="text-align:left;">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dbi.r-dbi.org" class="external-link">DBI</a></span><span class="op">)</span></span>
+<span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span></span>
+<span>  <span class="fu">RPostgres</span><span class="fu">::</span><span class="fu">Postgres</span><span class="op">(</span><span class="op">)</span>, </span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co"># dbWriteTable(con, tablename, data)</span></span>
+<span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">tbl</a></span><span class="op">(</span><span class="va">con</span>, <span class="va">tablename</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">rs</span>, <span class="va">tbl</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span></span></code></pre></div>
+</td>
+<td style="text-align:left;">
+<p>Not tested, but should work out-of-the-box using <a href="https://dbi.rdbi.org/" class="external-link"><code>DBI</code></a></p>
 </td>
 </tr>
 </tbody>
 </table>
+<p>Note that the <code>rs</code> object in the example code above refers to a <code><a href="reference/ruleset.html">ruleset()</a></code>. Larger complete examples can be found below.</p>
+</div>
 <div class="section level2">
 <h2 id="larger-example-using-the-arrow-backend">Larger Example using the <code>arrow</code> backend<a class="anchor" aria-label="anchor" href="#larger-example-using-the-arrow-backend"></a>
 </h2>
-<p>For a more involved example, using a different backend, let’s say we have a larger dataset of taxi trips from NY (see also the official <a href="https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page" class="external-link">datasource</a>), that we have saved as a local arrow dataset (using parquet as a data format).</p>
+<p>For a more involved example, using a different backend, let’s say we have a larger dataset of taxi trips from NY (see also the official <a href="https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page" class="external-link">source of the data</a>), that we have saved as a local arrow dataset (using parquet as a data format), where we want to make sure that some variables are in-line with our expectations/rules.</p>
 <div class="section level3">
 <h3 id="id_1-download-and-prepare-data">1 Download and Prepare Data<a class="anchor" aria-label="anchor" href="#id_1-download-and-prepare-data"></a>
 </h3>
-<p>First we prepare the data by downloading it and writing the dataset to <code>.parquet</code> files.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<p>First we prepare the data by downloading it and writing the dataset to <code>.parquet</code> files. This needs to be done only once and is shown for reproducibility reasons only, the actual <code>dataverifyr</code> code is shown below the next block</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/apache/arrow/" class="external-link">arrow</a></span><span class="op">)</span></span>
 <span><span class="va">url</span> <span class="op">&lt;-</span> <span class="st">"https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2018-01.parquet"</span></span>
 <span><span class="va">file</span> <span class="op">&lt;-</span> <span class="st">"yellow_tripdata_2018-01.parquet"</span></span>
@@ -254,31 +400,30 @@
 <span></span>
 <span><span class="co"># write the dataset to disk</span></span>
 <span><span class="fu"><a href="https://arrow.apache.org/docs/r/reference/write_dataset.html" class="external-link">write_dataset</a></span><span class="op">(</span><span class="va">d</span>, <span class="st">"nyc-taxi-data"</span><span class="op">)</span></span></code></pre></div>
-<p>Note that the above code is only used to get the data, the actual <code>dataverifyr</code> code is below.</p>
 </div>
 <div class="section level3">
 <h3 id="id_2-create-rules-in-yaml">2 Create Rules in <code>yaml</code>
 <a class="anchor" aria-label="anchor" href="#id_2-create-rules-in-yaml"></a>
 </h3>
-<p>Next, we can create some rules that we want to see if our data conforms to. As we saw earlier, we can create the rules in R using the <code><a href="reference/rule.html">rule()</a></code> and <code><a href="reference/ruleset.html">ruleset()</a></code> functions, there is however, the (in my case) preferred option to separate the code from the rules by writing the rules in a separate yaml file and read them into R.</p>
+<p>Next, we can create some rules that we will use to check our data. As we saw earlier, we can create the rules in R using the <code><a href="reference/rule.html">rule()</a></code> and <code><a href="reference/ruleset.html">ruleset()</a></code> functions, there is however, the (in my opinion) preferred option to separate the code from the rules by writing the rules in a separate yaml file and reading them into R.</p>
 <p>First we display the hand-written contents of the <code>nyc_data_rules.yaml</code> file.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">'Rule for: passenger_count'</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">expr</span><span class="kw">:</span><span class="at"> passenger_count &gt;= 0 &amp; passenger_count &lt;= 10</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">allow_na</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">negate</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">index</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">'Rule for: trip_distance'</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">expr</span><span class="kw">:</span><span class="at"> trip_distance &gt;= 0 &amp; trip_distance &lt;= 1000</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">allow_na</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">negate</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">index</span><span class="kw">:</span><span class="at"> </span><span class="dv">2</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">'Rule for: payment_type'</span></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">expr</span><span class="kw">:</span><span class="at"> payment_type %in% c(0, 1, 2, 3, 4)</span></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">allow_na</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">negate</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">index</span><span class="kw">:</span><span class="at"> </span><span class="dv">3</span></span></code></pre></div>
-<p>Then, we can load and display the rules:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">'Rule for: passenger_count'</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">expr</span><span class="kw">:</span><span class="at"> passenger_count &gt;= 0 &amp; passenger_count &lt;= 10</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">allow_na</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">negate</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">index</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">'Rule for: trip_distance'</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">expr</span><span class="kw">:</span><span class="at"> trip_distance &gt;= 0 &amp; trip_distance &lt;= 1000</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">allow_na</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">negate</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">index</span><span class="kw">:</span><span class="at"> </span><span class="dv">2</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">'Rule for: payment_type'</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">expr</span><span class="kw">:</span><span class="at"> payment_type %in% c(0, 1, 2, 3, 4)</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">allow_na</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">negate</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">index</span><span class="kw">:</span><span class="at"> </span><span class="dv">3</span></span></code></pre></div>
+<p>Then, we can load, display, and finally check the rules against the data</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rules</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/write_rules.html">read_rules</a></span><span class="op">(</span><span class="st">"nyc_data_rules.yaml"</span><span class="op">)</span></span>
 <span><span class="va">rules</span></span>
 <span><span class="co">#&gt; &lt;Verification Ruleset with 3 elements&gt;</span></span>
@@ -290,7 +435,7 @@
 <h3 id="id_3-verify-that-the-data-matches-the-given-rules">3 Verify that the Data matches the given Rules<a class="anchor" aria-label="anchor" href="#id_3-verify-that-the-data-matches-the-given-rules"></a>
 </h3>
 <p>Now we can check if the data follows our rules or if we have unexpected data points:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># open the dataset </span></span>
 <span><span class="va">ds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://arrow.apache.org/docs/r/reference/open_dataset.html" class="external-link">open_dataset</a></span><span class="op">(</span><span class="st">"nyc-taxi-data/"</span><span class="op">)</span></span>
 <span></span>
@@ -300,15 +445,15 @@
 <span><span class="co">#&gt; # A tibble: 3 × 10</span></span>
 <span><span class="co">#&gt;   name                      expr              allow…¹ negate   tests    pass  fail warn  error time </span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;                     &lt;chr&gt;             &lt;lgl&gt;   &lt;lgl&gt;    &lt;int&gt;   &lt;int&gt; &lt;int&gt; &lt;chr&gt; &lt;chr&gt; &lt;drt&gt;</span></span>
-<span><span class="co">#&gt; 1 Rule for: passenger_count passenger_count … FALSE   FALSE  8760687 8760687     0 ""    ""    0.46…</span></span>
-<span><span class="co">#&gt; 2 Rule for: trip_distance   trip_distance &gt;=… FALSE   FALSE  8760687 8760686     1 ""    ""    0.41…</span></span>
-<span><span class="co">#&gt; 3 Rule for: payment_type    payment_type %in… FALSE   FALSE  8760687 8760687     0 ""    ""    0.36…</span></span>
+<span><span class="co">#&gt; 1 Rule for: passenger_count passenger_count … FALSE   FALSE  8760687 8760687     0 ""    ""    0.57…</span></span>
+<span><span class="co">#&gt; 2 Rule for: trip_distance   trip_distance &gt;=… FALSE   FALSE  8760687 8760686     1 ""    ""    0.38…</span></span>
+<span><span class="co">#&gt; 3 Rule for: payment_type    payment_type %in… FALSE   FALSE  8760687 8760687     0 ""    ""    0.37…</span></span>
 <span><span class="co">#&gt; # … with abbreviated variable name ¹​allow_na</span></span>
 <span></span>
 <span><span class="fu"><a href="reference/plot_res.html">plot_res</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-taxi3-1.png" width="100%"></p>
-<p>Using the power of <code>arrow</code>, we were able to scan 8+mln observations for three rules in about 1.5 seconds (YMMV). As we can see from the results, there is one unexpected value, lets quickly investigate using the [<code><a href="reference/filter_fails.html">filter_fails()</a></code>] function, which filters a dataset for the failed rule matches</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<p>Using the power of <code>arrow</code>, we were able to scan 8+mln observations for three rules in about 1.5 seconds (YMMV). As we can see from the results, there is one unexpected value, lets quickly investigate using the <code><a href="reference/filter_fails.html">filter_fails()</a></code> function, which filters a dataset for the failed rule matches</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/filter_fails.html">filter_fails</a></span><span class="op">(</span><span class="va">ds</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="co"># only select a couple of variables for brevity</span></span>
@@ -324,7 +469,7 @@
 <h2 id="using-a-dbi-backend">Using a <code>DBI</code> Backend<a class="anchor" aria-label="anchor" href="#using-a-dbi-backend"></a>
 </h2>
 <p>If you have a <code>SQLite</code> or <code>duckdb</code> database, you can use the package like this</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dbi.r-dbi.org" class="external-link">DBI</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span></span>
@@ -338,8 +483,8 @@
 <span></span>
 <span><span class="co"># create rules</span></span>
 <span><span class="va">rules</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ruleset.html">ruleset</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="reference/rule.html">rule</a></span><span class="op">(</span><span class="va">mpg</span> <span class="op">&gt;</span> <span class="fl">10</span> <span class="op">&amp;</span> <span class="va">mpg</span> <span class="op">&lt;</span> <span class="fl">40</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="reference/rule.html">rule</a></span><span class="op">(</span><span class="va">cyl</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">6</span>, <span class="fl">8</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="reference/rule.html">rule</a></span><span class="op">(</span><span class="va">mpg</span> <span class="op">&gt;</span> <span class="fl">10</span> <span class="op">&amp;</span> <span class="va">mpg</span> <span class="op">&lt;</span> <span class="fl">30</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="reference/rule.html">rule</a></span><span class="op">(</span><span class="va">cyl</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">8</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  <span class="fu"><a href="reference/rule.html">rule</a></span><span class="op">(</span><span class="va">vs</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, allow_na <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -347,11 +492,33 @@
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="va">rules</span><span class="op">)</span></span>
 <span><span class="va">res</span></span>
 <span><span class="co">#&gt; # A tibble: 3 × 10</span></span>
-<span><span class="co">#&gt;   name          expr                allow_na negate tests  pass  fail warn  error time           </span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;         &lt;chr&gt;               &lt;lgl&gt;    &lt;lgl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt; &lt;drtn&gt;         </span></span>
-<span><span class="co">#&gt; 1 Rule for: mpg mpg &gt; 10 &amp; mpg &lt; 40 FALSE    FALSE     32    32     0 ""    ""    0.04303479 secs</span></span>
-<span><span class="co">#&gt; 2 Rule for: cyl cyl %in% c(4, 6, 8) FALSE    FALSE     32    32     0 ""    ""    0.02881193 secs</span></span>
-<span><span class="co">#&gt; 3 Rule for: vs  vs %in% c(0, 1)     TRUE     FALSE     32    32     0 ""    ""    0.02409101 secs</span></span>
+<span><span class="co">#&gt;   name          expr                allow_na negate tests  pass  fail warn  error time          </span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;         &lt;chr&gt;               &lt;lgl&gt;    &lt;lgl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt; &lt;drtn&gt;        </span></span>
+<span><span class="co">#&gt; 1 Rule for: mpg mpg &gt; 10 &amp; mpg &lt; 30 FALSE    FALSE     32    28     4 ""    ""    1.5696800 secs</span></span>
+<span><span class="co">#&gt; 2 Rule for: cyl cyl %in% c(4, 8)    FALSE    FALSE     32    25     7 ""    ""    0.1958361 secs</span></span>
+<span><span class="co">#&gt; 3 Rule for: vs  vs %in% c(0, 1)     TRUE     FALSE     32    32     0 ""    ""    0.1814930 secs</span></span>
+<span></span>
+<span><span class="fu"><a href="reference/filter_fails.html">filter_fails</a></span><span class="op">(</span><span class="va">res</span>, <span class="va">tbl</span>, per_rule <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; $`mpg &gt; 10 &amp; mpg &lt; 30`</span></span>
+<span><span class="co">#&gt; # A tibble: 4 × 11</span></span>
+<span><span class="co">#&gt;     mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb</span></span>
+<span><span class="co">#&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1  32.4     4  78.7    66  4.08 2.2   19.47     1     1     4     1</span></span>
+<span><span class="co">#&gt; 2  30.4     4  75.7    52  4.93 1.615 18.52     1     1     4     2</span></span>
+<span><span class="co">#&gt; 3  33.9     4  71.1    65  4.22 1.835 19.9      1     1     4     1</span></span>
+<span><span class="co">#&gt; 4  30.4     4  95.1   113  3.77 1.513 16.9      1     1     5     2</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $`cyl %in% c(4, 8)`</span></span>
+<span><span class="co">#&gt; # A tibble: 7 × 11</span></span>
+<span><span class="co">#&gt;     mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb</span></span>
+<span><span class="co">#&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1  21       6 160     110  3.9  2.62  16.46     0     1     4     4</span></span>
+<span><span class="co">#&gt; 2  21       6 160     110  3.9  2.875 17.02     0     1     4     4</span></span>
+<span><span class="co">#&gt; 3  21.4     6 258     110  3.08 3.215 19.44     1     0     3     1</span></span>
+<span><span class="co">#&gt; 4  18.1     6 225     105  2.76 3.46  20.22     1     0     3     1</span></span>
+<span><span class="co">#&gt; 5  19.2     6 167.6   123  3.92 3.44  18.3      1     0     4     4</span></span>
+<span><span class="co">#&gt; 6  17.8     6 167.6   123  3.92 3.44  18.9      1     0     4     4</span></span>
+<span><span class="co">#&gt; 7  19.7     6 145     175  3.62 2.77  15.5      0     1     5     6</span></span>
 <span></span>
 <span><span class="co"># lastly disconnect from the database again</span></span>
 <span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span>, shutdown <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
