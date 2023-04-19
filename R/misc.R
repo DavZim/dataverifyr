@@ -6,7 +6,7 @@
 #' @param d a data.frame
 #' @param align how the columns should be aligned
 #'
-#' @return
+#' @return the data invisibly
 #'
 #' @examples
 #' d <- data.frame(
