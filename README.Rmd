@@ -15,7 +15,8 @@ Sys.setenv(LANG = "en")
 options(pillar.sigfig = 5, width = 100)
 ```
 
-# `dataverifyr` - A Lightweight, Flexible, and Fast Data Validation Package That Can Handle All Sizes of Data
+# `dataverifyr` - A Lightweight, Flexible, and Fast Data Validation Package that Can Handle All Sizes of Data
+
 
 <!-- badges: start -->
 
@@ -57,6 +58,7 @@ This is a basic example which shows you how to
 
 Note that each rule is an R expression that is evaluated within the dataset.
 Our first rule, for example, states that we believe all values of the `mpg` variable are in the range 10 to 30 (exclusive).
+At the moment rules work in a window/vectorized approach only, that means that a rule like this will work `mpg > 10 * wt`, whereas a rule like this `sum(mpg) > 0` will not work as it aggregates values.
 
 ```{r example, message=FALSE}
 library(dataverifyr)
@@ -128,7 +130,7 @@ r <- do.call(rbind, list(
     ""
   ),
   d(
-    "[`data.table`](rdatatable.com)", "`data.table`",
+    "[`data.table`](https://rdatatable.com)", "`data.table`",
     code("library(data.table)\ndata <- data.table(x = 1:10)\ncheck_data(rs, data)"),
     ""
   ),
@@ -156,7 +158,7 @@ r <- do.call(rbind, list(
   d(
     "[`RPostgres`](https://rpostgres.r-dbi.org/), [`DBI`](https://dbi.r-dbi.org/), and [`dbplyr`](https://dbplyr.tidyverse.org/)", "`tbl_PqConnection`, `tbl_dbi`, `tbl_sql`, `tbl_lazy`, `tbl`",
     code('library(DBI)\ncon <- dbConnect(\n  RPostgres::Postgres(), \n  ...\n)\n# dbWriteTable(con, tablename, data)\ntbl <- dplyr::tbl(con, tablename)\ncheck_data(rs, tbl)\n\ndbDisconnect(con)'),
-"Not tested, but should work out-of-the-box using [`DBI`](https://dbi.rdbi.org/)", status = "❓"
+"Not tested, but should work out-of-the-box using [`DBI`](https://dbi.r-dbi.org/)", status = "❓"
   )
 ))
 r <- setNames(r, c("Backend / Library", "Status", "Data Type", "Example Code", "Comment"))

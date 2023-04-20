@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# `dataverifyr` - A Lightweight, Flexible, and Fast Data Validation Package That Can Handle All Sizes of Data
+# `dataverifyr` - A Lightweight, Flexible, and Fast Data Validation Package that Can Handle All Sizes of Data
 
 <!-- badges: start -->
 
@@ -57,7 +57,10 @@ This is a basic example which shows you how to
 
 Note that each rule is an R expression that is evaluated within the
 dataset. Our first rule, for example, states that we believe all values
-of the `mpg` variable are in the range 10 to 30 (exclusive).
+of the `mpg` variable are in the range 10 to 30 (exclusive). At the
+moment rules work in a window/vectorized approach only, that means that
+a rule like this will work `mpg > 10 * wt`, whereas a rule like this
+`sum(mpg) > 0` will not work as it aggregates values.
 
 ``` r
 library(dataverifyr)
@@ -79,10 +82,10 @@ rules
 # check if the data matches our rules
 res <- check_data(mtcars, rules)
 res
-#>             name                expr allow_na negate tests pass fail warn error              time
-#> 1: Rule for: mpg mpg > 10 & mpg < 30    FALSE  FALSE    32   28    4            0.0041229725 secs
-#> 2: Rule for: cyl    cyl %in% c(4, 8)    FALSE  FALSE    32   25    7            0.0026600361 secs
-#> 3:  Rule for: vs     vs %in% c(0, 1)     TRUE  FALSE    32   32    0            0.0003478527 secs
+#>             name                expr allow_na negate tests pass fail warn error             time
+#> 1: Rule for: mpg mpg > 10 & mpg < 30    FALSE  FALSE    32   28    4            0.005015850 secs
+#> 2: Rule for: cyl    cyl %in% c(4, 8)    FALSE  FALSE    32   25    7            0.002909899 secs
+#> 3:  Rule for: vs     vs %in% c(0, 1)     TRUE  FALSE    32   32    0            0.000451088 secs
 ```
 
 As we can see, our dataset `mtcars` does not conform to all of our
@@ -236,7 +239,7 @@ check_data(rs, data)
 <tr class="odd">
 <td style="text-align:left;">
 
-[`data.table`](rdatatable.com)
+[`data.table`](https://rdatatable.com)
 
 </td>
 <td style="text-align:center;">
@@ -421,7 +424,7 @@ dbDisconnect(con)
 <td style="text-align:left;">
 
 Not tested, but should work out-of-the-box using
-[`DBI`](https://dbi.rdbi.org/)
+[`DBI`](https://dbi.r-dbi.org/)
 
 </td>
 </tr>
@@ -526,9 +529,9 @@ res
 #> # A tibble: 3 × 10
 #>   name                      expr              allow…¹ negate   tests    pass  fail warn  error time 
 #>   <chr>                     <chr>             <lgl>   <lgl>    <int>   <int> <int> <chr> <chr> <drt>
-#> 1 Rule for: passenger_count passenger_count … FALSE   FALSE  8760687 8760687     0 ""    ""    0.57…
-#> 2 Rule for: trip_distance   trip_distance >=… FALSE   FALSE  8760687 8760686     1 ""    ""    0.38…
-#> 3 Rule for: payment_type    payment_type %in… FALSE   FALSE  8760687 8760687     0 ""    ""    0.37…
+#> 1 Rule for: passenger_count passenger_count … FALSE   FALSE  8760687 8760687     0 ""    ""    0.47…
+#> 2 Rule for: trip_distance   trip_distance >=… FALSE   FALSE  8760687 8760686     1 ""    ""    0.39…
+#> 3 Rule for: payment_type    payment_type %in… FALSE   FALSE  8760687 8760687     0 ""    ""    0.34…
 #> # … with abbreviated variable name ¹​allow_na
 
 plot_res(res)
@@ -584,11 +587,11 @@ rules <- ruleset(
 res <- check_data(tbl, rules)
 res
 #> # A tibble: 3 × 10
-#>   name          expr                allow_na negate tests  pass  fail warn  error time          
-#>   <chr>         <chr>               <lgl>    <lgl>  <dbl> <dbl> <dbl> <chr> <chr> <drtn>        
-#> 1 Rule for: mpg mpg > 10 & mpg < 30 FALSE    FALSE     32    28     4 ""    ""    1.5696800 secs
-#> 2 Rule for: cyl cyl %in% c(4, 8)    FALSE    FALSE     32    25     7 ""    ""    0.1958361 secs
-#> 3 Rule for: vs  vs %in% c(0, 1)     TRUE     FALSE     32    32     0 ""    ""    0.1814930 secs
+#>   name          expr                allow_na negate tests  pass  fail warn  error time           
+#>   <chr>         <chr>               <lgl>    <lgl>  <dbl> <dbl> <dbl> <chr> <chr> <drtn>         
+#> 1 Rule for: mpg mpg > 10 & mpg < 30 FALSE    FALSE     32    28     4 ""    ""    0.05484080 secs
+#> 2 Rule for: cyl cyl %in% c(4, 8)    FALSE    FALSE     32    25     7 ""    ""    0.02361512 secs
+#> 3 Rule for: vs  vs %in% c(0, 1)     TRUE     FALSE     32    32     0 ""    ""    0.02653694 secs
 
 filter_fails(res, tbl, per_rule = TRUE)
 #> $`mpg > 10 & mpg < 30`
