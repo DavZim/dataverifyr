@@ -1,5 +1,4 @@
-## R CMD check results
 
-0 errors | 0 warnings | 1 note
+Fixed wrong URL of https://r-datatable.com.
 
-* This is a new release.
+Use single-quotes around software names in the DESCRIPTION file.

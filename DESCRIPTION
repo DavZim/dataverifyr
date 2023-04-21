@@ -1,7 +1,7 @@
 Package: dataverifyr
 Type: Package
 Title: A Lightweight, Flexible, and Fast Data Validation Package that Can Handle All Sizes of Data
-Version: 0.1.2
+Version: 0.1.3
 Authors@R: c(
       person(given = "David",
              family = "Zimmermann-Kollenda",
@@ -10,7 +10,7 @@ Authors@R: c(
 Description: Allows you to define rules which can be used to verify a given
     dataset.
     The package acts as a thin wrapper around more powerful data packages such
-    as dplyr, data.table, arrow, and DBI (SQL), which do the heavy lifting.
+    as 'dplyr', 'data.table', 'arrow', and 'DBI' ('SQL'), which do the heavy lifting.
 License: MIT + file LICENSE
 URL: https://github.com/DavZim/dataverifyr,
     https://davzim.github.io/dataverifyr/

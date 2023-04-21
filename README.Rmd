@@ -130,7 +130,7 @@ r <- do.call(rbind, list(
     ""
   ),
   d(
-    "[`data.table`](https://rdatatable.com)", "`data.table`",
+    "[`data.table`](https://r-datatable.com)", "`data.table`",
     code("library(data.table)\ndata <- data.table(x = 1:10)\ncheck_data(rs, data)"),
     ""
   ),
