@@ -1,4 +1,1 @@
-
-Fixed wrong URL of https://r-datatable.com.
-
-Use single-quotes around software names in the DESCRIPTION file.
+Added safeguard around `par`, added `on.exit()` after call to par to keep userspace clean.

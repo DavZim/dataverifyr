@@ -32,6 +32,7 @@ plot_res <- function(res,
   r <- res[rev(seq(n)), ]
 
   op <- par(mai = c(1.5, 2, 1, 1), xpd = TRUE, family = "mono")
+  on.exit(par(op), add = TRUE)
 
   bp <- barplot(
     matrix(c(r$pass / r$tests, r$fail / r$tests), ncol = nrow(r), byrow = TRUE),
@@ -77,8 +78,6 @@ plot_res <- function(res,
                    rep("darkgray", n + 1)) # total
     )
   }
-
-  par(op)
 }
 
 # x <- 99.999999999 to 99.99
