@@ -69,10 +69,15 @@ test_that("data.table check_ works", {
     tests = 32,
     pass = c(32, 32, 27, 31, 0),
     fail = c(0, 0, 5, 1, 32),
-    warn = c("", "", "", "NAs introduced by coercion", ""),
-    error = c("", "", "", "", "Object 'does_not_exist' not found amongst mpg, cyl, disp, hp, drat and 6 more")
+    warn = c("", "", "", "NAs introduced by coercion", "")
   )
-  expect_equal(res[, .SD, .SDcols = !"time"], exp)
+  expect_equal(res[, .SD, .SDcols = names(exp)], exp)
+
+  # use regex to make test for missing column work for new version of data.table
+  # c.f. https://github.com/DavZim/dataverifyr/issues/3
+  errors <- c("", "", "", "",
+              "Object 'does_not_exist' not found amongst \\[?mpg, cyl, disp, hp, drat")
+  expect_true(all(mapply(grepl, pattern = errors, x = res$error)))
 })
 
 
