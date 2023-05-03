@@ -82,10 +82,10 @@ rules
 # check if the data matches our rules
 res <- check_data(mtcars, rules)
 res
-#>             name                expr allow_na negate tests pass fail warn error             time
-#> 1: Rule for: mpg mpg > 10 & mpg < 30    FALSE  FALSE    32   28    4            0.008037090 secs
-#> 2: Rule for: cyl    cyl %in% c(4, 8)    FALSE  FALSE    32   25    7            0.005316019 secs
-#> 3:  Rule for: vs     vs %in% c(0, 1)     TRUE  FALSE    32   32    0            0.000660181 secs
+#>             name                expr allow_na negate tests pass fail warn error              time
+#> 1: Rule for: mpg mpg > 10 & mpg < 30    FALSE  FALSE    32   28    4            0.0055301189 secs
+#> 2: Rule for: cyl    cyl %in% c(4, 8)    FALSE  FALSE    32   25    7            0.0034749508 secs
+#> 3:  Rule for: vs     vs %in% c(0, 1)     TRUE  FALSE    32   32    0            0.0004439354 secs
 ```
 
 As we can see, our dataset `mtcars` does not conform to all of our
@@ -343,7 +343,7 @@ library(DBI)
 con <- dbConnect(RSQLite::SQLite())
 # dbWriteTable(con, tablename, data)
 tbl <- dplyr::tbl(con, tablename)
-check_data(rs, tbl)
+check_data(tbl, rs)
 
 dbDisconnect(con)
 ```
@@ -380,7 +380,7 @@ library(DBI)
 con <- dbConnect(duckdb::duckdb())
 # dbWriteTable(con, tablename, data)
 tbl <- dplyr::tbl(con, tablename)
-check_data(rs, tbl)
+check_data(tbl, rs)
 
 dbDisconnect(con, shutdown = TRUE)
 ```
@@ -415,7 +415,7 @@ con <- dbConnect(
 )
 # dbWriteTable(con, tablename, data)
 tbl <- dplyr::tbl(con, tablename)
-check_data(rs, tbl)
+check_data(tbl, rs)
 
 dbDisconnect(con)
 ```
@@ -529,9 +529,9 @@ res
 #> # A tibble: 3 × 10
 #>   name                      expr              allow…¹ negate   tests    pass  fail warn  error time 
 #>   <chr>                     <chr>             <lgl>   <lgl>    <int>   <int> <int> <chr> <chr> <drt>
-#> 1 Rule for: passenger_count passenger_count … FALSE   FALSE  8760687 8760687     0 ""    ""    0.68…
-#> 2 Rule for: trip_distance   trip_distance >=… FALSE   FALSE  8760687 8760686     1 ""    ""    0.44…
-#> 3 Rule for: payment_type    payment_type %in… FALSE   FALSE  8760687 8760687     0 ""    ""    0.41…
+#> 1 Rule for: passenger_count passenger_count … FALSE   FALSE  8760687 8760687     0 ""    ""    0.56…
+#> 2 Rule for: trip_distance   trip_distance >=… FALSE   FALSE  8760687 8760686     1 ""    ""    0.43…
+#> 3 Rule for: payment_type    payment_type %in… FALSE   FALSE  8760687 8760687     0 ""    ""    0.42…
 #> # … with abbreviated variable name ¹​allow_na
 
 plot_res(res)
@@ -589,9 +589,9 @@ res
 #> # A tibble: 3 × 10
 #>   name          expr                allow_na negate tests  pass  fail warn  error time          
 #>   <chr>         <chr>               <lgl>    <lgl>  <dbl> <dbl> <dbl> <chr> <chr> <drtn>        
-#> 1 Rule for: mpg mpg > 10 & mpg < 30 FALSE    FALSE     32    28     4 ""    ""    2.5850210 secs
-#> 2 Rule for: cyl cyl %in% c(4, 8)    FALSE    FALSE     32    25     7 ""    ""    0.2247341 secs
-#> 3 Rule for: vs  vs %in% c(0, 1)     TRUE     FALSE     32    32     0 ""    ""    0.1944730 secs
+#> 1 Rule for: mpg mpg > 10 & mpg < 30 FALSE    FALSE     32    28     4 ""    ""    3.5227668 secs
+#> 2 Rule for: cyl cyl %in% c(4, 8)    FALSE    FALSE     32    25     7 ""    ""    0.2015200 secs
+#> 3 Rule for: vs  vs %in% c(0, 1)     TRUE     FALSE     32    32     0 ""    ""    0.1898661 secs
 
 filter_fails(res, tbl, per_rule = TRUE)
 #> $`mpg > 10 & mpg < 30`

@@ -103,6 +103,24 @@ The resulting `example_rules.yaml` looks like this
 cat(paste(c("```yaml", readLines("example_rules.yaml"), "```"), collapse = "\n"))
 ```
 
+One helpful use case is to use this functionality to assert that your data has the right values in a custom read function like so:
+
+```{r assert}
+read_custom <- function(file, rules) {
+  data <- read.csv(file) # or however you read in your data
+  stopifnot(check_data(data, rules, xname = file,
+                       fail_on_error = TRUE, fail_on_warn = TRUE))
+  # ...
+  data
+}
+# nothing happens when the data matches the rules
+data <- read_custom("correct_data.csv", rules)
+
+# an error is thrown when warnings or errors are found
+data <- read_custom("wrong_data.csv", rules)
+#> Error in check_data(data, rules, fail_on_error = TRUE, fail_on_warn = TRUE) : 
+#>   In dataset 'wrong_data.csv' found 1 warnings and 1 errors
+```
 
 
 ## Backends
@@ -146,18 +164,18 @@ r <- do.call(rbind, list(
   ),
   d(
     "[`RSQLite`](https://rsqlite.r-dbi.org/), [`DBI`](https://dbi.r-dbi.org/), and [`dbplyr`](https://dbplyr.tidyverse.org/)", "`tbl_SQLiteConnection`, `tbl_dbi`, `tbl_sql`, `tbl_lazy`, `tbl`",
-    code('library(DBI)\ncon <- dbConnect(RSQLite::SQLite())\n# dbWriteTable(con, tablename, data)\ntbl <- dplyr::tbl(con, tablename)\ncheck_data(rs, tbl)\n\ndbDisconnect(con)'),
+    code('library(DBI)\ncon <- dbConnect(RSQLite::SQLite())\n# dbWriteTable(con, tablename, data)\ntbl <- dplyr::tbl(con, tablename)\ncheck_data(tbl, rs)\n\ndbDisconnect(con)'),
     "Note that missing values are converted to `0` when using sqlite by default ([c.f. this SO answer](https://stackoverflow.com/a/57746647/3048453))"
   ),
   d(
     "[`duckdb`](https://duckdb.org/docs/api/r.html), [`DBI`](https://dbi.r-dbi.org/), and [`dbplyr`](https://dbplyr.tidyverse.org/)", "`tbl_duckdb_connection`, `tbl_dbi`, `tbl_sql`, `tbl_lazy`, `tbl`",
-    code('library(DBI)\ncon <- dbConnect(duckdb::duckdb())\n# dbWriteTable(con, tablename, data)\ntbl <- dplyr::tbl(con, tablename)\ncheck_data(rs, tbl)\n\ndbDisconnect(con, shutdown = TRUE)'),
+    code('library(DBI)\ncon <- dbConnect(duckdb::duckdb())\n# dbWriteTable(con, tablename, data)\ntbl <- dplyr::tbl(con, tablename)\ncheck_data(tbl, rs)\n\ndbDisconnect(con, shutdown = TRUE)'),
     ""
   ),
   
   d(
     "[`RPostgres`](https://rpostgres.r-dbi.org/), [`DBI`](https://dbi.r-dbi.org/), and [`dbplyr`](https://dbplyr.tidyverse.org/)", "`tbl_PqConnection`, `tbl_dbi`, `tbl_sql`, `tbl_lazy`, `tbl`",
-    code('library(DBI)\ncon <- dbConnect(\n  RPostgres::Postgres(), \n  ...\n)\n# dbWriteTable(con, tablename, data)\ntbl <- dplyr::tbl(con, tablename)\ncheck_data(rs, tbl)\n\ndbDisconnect(con)'),
+    code('library(DBI)\ncon <- dbConnect(\n  RPostgres::Postgres(), \n  ...\n)\n# dbWriteTable(con, tablename, data)\ntbl <- dplyr::tbl(con, tablename)\ncheck_data(tbl, rs)\n\ndbDisconnect(con)'),
 "Not tested, but should work out-of-the-box using [`DBI`](https://dbi.r-dbi.org/)", status = "❓"
   )
 ))
