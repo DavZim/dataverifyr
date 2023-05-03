@@ -121,27 +121,27 @@ code <- function(x) paste0("```R\n", x, "\n```")
 r <- do.call(rbind, list(
   d(
     "`base-R`", "`data.frame`",
-    code("data <- data.frame(x = 1:10)\ncheck_data(rs, data)"),
+    code("data <- data.frame(x = 1:10)\ncheck_data(data, rs)"),
     "When `data.table` or `dplyr` are available, they are used for faster speeds."
   ),
   d(
     "[`dplyr`](https://dplyr.tidyverse.org/)", "`tibble`",
-    code("library(dplyr)\ndata <- tibble(x = 1:10)\ncheck_data(rs, data)"),
+    code("library(dplyr)\ndata <- tibble(x = 1:10)\ncheck_data(data, rs)"),
     ""
   ),
   d(
     "[`data.table`](https://r-datatable.com)", "`data.table`",
-    code("library(data.table)\ndata <- data.table(x = 1:10)\ncheck_data(rs, data)"),
+    code("library(data.table)\ndata <- data.table(x = 1:10)\ncheck_data(data, rs)"),
     ""
   ),
   d(
     "[`arrow`](https://arrow.apache.org/docs/r/)", "`Table`, `ArrowTabular`, `ArrowObject`",
-    code("library(arrow)\ndata <- arrow_table(x = 1:10)\n# Alternatively:\ndata <- read_parquet(\n  file,\n  as_data_frame = FALSE\n)\ncheck_data(rs, data)"),
+    code("library(arrow)\ndata <- arrow_table(x = 1:10)\n# Alternatively:\ndata <- read_parquet(\n  file,\n  as_data_frame = FALSE\n)\ncheck_data(data, rs)"),
     ""
   ),
   d(
     "[`arrow`](https://arrow.apache.org/docs/r/)", "`FileSystemDataset`, `Dataset`, `ArrowObject`",
-    code("library(arrow)\ndata <- open_dataset(dir)\ncheck_data(rs, data)"),
+    code("library(arrow)\ndata <- open_dataset(dir)\ncheck_data(data, rs)"),
     "Especially handy for large datasets"
   ),
   d(
