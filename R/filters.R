@@ -76,6 +76,10 @@ filter_fails <- function(res, x, per_rule = FALSE) {
   }
 
   ll <- lapply(e, filter_data_, x = x, type = type, return_n = FALSE)
-  if (per_rule) ll <- setNames(ll, eorig) else ll <- do.call(rbind, ll)
-  ll[sapply(ll, nrow) != 0]
+  if (per_rule) {
+    ll <- setNames(ll, eorig)[sapply(ll, nrow) != 0]
+  } else {
+    ll <- do.call(rbind, ll)
+  }
+  ll
 }

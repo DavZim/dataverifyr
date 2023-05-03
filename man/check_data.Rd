@@ -4,13 +4,21 @@
 \alias{check_data}
 \title{Checks if a dataset confirms to a given set of rules}
 \usage{
-check_data(x, rules, fail_on_warn = FALSE, fail_on_error = FALSE)
+check_data(
+  x,
+  rules,
+  xname = deparse(substitute(x)),
+  fail_on_warn = FALSE,
+  fail_on_error = FALSE
+)
 }
 \arguments{
 \item{x}{a dataset, either a \code{\link{data.frame}}, \code{\link[dplyr:reexports]{dplyr::tibble}}, \code{\link[data.table:data.table]{data.table::data.table}},
 \code{\link[arrow:Table]{arrow::arrow_table}}, \code{\link[arrow:open_dataset]{arrow::open_dataset}}, or \code{\link[dplyr:tbl]{dplyr::tbl}} (SQL connection)}
 
 \item{rules}{a list of \code{\link{rule}}s}
+
+\item{xname}{optional, a name for the x variable (only used for errors)}
 
 \item{fail_on_warn}{if the function should throw an error on a warning}
 
