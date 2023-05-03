@@ -7,7 +7,7 @@
 filter_fails(res, x, per_rule = FALSE)
 }
 \arguments{
-\item{res}{a result data.frame as outputted from \code{\link[=check_data]{check_data()}}}
+\item{res}{a result data.frame as outputted from \code{\link[=check_data]{check_data()}} or a ruleset}
 
 \item{x}{a dataset that was used in \code{\link[=check_data]{check_data()}}}
 
@@ -30,6 +30,10 @@ rules <- ruleset(
 
 res <- check_data(mtcars, rules)
 
-fails <- filter_fails(res, mtcars)
-fails
+filter_fails(res, mtcars)
+filter_fails(res, mtcars, per_rule = TRUE)
+
+# alternatively, the first argument can also be a ruleset
+filter_fails(rules, mtcars)
+filter_fails(rules, mtcars, per_rule = TRUE)
 }
