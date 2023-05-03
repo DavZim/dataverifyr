@@ -154,6 +154,26 @@ The resulting `example_rules.yaml` looks like this
   index: 3
 ```
 
+One helpful use case is to use this functionality to assert that your
+data has the right values in a custom read function like so:
+
+``` r
+read_custom <- function(file, rules) {
+  data <- read.csv(file) # or however you read in your data
+  stopifnot(check_data(data, rules, xname = file,
+                       fail_on_error = TRUE, fail_on_warn = TRUE))
+  # ...
+  data
+}
+# nothing happens when the data matches the rules
+data <- read_custom("correct_data.csv", rules)
+
+# an error is thrown when warnings or errors are found
+data <- read_custom("wrong_data.csv", rules)
+#> Error in check_data(data, rules, fail_on_error = TRUE, fail_on_warn = TRUE) : 
+#>   In dataset 'wrong_data.csv' found 1 warnings and 1 errors
+```
+
 ## Backends
 
 At the moment the following backends are supported. Note that they are

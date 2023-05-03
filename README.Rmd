@@ -105,7 +105,7 @@ cat(paste(c("```yaml", readLines("example_rules.yaml"), "```"), collapse = "\n")
 
 One helpful use case is to use this functionality to assert that your data has the right values in a custom read function like so:
 
-```{r assert}
+```{r assert, eval=FALSE}
 read_custom <- function(file, rules) {
   data <- read.csv(file) # or however you read in your data
   stopifnot(check_data(data, rules, xname = file,
