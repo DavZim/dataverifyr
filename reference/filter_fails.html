@@ -88,7 +88,18 @@ the values that fail any rule.</p></dd>
 <span class="r-in"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="check_data.html">check_data</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">rules</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">filter_fails</span><span class="op">(</span><span class="va">res</span>, <span class="va">mtcars</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> 'list' object cannot be coerced to type 'double'</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      mpg cyl  disp  hp drat    wt  qsec vs am gear carb</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  1: 32.4   4  78.7  66 4.08 2.200 19.47  1  1    4    1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  2: 30.4   4  75.7  52 4.93 1.615 18.52  1  1    4    2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  3: 33.9   4  71.1  65 4.22 1.835 19.90  1  1    4    1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  4: 30.4   4  95.1 113 3.77 1.513 16.90  1  1    5    2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  5: 21.0   6 160.0 110 3.90 2.620 16.46  0  1    4    4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  6: 21.0   6 160.0 110 3.90 2.875 17.02  0  1    4    4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  7: 21.4   6 258.0 110 3.08 3.215 19.44  1  0    3    1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  8: 18.1   6 225.0 105 2.76 3.460 20.22  1  0    3    1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  9: 19.2   6 167.6 123 3.92 3.440 18.30  1  0    4    4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10: 17.8   6 167.6 123 3.92 3.440 18.90  1  0    4    4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11: 19.7   6 145.0 175 3.62 2.770 15.50  0  1    5    6</span>
 <span class="r-in"><span><span class="fu">filter_fails</span><span class="op">(</span><span class="va">res</span>, <span class="va">mtcars</span>, per_rule <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $`mpg &gt; 10 &amp; mpg &lt; 30`</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     mpg cyl disp  hp drat    wt  qsec vs am gear carb</span>
@@ -110,7 +121,18 @@ the values that fail any rule.</p></dd>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># alternatively, the first argument can also be a ruleset</span></span></span>
 <span class="r-in"><span><span class="fu">filter_fails</span><span class="op">(</span><span class="va">rules</span>, <span class="va">mtcars</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> 'list' object cannot be coerced to type 'double'</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      mpg cyl  disp  hp drat    wt  qsec vs am gear carb</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  1: 32.4   4  78.7  66 4.08 2.200 19.47  1  1    4    1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  2: 30.4   4  75.7  52 4.93 1.615 18.52  1  1    4    2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  3: 33.9   4  71.1  65 4.22 1.835 19.90  1  1    4    1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  4: 30.4   4  95.1 113 3.77 1.513 16.90  1  1    5    2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  5: 21.0   6 160.0 110 3.90 2.620 16.46  0  1    4    4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  6: 21.0   6 160.0 110 3.90 2.875 17.02  0  1    4    4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  7: 21.4   6 258.0 110 3.08 3.215 19.44  1  0    3    1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  8: 18.1   6 225.0 105 2.76 3.460 20.22  1  0    3    1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  9: 19.2   6 167.6 123 3.92 3.440 18.30  1  0    4    4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10: 17.8   6 167.6 123 3.92 3.440 18.90  1  0    4    4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11: 19.7   6 145.0 175 3.62 2.770 15.50  0  1    5    6</span>
 <span class="r-in"><span><span class="fu">filter_fails</span><span class="op">(</span><span class="va">rules</span>, <span class="va">mtcars</span>, per_rule <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $`mpg &gt; 10 &amp; mpg &lt; 30`</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     mpg cyl disp  hp drat    wt  qsec vs am gear carb</span>

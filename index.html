@@ -118,10 +118,10 @@
 <span><span class="co"># check if the data matches our rules</span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">rules</span><span class="op">)</span></span>
 <span><span class="va">res</span></span>
-<span><span class="co">#&gt;             name                expr allow_na negate tests pass fail warn error             time</span></span>
-<span><span class="co">#&gt; 1: Rule for: mpg mpg &gt; 10 &amp; mpg &lt; 30    FALSE  FALSE    32   28    4            0.008037090 secs</span></span>
-<span><span class="co">#&gt; 2: Rule for: cyl    cyl %in% c(4, 8)    FALSE  FALSE    32   25    7            0.005316019 secs</span></span>
-<span><span class="co">#&gt; 3:  Rule for: vs     vs %in% c(0, 1)     TRUE  FALSE    32   32    0            0.000660181 secs</span></span></code></pre></div>
+<span><span class="co">#&gt;             name                expr allow_na negate tests pass fail warn error              time</span></span>
+<span><span class="co">#&gt; 1: Rule for: mpg mpg &gt; 10 &amp; mpg &lt; 30    FALSE  FALSE    32   28    4            0.0055301189 secs</span></span>
+<span><span class="co">#&gt; 2: Rule for: cyl    cyl %in% c(4, 8)    FALSE  FALSE    32   25    7            0.0034749508 secs</span></span>
+<span><span class="co">#&gt; 3:  Rule for: vs     vs %in% c(0, 1)     TRUE  FALSE    32   32    0            0.0004439354 secs</span></span></code></pre></div>
 <p>As we can see, our dataset <code>mtcars</code> does not conform to all of our rules. We have four fails (fail=rule is not met) for the first rule <code>mpg &gt; 10 &amp; mpg &lt; 30</code> (there are <code>mpg</code> values up to 33.9) and seven fails for the second rule <code>cyl %in% c(4, 8)</code> (there are <code>cyl</code> values of 6), while the third rule <code>vs %in% c(0, 1)</code> is always met.</p>
 <p>To see which values do not meet our expectations, use the <code><a href="reference/filter_fails.html">filter_fails()</a></code> function</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -309,7 +309,7 @@ Especially handy for large datasets
 <span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">RSQLite</span><span class="fu">::</span><span class="fu"><a href="https://rsqlite.r-dbi.org/reference/SQLite.html" class="external-link">SQLite</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co"># dbWriteTable(con, tablename, data)</span></span>
 <span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">tbl</a></span><span class="op">(</span><span class="va">con</span>, <span class="va">tablename</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">rs</span>, <span class="va">tbl</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="va">rs</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span></span></code></pre></div>
 </td>
@@ -333,7 +333,7 @@ Especially handy for large datasets
 <span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/duckdb/man/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co"># dbWriteTable(con, tablename, data)</span></span>
 <span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">tbl</a></span><span class="op">(</span><span class="va">con</span>, <span class="va">tablename</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">rs</span>, <span class="va">tbl</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="va">rs</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span>, shutdown <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 </td>
@@ -359,7 +359,7 @@ Especially handy for large datasets
 <span><span class="op">)</span></span>
 <span><span class="co"># dbWriteTable(con, tablename, data)</span></span>
 <span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">tbl</a></span><span class="op">(</span><span class="va">con</span>, <span class="va">tablename</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">rs</span>, <span class="va">tbl</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="va">rs</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span></span></code></pre></div>
 </td>
@@ -445,9 +445,9 @@ Especially handy for large datasets
 <span><span class="co">#&gt; # A tibble: 3 × 10</span></span>
 <span><span class="co">#&gt;   name                      expr              allow…¹ negate   tests    pass  fail warn  error time </span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;                     &lt;chr&gt;             &lt;lgl&gt;   &lt;lgl&gt;    &lt;int&gt;   &lt;int&gt; &lt;int&gt; &lt;chr&gt; &lt;chr&gt; &lt;drt&gt;</span></span>
-<span><span class="co">#&gt; 1 Rule for: passenger_count passenger_count … FALSE   FALSE  8760687 8760687     0 ""    ""    0.68…</span></span>
-<span><span class="co">#&gt; 2 Rule for: trip_distance   trip_distance &gt;=… FALSE   FALSE  8760687 8760686     1 ""    ""    0.44…</span></span>
-<span><span class="co">#&gt; 3 Rule for: payment_type    payment_type %in… FALSE   FALSE  8760687 8760687     0 ""    ""    0.41…</span></span>
+<span><span class="co">#&gt; 1 Rule for: passenger_count passenger_count … FALSE   FALSE  8760687 8760687     0 ""    ""    0.56…</span></span>
+<span><span class="co">#&gt; 2 Rule for: trip_distance   trip_distance &gt;=… FALSE   FALSE  8760687 8760686     1 ""    ""    0.43…</span></span>
+<span><span class="co">#&gt; 3 Rule for: payment_type    payment_type %in… FALSE   FALSE  8760687 8760687     0 ""    ""    0.42…</span></span>
 <span><span class="co">#&gt; # … with abbreviated variable name ¹​allow_na</span></span>
 <span></span>
 <span><span class="fu"><a href="reference/plot_res.html">plot_res</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span></code></pre></div>
@@ -494,9 +494,9 @@ Especially handy for large datasets
 <span><span class="co">#&gt; # A tibble: 3 × 10</span></span>
 <span><span class="co">#&gt;   name          expr                allow_na negate tests  pass  fail warn  error time          </span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;         &lt;chr&gt;               &lt;lgl&gt;    &lt;lgl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt; &lt;drtn&gt;        </span></span>
-<span><span class="co">#&gt; 1 Rule for: mpg mpg &gt; 10 &amp; mpg &lt; 30 FALSE    FALSE     32    28     4 ""    ""    2.5850210 secs</span></span>
-<span><span class="co">#&gt; 2 Rule for: cyl cyl %in% c(4, 8)    FALSE    FALSE     32    25     7 ""    ""    0.2247341 secs</span></span>
-<span><span class="co">#&gt; 3 Rule for: vs  vs %in% c(0, 1)     TRUE     FALSE     32    32     0 ""    ""    0.1944730 secs</span></span>
+<span><span class="co">#&gt; 1 Rule for: mpg mpg &gt; 10 &amp; mpg &lt; 30 FALSE    FALSE     32    28     4 ""    ""    3.5227668 secs</span></span>
+<span><span class="co">#&gt; 2 Rule for: cyl cyl %in% c(4, 8)    FALSE    FALSE     32    25     7 ""    ""    0.2015200 secs</span></span>
+<span><span class="co">#&gt; 3 Rule for: vs  vs %in% c(0, 1)     TRUE     FALSE     32    32     0 ""    ""    0.1898661 secs</span></span>
 <span></span>
 <span><span class="fu"><a href="reference/filter_fails.html">filter_fails</a></span><span class="op">(</span><span class="va">res</span>, <span class="va">tbl</span>, per_rule <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; $`mpg &gt; 10 &amp; mpg &lt; 30`</span></span>
