@@ -1,1 +1,1 @@
-Fix test to prevent revdep fail for data.table.
+Fix bug where multiline rules would break.

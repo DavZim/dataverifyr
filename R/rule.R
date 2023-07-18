@@ -35,7 +35,7 @@
 #' rs
 #' check_data(mtcars, rs)
 rule <- function(expr, name = NA, allow_na = FALSE, negate = FALSE, ...) {
-  expr <- deparse(substitute(expr))
+  expr <- paste(deparse(substitute(expr)), collapse = "")
 
   # allows expressions as well as strings
   if (substr(expr, 1, 1) == '"' &&

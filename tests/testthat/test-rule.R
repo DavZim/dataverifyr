@@ -13,6 +13,12 @@ test_that("Basic rules work", {
   expect_equal(unclass(rule(mpg > 10, author = "me", date = Sys.Date())),
                list(name = "Rule for: mpg", expr = "mpg > 10", allow_na = FALSE,
                     negate = FALSE, author = "me", date = Sys.Date()))
+
+  # rules can span multiple lines and do not throw a warning!
+  r <- rule(mpg > 10 &
+              cyl %in% c(4, 6, 8) |
+              disp > 10)
+  expect_equal(r$expr, "mpg > 10 & cyl %in% c(4, 6, 8) | disp > 10")
 })
 
 
