@@ -1,5 +1,4 @@
 test_that("filters return values that are not matched by the rules", {
-
   data <- mtcars
 
   data$mpg[4] <- NA
@@ -19,6 +18,7 @@ test_that("filters return values that are not matched by the rules", {
   expect_equal(unname(vapply(fails, nrow, integer(1))),
                res$fail[res$fail != 0])
 
+
   # check values of fails
   exp <- list(
     with(data, data[!((mpg > 10 & mpg < 30) | is.na(mpg)), ]),
@@ -30,4 +30,10 @@ test_that("filters return values that are not matched by the rules", {
   })
 
   expect_equal(lapply(unname(fails), as.data.frame), exp)
+
+
+
+  # same result when rules are supplied to check_data
+  fails2 <- filter_fails(rules, data, per_rule = TRUE)
+  expect_equal(fails2, fails)
 })

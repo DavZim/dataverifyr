@@ -102,6 +102,7 @@ test_that("arrow::arrow_table check_ works", {
   expect_equal(res |> dplyr::select(-time), exp)
 })
 
+
 test_that("arrow::open_dataset check_ works", {
   skip_if_not(requireNamespace("arrow", quietly = TRUE),
               "arrow must be installed to test the functionality")
@@ -191,4 +192,25 @@ test_that("duckdb check_ works", {
   # the error messages are unreliable as the wording changes over versions,
   # test that there is some error message
   expect_equal(nchar(res$error) > 0, c(FALSE, FALSE, FALSE, TRUE, TRUE))
+})
+
+
+test_that("Test extra functionality", {
+  # works with only one rule as opposed to a ruleset =====
+  res <- check_data(data, rules[[1]])
+  res2 <- check_data(data, ruleset(rules[[1]]))
+  expect_equal(res[, !"time"], res2[, !"time"])
+
+  # works with rules as a file =====
+  rule_file <- "temp-rules.yml"
+  write_rules(rules, rule_file)
+
+  res <- check_data(data, rule_file)
+  res2 <- check_data(data, rules)
+  expect_equal(res[, !"time"], res2[, !"time"])
+  unlink(rule_file)
+
+  # fails on warn and fail on error work =====
+  expect_error(check_data(data, rules, fail_on_warn = TRUE))
+  expect_error(check_data(data, rules, fail_on_error = TRUE))
 })

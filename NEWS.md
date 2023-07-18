@@ -2,6 +2,9 @@
 
 * Fix bug where multiline rules would break
 
+* fix minor error in Readme
+* `filter_fails()` allows the first argument to be a `ruleset` and not only a result of `check_data()`
+
 # dataverifyr 0.1.2
 
 * fixed NOTEs for CRAN release

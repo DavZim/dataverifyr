@@ -3,6 +3,7 @@
 #' @param x a dataset, either a [`data.frame`], [`dplyr::tibble`], [`data.table::data.table`],
 #' [`arrow::arrow_table`], [`arrow::open_dataset`], or [`dplyr::tbl`] (SQL connection)
 #' @param rules a list of [`rule`]s
+#' @param xname optional, a name for the x variable (only used for errors)
 #' @param fail_on_warn if the function should throw an error on a warning
 #' @param fail_on_error if the function should throw an error on a failed rule
 #'
@@ -18,14 +19,13 @@
 #' rs
 #'
 #' check_data(mtcars, rs)
-check_data <- function(x, rules, fail_on_warn = FALSE, fail_on_error = FALSE) {
+check_data <- function(x, rules, xname = deparse(substitute(x)),
+                       fail_on_warn = FALSE, fail_on_error = FALSE) {
 
   # if rules is a yaml file, read it in
   if (length(rules) == 1 && is.character(rules)) rules <- read_rules(rules)
   # treat single rule if needed
   if (hasName(rules, "expr")) rules <- ruleset(rules)
-
-  xname <- deparse(substitute(x))
 
   type <- detect_type(class(x))
 
@@ -40,15 +40,20 @@ check_data <- function(x, rules, fail_on_warn = FALSE, fail_on_error = FALSE) {
 
   res <- check_(x, rules, type = type)
 
-  # fails on warning
-  if (fail_on_warn && any(res$warn != ""))
-    stop(sprintf("Found %s Warning(s) in dataset %s - Abort!",
-                 sum(res$warn != ""), xname))
+  # fails on warning and/or error
+  if (fail_on_warn && any(res$warn != "") ||
+      fail_on_error && any(res$error != "")) {
+    warn <- fail_on_warn && any(res$warn != "")
+    err <- fail_on_error && any(res$error != "")
 
-  # fails on error
-  if (fail_on_error && any(res$error != ""))
-    stop(sprintf("Found %s Error(s) in dataset %s - Abort!",
-                 sum(res$error != ""), xname))
+    txt <- sprintf("In dataset '%s' found %s%s%s",
+                   xname,
+                   if (warn) sprintf("%s warnings", sum(res$warn != "")),
+                   if (warn && err) " and ",
+                   if (err) sprintf("%s errors", sum(res$error != "")))
+    stop(txt)
+
+  }
 
   res
 }

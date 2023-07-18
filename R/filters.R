@@ -1,11 +1,6 @@
-
-
-
-
-
 #' Filters a result dataset for the values that failed the verification
 #'
-#' @param res a result data.frame as outputted from [`check_data()`]
+#' @param res a result data.frame as outputted from [`check_data()`] or a ruleset
 #' @param x a dataset that was used in [`check_data()`]
 #' @param per_rule if set to TRUE, a list of filtered data is returned, one for
 #' each failed verification rule. If set to FALSE, a data.frame is returned of
@@ -23,25 +18,43 @@
 #'
 #' res <- check_data(mtcars, rules)
 #'
-#' fails <- filter_fails(res, mtcars)
-#' fails
+#' filter_fails(res, mtcars)
+#' filter_fails(res, mtcars, per_rule = TRUE)
+#'
+#' # alternatively, the first argument can also be a ruleset
+#' filter_fails(rules, mtcars)
+#' filter_fails(rules, mtcars, per_rule = TRUE)
 filter_fails <- function(res, x, per_rule = FALSE) {
-  stopifnot(is.data.frame(res))
-  stopifnot(all(
-    c("name", "expr", "allow_na", "negate", "pass", "fail", "tests") %in% names(res)
-  ))
 
-  fails <- res$fail != 0
-  e <- res$expr[fails]
+  if (class(res)[[1]] == "ruleset") {
+
+    eorig <- sapply(res, function(x) x$expr)
+    negated <- sapply(res, function(x) x$negate)
+    allow_na <- sapply(res, function(x) x$allow_na)
+
+  } else { # result of check_data
+
+    stopifnot(is.data.frame(res))
+    stopifnot(all(
+      c("name", "expr", "allow_na", "negate", "pass", "fail", "tests") %in% names(res)
+    ))
+
+    fails <- res$fail != 0
+    eorig <- res$expr[fails]
+    negated <- res$negate[fails]
+    allow_na <- res$allow_na[fails]
+
+  }
+
   type <- detect_type(class(x))
 
   # add negated values
-  e <- ifelse(res$negate[fails], paste0("!(", e, ")"), e)
+  e <- ifelse(negated, paste0("!(", eorig, ")"), eorig)
 
   # add is.na guards
   e <- sapply(seq_along(e), function(i) {
     ifelse(
-      res$allow_na[fails][i],
+      allow_na[i],
       paste("(", e[i], ")", "|", paste("is.na(", get_symbols(e[i]), ")",
                                        sep = "", collapse = " | ")),
       # due to negation, add anti-is.na guard
@@ -55,14 +68,18 @@ filter_fails <- function(res, x, per_rule = FALSE) {
 
   # make sure the input dataset has the right class
   if (class(x)[[1]] == "data.frame") {
-    if (type == "data.table") {
+    if (type == "data.table" && requireNamespace("data.table", quietly = TRUE)) {
       x <- data.table::as.data.table(x)
-    } else if (type == "dplyr") {
+    } else if (type == "dplyr" && requireNamespace("dplyr", quietly = TRUE)) {
       x <- dplyr::as_tibble(x)
     }
   }
 
   ll <- lapply(e, filter_data_, x = x, type = type, return_n = FALSE)
-  if (per_rule) ll <- setNames(ll, res$expr[fails]) else ll <- do.call(rbind, ll)
+  if (per_rule) {
+    ll <- setNames(ll, eorig)[sapply(ll, nrow) != 0]
+  } else {
+    ll <- do.call(rbind, ll)
+  }
   ll
 }

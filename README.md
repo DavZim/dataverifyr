@@ -83,9 +83,9 @@ rules
 res <- check_data(mtcars, rules)
 res
 #>             name                expr allow_na negate tests pass fail warn error              time
-#> 1: Rule for: mpg mpg > 10 & mpg < 30    FALSE  FALSE    32   28    4            0.0054011345 secs
-#> 2: Rule for: cyl    cyl %in% c(4, 8)    FALSE  FALSE    32   25    7            0.0033059120 secs
-#> 3:  Rule for: vs     vs %in% c(0, 1)     TRUE  FALSE    32   32    0            0.0004060268 secs
+#> 1: Rule for: mpg mpg > 10 & mpg < 30    FALSE  FALSE    32   28    4            0.0055301189 secs
+#> 2: Rule for: cyl    cyl %in% c(4, 8)    FALSE  FALSE    32   25    7            0.0034749508 secs
+#> 3:  Rule for: vs     vs %in% c(0, 1)     TRUE  FALSE    32   32    0            0.0004439354 secs
 ```
 
 As we can see, our dataset `mtcars` does not conform to all of our
@@ -154,6 +154,27 @@ The resulting `example_rules.yaml` looks like this
   index: 3
 ```
 
+One helpful use case is to use this functionality to assert that your
+data has the right values in a custom read function like so:
+
+``` r
+read_custom <- function(file, rules) {
+  data <- read.csv(file) # or however you read in your data
+  # if the check_data detects a fail: the read_custom function will stop
+  check_data(data, rules, xname = file,
+             fail_on_error = TRUE, fail_on_warn = TRUE)
+  # ...
+  data
+}
+# nothing happens when the data matches the rules
+data <- read_custom("correct_data.csv", rules)
+
+# an error is thrown when warnings or errors are found
+data <- read_custom("wrong_data.csv", rules)
+#> Error in check_data(data, rules, fail_on_error = TRUE, fail_on_warn = TRUE) : 
+#>   In dataset 'wrong_data.csv' found 1 warnings and 1 errors
+```
+
 ## Backends
 
 At the moment the following backends are supported. Note that they are
@@ -199,7 +220,7 @@ Comment
 
 ``` r
 data <- data.frame(x = 1:10)
-check_data(rs, data)
+check_data(data, rs)
 ```
 
 </td>
@@ -229,7 +250,7 @@ speeds.
 ``` r
 library(dplyr)
 data <- tibble(x = 1:10)
-check_data(rs, data)
+check_data(data, rs)
 ```
 
 </td>
@@ -255,7 +276,7 @@ check_data(rs, data)
 ``` r
 library(data.table)
 data <- data.table(x = 1:10)
-check_data(rs, data)
+check_data(data, rs)
 ```
 
 </td>
@@ -286,7 +307,7 @@ data <- read_parquet(
   file,
   as_data_frame = FALSE
 )
-check_data(rs, data)
+check_data(data, rs)
 ```
 
 </td>
@@ -312,7 +333,7 @@ check_data(rs, data)
 ``` r
 library(arrow)
 data <- open_dataset(dir)
-check_data(rs, data)
+check_data(data, rs)
 ```
 
 </td>
@@ -343,7 +364,7 @@ library(DBI)
 con <- dbConnect(RSQLite::SQLite())
 # dbWriteTable(con, tablename, data)
 tbl <- dplyr::tbl(con, tablename)
-check_data(rs, tbl)
+check_data(tbl, rs)
 
 dbDisconnect(con)
 ```
@@ -380,7 +401,7 @@ library(DBI)
 con <- dbConnect(duckdb::duckdb())
 # dbWriteTable(con, tablename, data)
 tbl <- dplyr::tbl(con, tablename)
-check_data(rs, tbl)
+check_data(tbl, rs)
 
 dbDisconnect(con, shutdown = TRUE)
 ```
@@ -415,7 +436,7 @@ con <- dbConnect(
 )
 # dbWriteTable(con, tablename, data)
 tbl <- dplyr::tbl(con, tablename)
-check_data(rs, tbl)
+check_data(tbl, rs)
 
 dbDisconnect(con)
 ```
@@ -529,9 +550,9 @@ res
 #> # A tibble: 3 × 10
 #>   name                      expr              allow…¹ negate   tests    pass  fail warn  error time 
 #>   <chr>                     <chr>             <lgl>   <lgl>    <int>   <int> <int> <chr> <chr> <drt>
-#> 1 Rule for: passenger_count passenger_count … FALSE   FALSE  8760687 8760687     0 ""    ""    0.74…
-#> 2 Rule for: trip_distance   trip_distance >=… FALSE   FALSE  8760687 8760686     1 ""    ""    0.50…
-#> 3 Rule for: payment_type    payment_type %in… FALSE   FALSE  8760687 8760687     0 ""    ""    0.45…
+#> 1 Rule for: passenger_count passenger_count … FALSE   FALSE  8760687 8760687     0 ""    ""    0.56…
+#> 2 Rule for: trip_distance   trip_distance >=… FALSE   FALSE  8760687 8760686     1 ""    ""    0.43…
+#> 3 Rule for: payment_type    payment_type %in… FALSE   FALSE  8760687 8760687     0 ""    ""    0.42…
 #> # … with abbreviated variable name ¹​allow_na
 
 plot_res(res)
@@ -587,11 +608,11 @@ rules <- ruleset(
 res <- check_data(tbl, rules)
 res
 #> # A tibble: 3 × 10
-#>   name          expr                allow_na negate tests  pass  fail warn  error time           
-#>   <chr>         <chr>               <lgl>    <lgl>  <dbl> <dbl> <dbl> <chr> <chr> <drtn>         
-#> 1 Rule for: mpg mpg > 10 & mpg < 30 FALSE    FALSE     32    28     4 ""    ""    0.03803802 secs
-#> 2 Rule for: cyl cyl %in% c(4, 8)    FALSE    FALSE     32    25     7 ""    ""    0.02827501 secs
-#> 3 Rule for: vs  vs %in% c(0, 1)     TRUE     FALSE     32    32     0 ""    ""    0.03140306 secs
+#>   name          expr                allow_na negate tests  pass  fail warn  error time          
+#>   <chr>         <chr>               <lgl>    <lgl>  <dbl> <dbl> <dbl> <chr> <chr> <drtn>        
+#> 1 Rule for: mpg mpg > 10 & mpg < 30 FALSE    FALSE     32    28     4 ""    ""    3.5227668 secs
+#> 2 Rule for: cyl cyl %in% c(4, 8)    FALSE    FALSE     32    25     7 ""    ""    0.2015200 secs
+#> 3 Rule for: vs  vs %in% c(0, 1)     TRUE     FALSE     32    32     0 ""    ""    0.1898661 secs
 
 filter_fails(res, tbl, per_rule = TRUE)
 #> $`mpg > 10 & mpg < 30`
