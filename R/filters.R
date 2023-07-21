@@ -44,6 +44,8 @@ filter_fails <- function(res, x, per_rule = FALSE) {
     negated <- res$negate[fails]
     allow_na <- res$allow_na[fails]
 
+    if (all(!fails)) return(x[0, ])
+
   }
 
   type <- detect_type(class(x))

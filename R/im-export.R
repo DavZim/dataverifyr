@@ -37,6 +37,7 @@ read_rules <- function(file) {
   }
 
   res <- lapply(res, function(r) {
+    r$expr <- paste(r$expr, collapse = "\n")
     class(r) <- "rule"
     r
   })
