@@ -32,7 +32,7 @@
     
     <a class="navbar-brand me-2" href="index.html">dataverifyr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.6.9001</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.6.9002</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -189,7 +189,7 @@
 <div class="section level2">
 <h2 id="backends">Backends<a class="anchor" aria-label="anchor" href="#backends"></a>
 </h2>
-<p>At the moment the following backends are supported. Note that they are automatically chosen based on data type and package availability. Eg, when the dataset is a <code><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">dplyr::tbl()</a></code> connected to an <code>SQLite</code> database, the package will automatically choose <code>RSQLite</code>/<code>DBI</code>/<code>dbplyr</code> for the task.</p>
+<p>At the moment the following backends are supported. Note that they are automatically chosen based on data type and package availability. Eg, when the dataset is a <code><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">dplyr::tbl()</a></code> connected to an <code>SQLite</code> database, the package will automatically choose <code>RSQLite</code>/<code>DBI</code>/<code>dbplyr</code> for the task. To see which backend <code>dataverifyr</code> would use for a task, you can use <code>detect_backend(data)</code>.</p>
 <table class="table">
 <thead class="header">
 <th style="text-align:left;">
@@ -279,7 +279,7 @@ Comment
 <td style="text-align:left;">
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/apache/arrow/" class="external-link">arrow</a></span><span class="op">)</span></span>
-<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://arrow.apache.org/docs/r/reference/Table.html" class="external-link">arrow_table</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span></span>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://arrow.apache.org/docs/r/reference/table.html" class="external-link">arrow_table</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span></span>
 <span><span class="co"># Alternatively:</span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://arrow.apache.org/docs/r/reference/read_parquet.html" class="external-link">read_parquet</a></span><span class="op">(</span></span>
 <span>  <span class="va">file</span>,</span>
@@ -511,7 +511,7 @@ Especially handy for large datasets
 <span><span class="co">#&gt; # A tibble: 3 × 10</span></span>
 <span><span class="co">#&gt;   name          expr                allow_na negate tests  pass  fail warn  error time          </span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;         &lt;chr&gt;               &lt;lgl&gt;    &lt;lgl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt; &lt;drtn&gt;        </span></span>
-<span><span class="co">#&gt; 1 Rule for: mpg mpg &gt; 10 &amp; mpg &lt; 30 FALSE    FALSE     32    28     4 ""    ""    3.5227668 secs</span></span>
+<span><span class="co">#&gt; 1 Rule for: mpg mpg &gt; 10 &amp; mpg &lt; 30 FALSE    FALSE     32    28     4 ""    ""    1.232728 secs</span></span>
 <span><span class="co">#&gt; 2 Rule for: cyl cyl %in% c(4, 8)    FALSE    FALSE     32    25     7 ""    ""    0.2015200 secs</span></span>
 <span><span class="co">#&gt; 3 Rule for: vs  vs %in% c(0, 1)     TRUE     FALSE     32    32     0 ""    ""    0.1898661 secs</span></span>
 <span></span>
