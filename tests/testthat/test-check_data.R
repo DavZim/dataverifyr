@@ -14,7 +14,7 @@ rules <- ruleset(
 )
 
 test_that("base-r check_ works", {
-  res <- check_(data, rules, type = "base-r")
+  res <- check_(data, rules, backend = "base-r")
 
   expect_equal(class(res), "data.frame")
   exp <- data.frame(
@@ -36,7 +36,7 @@ test_that("dplyr check_ works", {
   skip_if_not(requireNamespace("dplyr", quietly = TRUE),
               "dplyr must be installed to test the functionality")
 
-  res <- check_(dplyr::tibble(data), rules, type = "dplyr")
+  res <- check_(dplyr::tibble(data), rules, backend = "dplyr")
 
   expect_equal(class(res), c("tbl_df", "tbl", "data.frame"))
   exp <- dplyr::tibble(
@@ -58,7 +58,7 @@ test_that("data.table check_ works", {
   skip_if_not(requireNamespace("data.table", quietly = TRUE),
               "data.table must be installed to test the functionality")
 
-  res <- check_(data.table::as.data.table(data), rules, type = "data.table")
+  res <- check_(data.table::as.data.table(data), rules, backend = "data.table")
 
   expect_equal(class(res), c("data.table", "data.frame"))
   exp <- data.table::data.table(
@@ -85,7 +85,7 @@ test_that("arrow::arrow_table check_ works", {
   skip_if_not(requireNamespace("arrow", quietly = TRUE),
               "arrow must be installed to test the functionality")
 
-  res <- check_(arrow::arrow_table(data), rules, type = "collectibles")
+  res <- check_(arrow::arrow_table(data), rules, backend = "collectibles")
 
   expect_equal(class(res), c("tbl_df", "tbl", "data.frame"))
   exp <- dplyr::tibble(
@@ -111,7 +111,7 @@ test_that("arrow::open_dataset check_ works", {
   arrow::write_dataset(data, temp)
   ds <- arrow::open_dataset(temp)
 
-  res <- check_(ds, rules, type = "collectibles")
+  res <- check_(ds, rules, backend = "collectibles")
 
   expect_equal(class(res), c("tbl_df", "tbl", "data.frame"))
   exp <- dplyr::tibble(
@@ -141,7 +141,7 @@ test_that("sqlite (RSQLite) check_ works", {
 
   tbl <- dplyr::tbl(con, "data")
 
-  res <- check_(tbl, rules, type = "collectibles")
+  res <- check_(tbl, rules, backend = "collectibles")
 
   expect_equal(class(res), c("tbl_df", "tbl", "data.frame"))
   exp <- dplyr::tibble(
@@ -175,7 +175,7 @@ test_that("duckdb check_ works", {
 
   tbl <- dplyr::tbl(con, "data")
 
-  res <- check_(tbl, rules, type = "collectibles")
+  res <- check_(tbl, rules, backend = "collectibles")
 
   expect_equal(class(res), c("tbl_df", "tbl", "data.frame"))
   exp <- dplyr::tibble(

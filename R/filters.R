@@ -48,7 +48,7 @@ filter_fails <- function(res, x, per_rule = FALSE) {
 
   }
 
-  type <- detect_type(class(x))
+  backend <- detect_backend(x)
 
   # add negated values
   e <- ifelse(negated, paste0("!(", eorig, ")"), eorig)
@@ -70,14 +70,14 @@ filter_fails <- function(res, x, per_rule = FALSE) {
 
   # make sure the input dataset has the right class
   if (class(x)[[1]] == "data.frame") {
-    if (type == "data.table" && requireNamespace("data.table", quietly = TRUE)) {
+    if (backend == "data.table" && requireNamespace("data.table", quietly = TRUE)) {
       x <- data.table::as.data.table(x)
-    } else if (type == "dplyr" && requireNamespace("dplyr", quietly = TRUE)) {
+    } else if (backend == "dplyr" && requireNamespace("dplyr", quietly = TRUE)) {
       x <- dplyr::as_tibble(x)
     }
   }
 
-  ll <- lapply(e, filter_data_, x = x, type = type, return_n = FALSE)
+  ll <- lapply(e, filter_data_, x = x, backend = backend, return_n = FALSE)
   if (per_rule) {
     ll <- setNames(ll, eorig)[sapply(ll, nrow) != 0]
   } else {

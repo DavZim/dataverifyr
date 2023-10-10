@@ -10,6 +10,8 @@
 #' @return a data.frame-like object with one row for each rule and its results
 #' @export
 #'
+#' @seealso [detect_backend()]
+#'
 #' @examples
 #' rs <- ruleset(
 #'   rule(mpg > 10),
@@ -27,18 +29,18 @@ check_data <- function(x, rules, xname = deparse(substitute(x)),
   # treat single rule if needed
   if (hasName(rules, "expr")) rules <- ruleset(rules)
 
-  type <- detect_type(class(x))
+  backend <- detect_backend(x)
 
   # make sure the input dataset has the right class
   if (class(x)[[1]] == "data.frame") {
-    if (type == "data.table") {
+    if (backend == "data.table") {
       x <- data.table::as.data.table(x)
-    } else if (type == "dplyr") {
+    } else if (backend == "dplyr") {
       x <- dplyr::as_tibble(x)
     }
   }
 
-  res <- check_(x, rules, type = type)
+  res <- check_(x, rules, backend = backend)
 
   # fails on warning and/or error
   if (fail_on_warn && any(res$warn != "") ||
@@ -58,39 +60,66 @@ check_data <- function(x, rules, xname = deparse(substitute(x)),
   res
 }
 
-# helper function that detects which type the request should use:
-# returns either: base-r, data.table, collectibles (any DBI or arrow backend)
-detect_type <- function(cc) {
+#' Detects the backend which will be used for checking the rules
+#'
+#' @description
+#' The detection will be made based on the class of the object as well as the packages installed.
+#' For example, if a `data.frame` is used, it will look if `data.table` or `dplyr` are installed on the system, as they provide more speed.
+#' Note the main functions will revert the
+#'
+#' @param x The data object, ie a data.frame, tibble, data.table, arrow, or DBI object
+#'
+#' @return a single character element with the name of the backend to use.
+#' One of `base-r`, `data.table`, `dplyr`, `collectibles` (for arrow or DBI objects)
+#' @export
+#'
+#' @seealso [check_data()]
+#' @examples
+#' data <- mtcars
+#' detect_backend(data)
+detect_backend <- function(x) {
+  cc <- class(x)
   if ("data.table" %in% cc) {
     if (!has_pkg("data.table"))
       stop("The data.table package needs to be installed in order to test a data.table OR you can convert the data to a data.frame first!")
-    type <- "data.table"
+    backend <- "data.table"
 
-  } else if ("tibble" %in% cc) {
+  } else if (any(c("tibble", "tbl_df") %in% cc)) {
     if (!has_pkg("dplyr"))
       stop("The dplyr package needs to be installed in order to test a tibble OR you can convert the data to a data.frame first!")
-    type <- "dplyr"
+    backend <- "dplyr"
 
   } else if (length(cc) == 1 && cc == "data.frame") {
 
     if (has_pkg("data.table")) {
-      type <- "data.table"
+      backend <- "data.table"
     } else if (has_pkg("dplyr")) {
-      type <- "dplyr"
+      backend <- "dplyr"
     } else {
-      type <- "base-r"
+      backend <- "base-r"
     }
 
-  } else if (any(c("tbl_sql", "ArrowObject") %in% cc)) {
+  } else if ("tbl_sql" %in% cc) {
 
-    type <- "collectibles"
+    if (!has_pkg("DBI"))
+      stop("The DBI package needs to be installed in order to test a tbl_sql.")
+
+    backend <- "collectibles"
+
+  } else if ("ArrowObject" %in% cc) {
+
+    if (!has_pkg("arrow"))
+      stop("The arrow package needs to be installed in order to test an ArrowObject.")
+
+    backend <- "collectibles"
 
   } else {
+
     stop(sprintf(paste("Unknown class of x found: '%s'.",
                        "x must be a data.frame/tibble/data.table or a tbl (SQL table) or ArrowObject."),
                  paste(cc, collapse = ",  ")))
   }
-  type
+  backend
 }
 
 # small helper to check if a package is installed
@@ -104,19 +133,19 @@ get_warnings <- function(code) {
   strip_dplyr_errors(paste(unique(out), collapse = ", "))
 }
 
-# helper function that checks the rules given a specific type (~package)
-check_ <- function(x, rules, type = c("base-r", "dplyr", "data.table", "collectibles")) {
+# helper function that checks the rules given a specific backend (~package)
+check_ <- function(x, rules, backend = c("base-r", "dplyr", "data.table", "collectibles")) {
 
-  type <- match.arg(type)
+  backend <- match.arg(backend)
 
   # function to create a data.frame
-  to_df <- switch(type,
+  to_df <- switch(backend,
                   "base-r" = data.frame,
                   dplyr = dplyr::tibble,
                   data.table = data.table::data.table,
                   collectibles = dplyr::tibble)
   # function to combine multiple data.frames into a single one by row
-  br <- switch(type,
+  br <- switch(backend,
                "base-r" = function(l) do.call(rbind, l),
                dplyr = dplyr::bind_rows,
                data.table = data.table::rbindlist,
@@ -152,7 +181,7 @@ check_ <- function(x, rules, type = c("base-r", "dplyr", "data.table", "collecti
     Sys.setenv(NO_COLOR = "OFF")
     pos <- tryCatch({
       warns <- get_warnings({
-        pos <- filter_data_(x, type, e)
+        pos <- filter_data_(x, backend, e)
       })
       pos
     }, error = function(err) {
@@ -185,15 +214,15 @@ check_ <- function(x, rules, type = c("base-r", "dplyr", "data.table", "collecti
 
 # internal helper function that filters a dataset x
 # when return_n = FALSE the data is returned, otherwise the number of rows
-filter_data_ <- function(x, type, e, return_n = TRUE) {
-  if (type == "base-r") {
+filter_data_ <- function(x, backend, e, return_n = TRUE) {
+  if (backend == "base-r") {
     # note that the nrow(with(x, x[eval(parse(text = e)), ]))
     # includes NA rows and therefore returns the wrong number of rows
     pos <- with(x, eval(parse(text = e)))
     pos <- if (return_n) sum(pos, na.rm = TRUE) else x[pos, ]
-  } else if (type == "dplyr" | type == "collectibles") {
+  } else if (backend == "dplyr" | backend == "collectibles") {
     rr <- dplyr::filter(x, !!str2lang(e))
-    if (type == "collectibles") {
+    if (backend == "collectibles") {
       if (return_n) {
         pos <- dplyr::pull(
           dplyr::collect(dplyr::summarise(rr, n = dplyr::n())),
@@ -205,7 +234,7 @@ filter_data_ <- function(x, type, e, return_n = TRUE) {
     } else { # dplyr
       pos <- if (return_n) nrow(rr) else rr
     }
-  } else if (type == "data.table") {
+  } else if (backend == "data.table") {
     pos <- x[eval(parse(text = e)), ]
     if (return_n) pos <- nrow(pos)
   }

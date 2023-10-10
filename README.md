@@ -181,7 +181,8 @@ At the moment the following backends are supported. Note that they are
 automatically chosen based on data type and package availability. Eg,
 when the dataset is a `dplyr::tbl()` connected to an `SQLite` database,
 the package will automatically choose `RSQLite`/`DBI`/`dbplyr` for the
-task.
+task. To see which backend `dataverifyr` would use for a task, you can
+use `detect_backend(data)`.
 
 <table>
 <thead class="header">
@@ -610,7 +611,7 @@ res
 #> # A tibble: 3 × 10
 #>   name          expr                allow_na negate tests  pass  fail warn  error time          
 #>   <chr>         <chr>               <lgl>    <lgl>  <dbl> <dbl> <dbl> <chr> <chr> <drtn>        
-#> 1 Rule for: mpg mpg > 10 & mpg < 30 FALSE    FALSE     32    28     4 ""    ""    3.5227668 secs
+#> 1 Rule for: mpg mpg > 10 & mpg < 30 FALSE    FALSE     32    28     4 ""    ""    1.232728 secs
 #> 2 Rule for: cyl cyl %in% c(4, 8)    FALSE    FALSE     32    25     7 ""    ""    0.2015200 secs
 #> 3 Rule for: vs  vs %in% c(0, 1)     TRUE     FALSE     32    32     0 ""    ""    0.1898661 secs
 

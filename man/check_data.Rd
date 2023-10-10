@@ -40,3 +40,6 @@ rs
 
 check_data(mtcars, rs)
 }
+\seealso{
+\code{\link[=detect_backend]{detect_backend()}}
+}

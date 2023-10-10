@@ -129,6 +129,7 @@ data <- read_custom("wrong_data.csv", rules)
 At the moment the following backends are supported.
 Note that they are automatically chosen based on data type and package availability.
 Eg, when the dataset is a `dplyr::tbl()` connected to an `SQLite` database, the package will automatically choose `RSQLite`/`DBI`/`dbplyr` for the task.
+To see which backend `dataverifyr` would use for a task, you can use `detect_backend(data)`.
 
 ```{r backends, echo=FALSE, results="asis"}
 # setup the table of backends in R... base markdown is not nice with this formatting...
