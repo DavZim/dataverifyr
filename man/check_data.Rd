@@ -8,8 +8,9 @@ check_data(
   x,
   rules,
   xname = deparse(substitute(x)),
-  fail_on_warn = FALSE,
-  fail_on_error = FALSE
+  stop_on_fail = FALSE,
+  stop_on_warn = FALSE,
+  stop_on_error = FALSE
 )
 }
 \arguments{
@@ -20,9 +21,11 @@ check_data(
 
 \item{xname}{optional, a name for the x variable (only used for errors)}
 
-\item{fail_on_warn}{if the function should throw an error on a warning}
+\item{stop_on_fail}{when any of the rules fail, throw an error with stop}
 
-\item{fail_on_error}{if the function should throw an error on a failed rule}
+\item{stop_on_warn}{when a warning is found in the code execution, throw an error with stop}
+
+\item{stop_on_error}{when an error is found in the code execution, throw an error with stop}
 }
 \value{
 a data.frame-like object with one row for each rule and its results

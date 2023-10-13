@@ -4,8 +4,9 @@
 #' [`arrow::arrow_table`], [`arrow::open_dataset`], or [`dplyr::tbl`] (SQL connection)
 #' @param rules a list of [`rule`]s
 #' @param xname optional, a name for the x variable (only used for errors)
-#' @param fail_on_warn if the function should throw an error on a warning
-#' @param fail_on_error if the function should throw an error on a failed rule
+#' @param stop_on_fail when any of the rules fail, throw an error with stop
+#' @param stop_on_warn when a warning is found in the code execution, throw an error with stop
+#' @param stop_on_error when an error is found in the code execution, throw an error with stop
 #'
 #' @return a data.frame-like object with one row for each rule and its results
 #' @export
@@ -22,7 +23,8 @@
 #'
 #' check_data(mtcars, rs)
 check_data <- function(x, rules, xname = deparse(substitute(x)),
-                       fail_on_warn = FALSE, fail_on_error = FALSE) {
+                       stop_on_fail = FALSE, stop_on_warn = FALSE,
+                       stop_on_error = FALSE) {
 
   # if rules is a yaml file, read it in
   if (length(rules) == 1 && is.character(rules)) rules <- read_rules(rules)
@@ -42,19 +44,19 @@ check_data <- function(x, rules, xname = deparse(substitute(x)),
 
   res <- check_(x, rules, backend = backend)
 
-  # fails on warning and/or error
-  if (fail_on_warn && any(res$warn != "") ||
-      fail_on_error && any(res$error != "")) {
-    warn <- fail_on_warn && any(res$warn != "")
-    err <- fail_on_error && any(res$error != "")
+  # stops on fail, warning and/or error
+  fail <- stop_on_fail && any(res$fail != 0)
+  warn <- stop_on_warn && any(res$warn != "")
+  err <- stop_on_error && any(res$error != "")
 
-    txt <- sprintf("In dataset '%s' found %s%s%s",
-                   xname,
-                   if (warn) sprintf("%s warnings", sum(res$warn != "")),
-                   if (warn && err) " and ",
-                   if (err) sprintf("%s errors", sum(res$error != "")))
-    stop(txt)
+  if (fail || warn || err) {
+    tt <- paste(c(
+      if (fail) sprintf("%s rule fails", sum(res$fail != 0)),
+      if (warn) sprintf("%s warnings", sum(res$warn != "")),
+      if (err) sprintf("%s errors", sum(res$error != ""))
+    ), collapse = ", ")
 
+    stop(sprintf("In dataset '%s' found %s", xname, tt))
   }
 
   res

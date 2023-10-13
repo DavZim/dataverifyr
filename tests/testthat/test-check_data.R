@@ -9,7 +9,7 @@ rules <- ruleset(
   rule(cyl %in% c(4, 6, 8), "r1"),
   rule(mpg < 10 & mpg > 34, "r2", negate = TRUE),
   rule(disp > 100, "r3", allow_na = TRUE), # data validation "fails"
-  rule(as.numeric(hp) > 0 & as.numeric(hp) < 400, "r4"), # creates warning + 1 NA
+  rule(as.numeric(hp) > 0 & as.numeric(hp) < 400, "r4"), # creates warning + 1 NA -> result in fail
   rule(does_not_exist %in% c("a", "b", "c"), "r5") # creates a stop
 )
 
@@ -210,7 +210,86 @@ test_that("Test extra functionality", {
   expect_equal(res[, !"time"], res2[, !"time"])
   unlink(rule_file)
 
-  # fails on warn and fail on error work =====
-  expect_error(check_data(data, rules, fail_on_warn = TRUE))
-  expect_error(check_data(data, rules, fail_on_error = TRUE))
+  # stop on warn and fail on error work =====
+  expect_error(check_data(data, rules, stop_on_fail = TRUE))
+  expect_error(check_data(data, rules, stop_on_warn = TRUE))
+  expect_error(check_data(data, rules, stop_on_error = TRUE))
+})
+
+test_that("Special case where a warning with allowed missing values returned a fail", {
+  rules <- ruleset(
+    rule(as.numeric(vs) %in% c(0, 1), allow_na = TRUE)
+    # conversion will introduce warning but allow_na should pass it
+  )
+  data <- mtcars
+  data$vs <- as.character(data$vs)
+  data$vs[1] <- "asd"
+
+  res <- check_data(data, rules)
+  expect_equal(res$fail, 1)
+  expect_equal(res$warn, "NAs introduced by coercion")
+})
+
+
+test_that("Extra tests for stop_on_fail with custom reader", {
+  rules <- ruleset(
+    rule(mpg > 10 & mpg < 30), # mpg goes up to 34
+    rule(cyl %in% c(4, 8)), # missing 6 cyl
+    rule(as.numeric(vs) %in% c(0, 1), allow_na = TRUE) # conversion can introduce warning
+  )
+
+  read_custom <- function(file, rules) {
+    data <- read.csv(file)
+    # expected: if the check_data detects a fail: the read_custom function will stop
+    check_data(data, rules, xname = file,
+               stop_on_fail = TRUE, stop_on_warn = TRUE, stop_on_error = TRUE)
+    data
+  }
+
+  d <- mtcars
+  d$name <- rownames(d)
+  rownames(d) <- NULL
+
+  # normal use case, no fails, warnings, errors
+  data_ok <- d[d$mpg <= 30 & d$cyl != 6, ]
+  rownames(data_ok) <- NULL
+
+  file_ok <- tempfile(fileext = ".csv")
+  write.csv(data_ok, file_ok, row.names = FALSE)
+
+  data_ok_got <- read_custom(file_ok, rules)
+  expect_equal(data_ok_got, data_ok)
+
+  # fail use case, no warnings, errors
+  data_fail <- d
+  file_fail <- tempfile(fileext = ".csv")
+  write.csv(data_fail, file_fail, row.names = FALSE)
+
+  expect_error(
+    read_custom(file_fail, rules),
+    "In dataset '.*' found 2 rule fails"
+  )
+
+  # warn use case, no fails, no errors
+  data_warn <- data_ok
+  data_warn$vs <- as.character(data_warn$vs)
+  data_warn$vs[3] <- "asd" # will throw warning
+
+  file_warn <- tempfile(fileext = ".csv")
+  write.csv(data_warn, file_warn, row.names = FALSE)
+
+  # see `allow_na` in `?rule` for an explanation why this fails
+  expect_error(
+    read_custom(file_warn, rules),
+    "In dataset '.*' found 1 rule fails, 1 warnings"
+  )
+
+  # error use case results in rule fails as well, no warnings
+  rules_error <- ruleset(
+    rule(stop("Not going to work..."))
+  )
+  expect_error(
+    read_custom(file_ok, rules_error),
+    "In dataset '.*' found 1 rule fails, 1 errors"
+  )
 })

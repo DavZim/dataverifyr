@@ -7,7 +7,12 @@
 #' [arrow documentation](https://arrow.apache.org/docs/r/reference/acero.html#function-mappings)).
 #' The expression can be given as a string as well.
 #' @param name an optional name for the rule for reference
-#' @param allow_na does the rule allow for NA values? default value is FALSE
+#' @param allow_na does the rule allow for NA values in the data? default value is FALSE.
+#' Note that when NAs are introduced in the expression, `allow_na` has no effect.
+#' Eg when the rule `as.numeric(vs) %in% c(0, 1)` finds the values of `vs` as
+#' `c("1", "A")`, the rule will throw a fail regardless of the value of `allow_na`
+#' as the NA is introduced in the expression and is not found in the original data.
+#' However, when the values of `vs` are `c("1", NA)`, `allow_na` will have an effect.
 #' @param negate is the rule negated, only applies to the expression not allow_na,
 #' that is, if `expr = mpg > 10`, `allow_na = TRUE`, and `negate = TRUE`, it would
 #' match all `mpg <= 10` as well as NAs.

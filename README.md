@@ -162,7 +162,7 @@ read_custom <- function(file, rules) {
   data <- read.csv(file) # or however you read in your data
   # if the check_data detects a fail: the read_custom function will stop
   check_data(data, rules, xname = file,
-             fail_on_error = TRUE, fail_on_warn = TRUE)
+             stop_on_fail = TRUE, stop_on_warn = TRUE, stop_on_error = TRUE)
   # ...
   data
 }
@@ -171,8 +171,8 @@ data <- read_custom("correct_data.csv", rules)
 
 # an error is thrown when warnings or errors are found
 data <- read_custom("wrong_data.csv", rules)
-#> Error in check_data(data, rules, fail_on_error = TRUE, fail_on_warn = TRUE) : 
-#>   In dataset 'wrong_data.csv' found 1 warnings and 1 errors
+#> Error in check_data(data, rules, stop_on_fail = TRUE, stop_on_error = TRUE, stop_on_warn = TRUE) : 
+#>   In dataset 'wrong_data.csv' found 2 rule fails, 1 warnings, 1 errors
 ```
 
 ## Backends

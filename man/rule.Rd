@@ -19,7 +19,12 @@ The expression can be given as a string as well.}
 
 \item{name}{an optional name for the rule for reference}
 
-\item{allow_na}{does the rule allow for NA values? default value is FALSE}
+\item{allow_na}{does the rule allow for NA values in the data? default value is FALSE.
+Note that when NAs are introduced in the expression, \code{allow_na} has no effect.
+Eg when the rule \code{as.numeric(vs) \%in\% c(0, 1)} finds the values of \code{vs} as
+\code{c("1", "A")}, the rule will throw a fail regardless of the value of \code{allow_na}
+as the NA is introduced in the expression and is not found in the original data.
+However, when the values of \code{vs} are \code{c("1", NA)}, \code{allow_na} will have an effect.}
 
 \item{negate}{is the rule negated, only applies to the expression not allow_na,
 that is, if \code{expr = mpg > 10}, \code{allow_na = TRUE}, and \code{negate = TRUE}, it would
