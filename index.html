@@ -32,7 +32,7 @@
     
     <a class="navbar-brand me-2" href="index.html">dataverifyr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.6.9002</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.6.9003</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -174,7 +174,7 @@
 <span>  <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="va">file</span><span class="op">)</span> <span class="co"># or however you read in your data</span></span>
 <span>  <span class="co"># if the check_data detects a fail: the read_custom function will stop</span></span>
 <span>  <span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">rules</span>, xname <span class="op">=</span> <span class="va">file</span>,</span>
-<span>             fail_on_error <span class="op">=</span> <span class="cn">TRUE</span>, fail_on_warn <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>             stop_on_fail <span class="op">=</span> <span class="cn">TRUE</span>, stop_on_warn <span class="op">=</span> <span class="cn">TRUE</span>, stop_on_error <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span>  <span class="co"># ...</span></span>
 <span>  <span class="va">data</span></span>
 <span><span class="op">}</span></span>
@@ -183,8 +183,8 @@
 <span></span>
 <span><span class="co"># an error is thrown when warnings or errors are found</span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">read_custom</span><span class="op">(</span><span class="st">"wrong_data.csv"</span>, <span class="va">rules</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Error in check_data(data, rules, fail_on_error = TRUE, fail_on_warn = TRUE) : </span></span>
-<span><span class="co">#&gt;   In dataset 'wrong_data.csv' found 1 warnings and 1 errors</span></span></code></pre></div>
+<span><span class="co">#&gt; Error in check_data(data, rules, stop_on_fail = TRUE, stop_on_error = TRUE, stop_on_warn = TRUE) : </span></span>
+<span><span class="co">#&gt;   In dataset 'wrong_data.csv' found 2 rule fails, 1 warnings, 1 errors</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="backends">Backends<a class="anchor" aria-label="anchor" href="#backends"></a>

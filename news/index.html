@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">dataverifyr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.6.9002</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.6.9003</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,6 +44,14 @@
       <small>Source: <a href="https://github.com/DavZim/dataverifyr/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.7" id="dataverifyr-017">dataverifyr 0.1.7<a class="anchor" aria-label="anchor" href="#dataverifyr-017"></a></h2>
+<ul><li>rename args <code>fail_on_X</code> to <code>stop_on_X</code>
+</li>
+<li>adds <code>stop_on_fail</code> to [<code><a href="../reference/check_data.html">check_data()</a></code>], so that the examples using <code>read_custom()</code> make sense (eg in the Readme); thanks <a href="https://github.com/FedericoComoglio" class="external-link">FedericoComoglio</a> for pointing it out!</li>
+<li>fix bug when dplyr backend is used + add tests; thanks <a href="https://github.com/FedericoComoglio" class="external-link">FedericoComoglio</a> for reporting the bug!</li>
+<li>expose [<code><a href="../reference/detect_backend.html">detect_backend()</a></code>] to allow user the check which backend is used</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.6" id="dataverifyr-016">dataverifyr 0.1.6<a class="anchor" aria-label="anchor" href="#dataverifyr-016"></a></h2>
 <ul><li>allow multiline rules in yaml file</li>

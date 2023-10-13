@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">dataverifyr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.6.9002</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.6.9003</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -73,7 +73,12 @@ The expression can be given as a string as well.</p></dd>
 
 
 <dt>allow_na</dt>
-<dd><p>does the rule allow for NA values? default value is FALSE</p></dd>
+<dd><p>does the rule allow for NA values in the data? default value is FALSE.
+Note that when NAs are introduced in the expression, <code>allow_na</code> has no effect.
+Eg when the rule <code>as.numeric(vs) %in% c(0, 1)</code> finds the values of <code>vs</code> as
+<code>c("1", "A")</code>, the rule will throw a fail regardless of the value of <code>allow_na</code>
+as the NA is introduced in the expression and is not found in the original data.
+However, when the values of <code>vs</code> are <code>c("1", NA)</code>, <code>allow_na</code> will have an effect.</p></dd>
 
 
 <dt>negate</dt>
@@ -122,13 +127,13 @@ but are not used. Could be for example date, person, contact, comment, etc</p></
 <span class="r-out co"><span class="r-pr">#&gt;</span>   allow NA: TRUE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   negated:  FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   author: 'me'</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   date: '2023-10-10'</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   date: '2023-10-13'</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="check_data.html">check_data</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">r</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             name     expr allow_na negate tests pass fail warn error</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1: Rule for: mpg mpg &gt; 10    FALSE  FALSE    32   32    0           </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1: 0.000412941 secs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1: 0.0004911423 secs</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">rs</span> <span class="op">&lt;-</span> <span class="fu"><a href="ruleset.html">ruleset</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="fu">rule</span><span class="op">(</span><span class="va">mpg</span> <span class="op">&gt;</span> <span class="fl">10</span><span class="op">)</span>,</span></span>
@@ -146,9 +151,9 @@ but are not used. Could be for example date, person, contact, comment, etc</p></
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2:  Rule for: cyl            cyl %in% c(4, 6)    FALSE  FALSE    32   18   14</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3: Rule for: qsec qsec &gt;= 14.5 &amp; qsec &lt;= 22.9    FALSE  FALSE    32   32    0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    warn error              time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1:            0.0003507137 secs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2:            0.0013735294 secs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3:            0.0003037453 secs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1:            0.0005056858 secs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2:            0.0019054413 secs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3:            0.0004105568 secs</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
