@@ -19,7 +19,13 @@
     <loc>https://davzim.github.io/dataverifyr/news/index.html</loc>
   </url>
   <url>
+    <loc>https://davzim.github.io/dataverifyr/reference/bind_rules.html</loc>
+  </url>
+  <url>
     <loc>https://davzim.github.io/dataverifyr/reference/check_data.html</loc>
+  </url>
+  <url>
+    <loc>https://davzim.github.io/dataverifyr/reference/dataverifyr_plus.html</loc>
   </url>
   <url>
     <loc>https://davzim.github.io/dataverifyr/reference/detect_backend.html</loc>
