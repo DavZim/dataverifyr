@@ -7,7 +7,9 @@
 datavarifyr_plus(a, b)
 }
 \arguments{
-\item{a}{the second ruleset you wish to add}
+\item{a}{the first ruleset you wish to add}
+
+\item{b}{the second ruleset you wish to add}
 }
 \description{
 \code{+} allows you to add rules and rulesets into larger rulesets. This
