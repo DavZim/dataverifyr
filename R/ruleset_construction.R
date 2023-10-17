@@ -1,12 +1,11 @@
 #' Add Rules and Rulesets Together
 #'
-#' `+` allows you to add rules and rulesets into larger rulesets. This
+#' @description + allows you to add rules and rulesets into larger rulesets. This
 #' can be useful if you want to create a ruleset for a dataset out of checks
 #' for other datasets.
-#'
 #' @param a the first ruleset you wish to add
 #' @param b the second ruleset you wish to add
-#' @rdname ruleset_add
+#' @name dataverifyr_plus
 datavarifyr_plus <- function(a, b) {
   # This is the method to add *both* rules and rulesets together.
   # Has to be done this way AFAIK to comply with R's
@@ -32,11 +31,11 @@ datavarifyr_plus <- function(a, b) {
 }
 
 #' @export
-#' @rdname dataverifyr_add
+#' @rdname dataverifyr_plus
 "+.ruleset" <- datavarifyr_plus
 
 #' @export
-#' @rdname dataverifyr_add
+#' @rdname dataverifyr_plus
 "+.rule" <- datavarifyr_plus
 
 
