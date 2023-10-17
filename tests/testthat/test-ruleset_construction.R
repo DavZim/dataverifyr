@@ -41,6 +41,20 @@ test_that("rulesets can be added to rules", {
       )
 })
 
+test_that("duplicates are removed when adding rules and rulesets", {
+      rule_1 <- rule(mpg > 10)
+      rule_2 <- rule(hp > 10)
+      expect_equal(
+        length(ruleset(rule_1, rule_2) + ruleset(rule_1, rule_2)),
+        2
+      )
+
+      expect_equal(
+        length(rule_1 + rule_2 + ruleset(rule_1, rule_2) + ruleset(rule_1, rule_2)),
+        2
+      )
+})
+
 test_that("bind_rules works", {
       rule_1 <- rule(mpg > 10)
       rule_2 <- rule(hp > 10)

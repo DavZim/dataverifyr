@@ -21,6 +21,8 @@ datavarifyr_plus <- function(a, b) {
     out <- c(a, b)
   }
 
+  out <- out[!duplicated(out)]
+
   for (i in seq_along(out)) {
     out[[i]]["index"] <- i
   }
