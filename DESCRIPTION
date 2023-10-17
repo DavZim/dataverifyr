@@ -6,7 +6,12 @@ Authors@R: c(
       person(given = "David",
              family = "Zimmermann-Kollenda",
              role = c("aut","cre"),
-             email = "david_j_zimmermann@hotmail.com"))
+             email = "david_j_zimmermann@hotmail.com"),
+      person(given = "Beniamino",
+             family = "Green",
+             role = "ctb",
+             email = "beniamino.green@tutanota.com")
+      )
 Description: Allows you to define rules which can be used to verify a given
     dataset.
     The package acts as a thin wrapper around more powerful data packages such
@@ -15,9 +20,9 @@ License: MIT + file LICENSE
 URL: https://github.com/DavZim/dataverifyr,
     https://davzim.github.io/dataverifyr/
 BugReports: https://github.com/DavZim/dataverifyr/issues
-Imports: 
+Imports:
     yaml
-Suggests: 
+Suggests:
     arrow,
     data.table,
     DBI,
