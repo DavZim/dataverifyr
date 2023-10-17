@@ -5,7 +5,7 @@
 #' for other datasets.
 #'
 #' @param a the first ruleset you wish to add
-#' @param a the second ruleset you wish to add
+#' @param b the second ruleset you wish to add
 #' @rdname ruleset_add
 datavarifyr_plus <- function(a, b) {
   # This is the method to add *both* rules and rulesets together.
@@ -13,11 +13,11 @@ datavarifyr_plus <- function(a, b) {
   # [double dispatch](https://yutani.rbind.io/post/double-dispatch-of-s3-method/)
   # semantics.
 
-  if (class(a) == "rule" & class(b) == "rule") {
+  if (inherits(a, "rule")  & inherits(b, "rule")) {
     out <- list(a, b)
   } else {
-    if (class(a) == "rule") a <- list(a)
-    if (class(b) == "rule") b <- list(b)
+    if (inherits(a, "rule")) a <- list(a)
+    if (inherits(b,"rule")) b <- list(b)
     out <- c(a, b)
   }
 
