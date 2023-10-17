@@ -7,28 +7,26 @@
 #' @param a the first ruleset you wish to add
 #' @param a the second ruleset you wish to add
 #' @rdname ruleset_add
-datavarifyr_plus  <- function(a,b) {
-    # This is the method to add *both* rules and rulesets together.
-    # Has to be done this way AFAIK to comply with R's
-    # [double dispatch](https://yutani.rbind.io/post/double-dispatch-of-s3-method/)
-    # semantics.
+datavarifyr_plus <- function(a, b) {
+  # This is the method to add *both* rules and rulesets together.
+  # Has to be done this way AFAIK to comply with R's
+  # [double dispatch](https://yutani.rbind.io/post/double-dispatch-of-s3-method/)
+  # semantics.
 
-    if (class(a) == "ruleset" & class(b)=="ruleset") {
-        out <- c(a,b)
-    } else if (class(a) == "ruleset" & class(b) == "rule"){
-        out <- c(a,list(b))
-    } else if (class(a) == "rule" & class(b) == "ruleset"){
-        out <- c(list(a),b)
-    } else{
-        out <- list(a,b)
-    }
+  if (class(a) == "rule" & class(b) == "rule") {
+    out <- list(a, b)
+  } else {
+    if (class(a) == "rule") a <- list(a)
+    if (class(b) == "rule") b <- list(b)
+    out <- c(a, b)
+  }
 
-    for (i in seq_along(out)){
-        out[[i]]['index'] <- i
-    }
+  for (i in seq_along(out)) {
+    out[[i]]["index"] <- i
+  }
 
-    class(out) <- "ruleset"
-    return(out)
+  class(out) <- "ruleset"
+  return(out)
 }
 
 #' @export
@@ -49,6 +47,5 @@ datavarifyr_plus  <- function(a,b) {
 #'
 #' @return a ruleset which consolidates all the inputs
 bind_rules <- function(rule_ruleset_list) {
-    Reduce(`+`, rule_ruleset_list)
+  Reduce(`+`, rule_ruleset_list)
 }
-
