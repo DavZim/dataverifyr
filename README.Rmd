@@ -305,7 +305,7 @@ dbDisconnect(con, shutdown = TRUE)
 
 If this library is not what you are looking for, the following might be good alternatives to validate your data:
 
-- [`pointblank`](https://rich-iannone.github.io/pointblank/)
+- [`pointblank`](https://rstudio.github.io/pointblank/)
 - [`validate`](https://github.com/data-cleaning/validate)
 - [`data.validator`](https://github.com/Appsilon/data.validator)
 

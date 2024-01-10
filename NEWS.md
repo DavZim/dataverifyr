@@ -1,4 +1,8 @@
 
+# dataverifyr 0.1.8
+
+* fix broken URL Link to pointblank
+
 # dataverifyr 0.1.7
 
 * rename args `fail_on_X` to `stop_on_X`

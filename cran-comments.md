@@ -1,1 +1,1 @@
-Fixes some bugs and exposes an internal function for better usability
+Fix broken URL link
