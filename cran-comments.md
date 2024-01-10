@@ -1,1 +1,1 @@
-Fix bug where multiline rules would break.
+Fixes some bugs and exposes an internal function for better usability
