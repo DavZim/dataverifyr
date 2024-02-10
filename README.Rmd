@@ -32,9 +32,10 @@ That way, you can concentrate on writing the rules and making sure that your dat
 
 The package is lightweight as all the heavy dependencies are Suggests-only, that means if you want to use `data.table` for the task, you don't need to install the other packages (`arrow`, `DBI`, etc) unless you explicitly tell R to install all suggested packages as well when installing the package.
 
-The backend for your analysis is automatically chosen based on the type of input dataset as well as the available packages.
+The backend for your analysis is automatically chosen based on the type of input dataset as well as the available packages (see also `?detect_backend(data)`).
 By using the underlying technologies and handing over all evaluation of code to the backend, this package can deal with all sizes of data the backends can deal with.
 
+The package also has a helper function to describe a dataset, see `?describe()`.
 
 ## Installation
 
@@ -63,6 +64,9 @@ At the moment rules work in a window/vectorized approach only, that means that a
 ```{r example, message=FALSE}
 library(dataverifyr)
 
+# create a dataset
+data <- mtcars
+
 # define a rule set within our R code; alternatively in a yaml file
 rules <- ruleset(
   rule(mpg > 10 & mpg < 30), # mpg goes up to 34
@@ -73,8 +77,11 @@ rules <- ruleset(
 # print the rules
 rules
 
+# describe the dataset
+describe(data)
+
 # check if the data matches our rules
-res <- check_data(mtcars, rules)
+res <- check_data(data, rules)
 res
 ```
 
@@ -206,9 +213,8 @@ if (!file.exists(file)) download.file(url, file, method = "curl")
 file.size(file) / 1e6 # in MB
 
 # quick check of the filesize
-d <- read_parquet(file)
-dim(d)
-names(d)
+d <- open_dataset(file)
+describe(d)
 
 # write the dataset to disk
 write_dataset(d, "nyc-taxi-data")
