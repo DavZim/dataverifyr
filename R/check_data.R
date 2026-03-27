@@ -103,15 +103,15 @@ detect_backend <- function(x) {
 
   } else if ("tbl_sql" %in% cc) {
 
-    if (!has_pkg("DBI"))
-      stop("The DBI package needs to be installed in order to test a tbl_sql.")
+    if (!has_pkg("DBI") || !has_pkg("dbplyr"))
+      stop("The DBI and dbplyr packages need to be installed in order to test a tbl_sql.")
 
     backend <- "collectibles"
 
   } else if ("ArrowObject" %in% cc) {
 
-    if (!has_pkg("arrow"))
-      stop("The arrow package needs to be installed in order to test an ArrowObject.")
+    if (!has_pkg("arrow") || !has_pkg("dbplyr"))
+      stop("The arrow and dbplyr packages need to be installed in order to test an ArrowObject.")
 
     backend <- "collectibles"
 

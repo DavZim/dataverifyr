@@ -30,10 +30,13 @@ unless you explicitly tell R to install all suggested packages as well
 when installing the package.
 
 The backend for your analysis is automatically chosen based on the type
-of input dataset as well as the available packages. By using the
-underlying technologies and handing over all evaluation of code to the
-backend, this package can deal with all sizes of data the backends can
-deal with.
+of input dataset as well as the available packages (see also
+`?detect_backend(data)`). By using the underlying technologies and
+handing over all evaluation of code to the backend, this package can
+deal with all sizes of data the backends can deal with.
+
+The package also has a helper function to describe a dataset, see
+`?describe()`.
 
 ## Installation
 
@@ -65,6 +68,9 @@ a rule like this will work `mpg > 10 * wt`, whereas a rule like this
 ``` r
 library(dataverifyr)
 
+# create a dataset
+data <- mtcars
+
 # define a rule set within our R code; alternatively in a yaml file
 rules <- ruleset(
   rule(mpg > 10 & mpg < 30), # mpg goes up to 34
@@ -79,13 +85,40 @@ rules
 #>   [2] 'Rule for: cyl' matching `cyl %in% c(4, 8)` (allow_na: FALSE)
 #>   [3] 'Rule for: vs' matching `vs %in% c(0, 1)` (allow_na: TRUE)
 
+# describe the dataset
+describe(data)
+#>      var    type  n n_distinct n_na                  most_frequent    min       mean  median
+#>  1:  mpg numeric 32         25    0     21 (2), 22.8 (2), 21.4 (2) 10.400  20.090625  19.200
+#>  2:  cyl numeric 32          3    0          8 (14), 4 (11), 6 (7)  4.000   6.187500   6.000
+#>  3: disp numeric 32         27    0    275.8 (3), 160 (2), 360 (2) 71.100 230.721875 196.300
+#>  4:   hp numeric 32         22    0      110 (3), 175 (3), 180 (3) 52.000 146.687500 123.000
+#>  5: drat numeric 32         22    0    3.92 (3), 3.07 (3), 3.9 (2)  2.760   3.596563   3.695
+#>  6:   wt numeric 32         29    0   3.44 (3), 3.57 (2), 2.62 (1)  1.513   3.217250   3.325
+#>  7: qsec numeric 32         30    0 17.02 (2), 18.9 (2), 16.46 (1) 14.500  17.848750  17.710
+#>  8:   vs numeric 32          2    0        0 (18), 1 (14), NA (NA)  0.000   0.437500   0.000
+#>  9:   am numeric 32          2    0        0 (19), 1 (13), NA (NA)  0.000   0.406250   0.000
+#> 10: gear numeric 32          3    0          3 (15), 4 (12), 5 (5)  3.000   3.687500   4.000
+#> 11: carb numeric 32          6    0          4 (10), 2 (10), 1 (7)  1.000   2.812500   2.000
+#>         max          sd
+#>  1:  33.900   6.0269481
+#>  2:   8.000   1.7859216
+#>  3: 472.000 123.9386938
+#>  4: 335.000  68.5628685
+#>  5:   4.930   0.5346787
+#>  6:   5.424   0.9784574
+#>  7:  22.900   1.7869432
+#>  8:   1.000   0.5040161
+#>  9:   1.000   0.4989909
+#> 10:   5.000   0.7378041
+#> 11:   8.000   1.6152000
+
 # check if the data matches our rules
-res <- check_data(mtcars, rules)
+res <- check_data(data, rules)
 res
 #>             name                expr allow_na negate tests pass fail warn error              time
-#> 1: Rule for: mpg mpg > 10 & mpg < 30    FALSE  FALSE    32   28    4            0.0055301189 secs
-#> 2: Rule for: cyl    cyl %in% c(4, 8)    FALSE  FALSE    32   25    7            0.0034749508 secs
-#> 3:  Rule for: vs     vs %in% c(0, 1)     TRUE  FALSE    32   32    0            0.0004439354 secs
+#> 1: Rule for: mpg mpg > 10 & mpg < 30    FALSE  FALSE    32   28    4            0.0010831356 secs
+#> 2: Rule for: cyl    cyl %in% c(4, 8)    FALSE  FALSE    32   25    7            0.0033519268 secs
+#> 3:  Rule for: vs     vs %in% c(0, 1)     TRUE  FALSE    32   32    0            0.0005369186 secs
 ```
 
 As we can see, our dataset `mtcars` does not conform to all of our
@@ -482,15 +515,31 @@ file.size(file) / 1e6 # in MB
 #> [1] 123.6685
 
 # quick check of the filesize
-d <- read_parquet(file)
-dim(d)
-#> [1] 8760687      19
-names(d)
-#>  [1] "VendorID"              "tpep_pickup_datetime"  "tpep_dropoff_datetime" "passenger_count"      
-#>  [5] "trip_distance"         "RatecodeID"            "store_and_fwd_flag"    "PULocationID"         
-#>  [9] "DOLocationID"          "payment_type"          "fare_amount"           "extra"                
-#> [13] "mta_tax"               "tip_amount"            "tolls_amount"          "improvement_surcharge"
-#> [17] "total_amount"          "congestion_surcharge"  "airport_fee"
+d <- open_dataset(file)
+describe(d)
+#> # A tibble: 19 × 10
+#>    var                  type  n_dis…¹    n_na most_…²     min      mean   median       max        sd
+#>    <chr>                <chr>   <int>   <int> <chr>     <dbl>     <dbl>    <dbl>     <dbl>     <dbl>
+#>  1 VendorID             inte…       2       0 2 (491…    1      1.5610    2           2     0.49508 
+#>  2 tpep_pickup_datetime POSI… 2311532       0 2018-0…   NA     NA        NA          NA    NA       
+#>  3 tpep_dropoff_dateti… POSI… 2315089       0 2018-0…   NA     NA        NA          NA    NA       
+#>  4 passenger_count      inte…      10       0 1 (624…    0      1.6068    1           9     1.2330  
+#>  5 trip_distance        nume…    4397       0 0.8 (2…    0      2.8040    1.5503 189484.    3.2532  
+#>  6 RatecodeID           inte…       7       0 1 (853…    1      1.0395    1          99     0.31301 
+#>  7 store_and_fwd_flag   char…       2       0 N (872…    1      1         1           1     0       
+#>  8 PULocationID         inte…     259       0 237 (3…    1    164.46    161.86      265    66.520   
+#>  9 DOLocationID         inte…     261       0 236 (3…    1    162.73    162.10      265    75.411   
+#> 10 payment_type         inte…       4       0 1 (610…    1      1.3106    1           4     0.45814 
+#> 11 fare_amount          nume…    1714       0 6 (473… -450     12.244     8.8357   8016     9.9255  
+#> 12 extra                nume…      42       0 0 (474…  -44.69   0.32469   0          60     0.068786
+#> 13 mta_tax              nume…      15       0 0.5 (8…   -0.5    0.49751   0.5        45.49  0.043389
+#> 14 tip_amount           nume…    3397       0 0 (289…  -88.8    1.8188    1.3968    441.71  2.2823  
+#> 15 tolls_amount         nume…     967       0 0 (833…  -15      0.30262   0         950.7   1.1501  
+#> 16 improvement_surchar… nume…       4       0 0.3 (8…   -0.3    0.29963   0.3         1     0.018442
+#> 17 total_amount         nume…   11514       0 7.3 (2… -450.3   15.491    11.321    8016.8  11.984   
+#> 18 congestion_surcharge nume…       2 8760675 NA (87…    2.5    2.5       2.5         2.5  NA       
+#> 19 airport_fee          nume…       2 8760675 NA (87…    0      0         0           0    NA       
+#> # … with abbreviated variable names ¹​n_distinct, ²​most_frequent
 
 # write the dataset to disk
 write_dataset(d, "nyc-taxi-data")
@@ -551,9 +600,9 @@ res
 #> # A tibble: 3 × 10
 #>   name                      expr              allow…¹ negate   tests    pass  fail warn  error time 
 #>   <chr>                     <chr>             <lgl>   <lgl>    <int>   <int> <int> <chr> <chr> <drt>
-#> 1 Rule for: passenger_count passenger_count … FALSE   FALSE  8760687 8760687     0 ""    ""    0.56…
-#> 2 Rule for: trip_distance   trip_distance >=… FALSE   FALSE  8760687 8760686     1 ""    ""    0.43…
-#> 3 Rule for: payment_type    payment_type %in… FALSE   FALSE  8760687 8760687     0 ""    ""    0.42…
+#> 1 Rule for: passenger_count passenger_count … FALSE   FALSE  8760687 8760687     0 ""    ""    0.42…
+#> 2 Rule for: trip_distance   trip_distance >=… FALSE   FALSE  8760687 8760686     1 ""    ""    0.51…
+#> 3 Rule for: payment_type    payment_type %in… FALSE   FALSE  8760687 8760687     0 ""    ""    0.45…
 #> # … with abbreviated variable name ¹​allow_na
 
 plot_res(res)
@@ -611,9 +660,9 @@ res
 #> # A tibble: 3 × 10
 #>   name          expr                allow_na negate tests  pass  fail warn  error time          
 #>   <chr>         <chr>               <lgl>    <lgl>  <dbl> <dbl> <dbl> <chr> <chr> <drtn>        
-#> 1 Rule for: mpg mpg > 10 & mpg < 30 FALSE    FALSE     32    28     4 ""    ""    1.232728 secs
-#> 2 Rule for: cyl cyl %in% c(4, 8)    FALSE    FALSE     32    25     7 ""    ""    0.2015200 secs
-#> 3 Rule for: vs  vs %in% c(0, 1)     TRUE     FALSE     32    32     0 ""    ""    0.1898661 secs
+#> 1 Rule for: mpg mpg > 10 & mpg < 30 FALSE    FALSE     32    28     4 ""    ""    4.4900761 secs
+#> 2 Rule for: cyl cyl %in% c(4, 8)    FALSE    FALSE     32    25     7 ""    ""    0.1926301 secs
+#> 3 Rule for: vs  vs %in% c(0, 1)     TRUE     FALSE     32    32     0 ""    ""    0.2003391 secs
 
 filter_fails(res, tbl, per_rule = TRUE)
 #> $`mpg > 10 & mpg < 30`
