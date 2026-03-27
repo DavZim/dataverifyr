@@ -17,8 +17,8 @@ data <- data.frame(
   # posixct
   h = as.POSIXct(sample.int(365*60*60*24, 10, replace = TRUE), origin = "2020-01-01")
 )
-for (n in names(data))
-  data[sample.int(nrow(data), 3), n] <- NA
+
+for (n in names(data)) data[sample.int(nrow(data), 3), n] <- NA
 
 # the expected values
 exp <- data.frame(

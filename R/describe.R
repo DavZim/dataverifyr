@@ -47,7 +47,6 @@ describe <- function(x) {
   }
 }
 
-
 # internal function to see which values should use the min/max etc part
 is_numeric <- function(v) {
   any(class(v) %in% c("integer", "numeric", "POSIXt"))
@@ -82,9 +81,9 @@ describe_base_r <- function(x, max_n = 3) {
 
         min = as.numeric(min(if (is_num) v else nz, na.rm = TRUE)),
         mean = as.numeric(mean(if (is_num) v else nz, na.rm = TRUE)),
-        median = as.numeric(median(if (is_num) v else nz, na.rm = TRUE)),
+        median = as.numeric(stats::median(if (is_num) v else nz, na.rm = TRUE)),
         max = as.numeric(max(if (is_num) v else nz, na.rm = TRUE)),
-        sd = as.numeric(sd(if (is_num) v else nz, na.rm = TRUE))
+        sd = as.numeric(stats::sd(if (is_num) v else nz, na.rm = TRUE))
       )
     }
   )
@@ -116,9 +115,9 @@ describe_dplyr <- function(x, max_n = 3) {
           most_frequent = mf,
           min = as.numeric(min(if (is_num) .data[[v]] else nz, na.rm = TRUE)),
           mean = as.numeric(mean(if (is_num) .data[[v]] else nz, na.rm = TRUE)),
-          median = as.numeric(median(if (is_num) .data[[v]] else nz, na.rm = TRUE)),
+          median = as.numeric(stats::median(if (is_num) .data[[v]] else nz, na.rm = TRUE)),
           max = as.numeric(max(if (is_num) .data[[v]] else nz, na.rm = TRUE)),
-          sd = as.numeric(sd(if (is_num) .data[[v]] else nz, na.rm = TRUE))
+          sd = as.numeric(stats::sd(if (is_num) .data[[v]] else nz, na.rm = TRUE))
         )
     }
   )
@@ -149,9 +148,9 @@ describe_data.table <- function(x, max_n = 3) {
 
         min = as.numeric(min(if (is_num) get(v) else nz, na.rm = TRUE)),
         mean = as.numeric(mean(if (is_num) get(v) else nz, na.rm = TRUE)),
-        median = as.numeric(median(if (is_num) get(v) else nz, na.rm = TRUE)),
+        median = as.numeric(stats::median(if (is_num) get(v) else nz, na.rm = TRUE)),
         max = as.numeric(max(if (is_num) get(v) else nz, na.rm = TRUE)),
-        sd = as.numeric(sd(if (is_num) get(v) else nz, na.rm = TRUE))
+        sd = as.numeric(stats::sd(if (is_num) get(v) else nz, na.rm = TRUE))
       )]
     }
   )
@@ -196,9 +195,9 @@ describe_sql <- function(x, max_n = 3) {
         dplyr::summarise(
           min = min(x, na.rm = TRUE),
           mean = mean(x, na.rm = TRUE),
-          median = median(x, na.rm = TRUE),
+          median = stats::median(x, na.rm = TRUE),
           max = max(x, na.rm = TRUE),
-          sd = sd(x, na.rm = TRUE)
+          sd = stats::sd(x, na.rm = TRUE)
         ) |>
         dplyr::collect(),
       silent = TRUE
@@ -255,9 +254,9 @@ describe_arrow <- function(x, max_n = 3) {
           dplyr::summarise(
             min = min(x, na.rm = TRUE),
             mean = mean(x, na.rm = TRUE),
-            median = median(x, na.rm = TRUE),
+            median = stats::median(x, na.rm = TRUE),
             max = max(x, na.rm = TRUE),
-            sd = sd(x, na.rm = TRUE)
+            sd = stats::sd(x, na.rm = TRUE)
           ) |>
           dplyr::collect(),
         silent = TRUE)

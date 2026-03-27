@@ -13,6 +13,7 @@ rules <- ruleset(
   rule(does_not_exist %in% c("a", "b", "c"), "r5") # creates a stop
 )
 
+
 test_that("base-r check_ works", {
   res <- check_(data, rules, backend = "base-r")
 

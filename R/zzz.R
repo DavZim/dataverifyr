@@ -4,4 +4,4 @@
 NULL
 
 .datatable.aware <- TRUE
-globalVariables(c("n"))
+globalVariables(c("n", ".", ".data", ".N", ":="))
