@@ -68,3 +68,11 @@ test_that("detect_backend works as expected", {
   pkgs <- c("DBI", "dbplyr")
   expect_equal(detect_backend(data), "collectibles")
 })
+
+test_that("detect_backend falls back to dplyr for data.frame when data.table is unavailable", {
+  data <- mtcars
+  pkgs <- "dplyr"
+  local_mocked_bindings(has_pkg = function(p) p %in% pkgs, .package = "dataverifyr")
+
+  expect_equal(detect_backend(data), "dplyr")
+})
