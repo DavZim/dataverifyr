@@ -1,12 +1,17 @@
 #' Checks if a dataset confirms to a given set of rules
 #'
 #' @param x a dataset, either a [`data.frame`], [`dplyr::tibble`], [`data.table::data.table`],
-#' [`arrow::arrow_table`], [`arrow::open_dataset`], or [`dplyr::tbl`] (SQL connection)
+#' [`arrow::arrow_table`], [`arrow::open_dataset`], or [`dplyr::tbl`] (SQL connection).
+#' Can also be a named list of datasets when using reference rules.
 #' @param rules a list of [`rule`]s
 #' @param xname optional, a name for the x variable (only used for errors)
 #' @param stop_on_fail when any of the rules fail, throw an error with stop
 #' @param stop_on_warn when a warning is found in the code execution, throw an error with stop
 #' @param stop_on_error when an error is found in the code execution, throw an error with stop
+#' @param stop_on_schema_fail when any schema checks fail, throw an error with stop
+#' @param extra_columns how to treat columns in `x` that are not declared in
+#' optional `data_columns` attached to a ruleset. One of `"ignore"` (default),
+#' `"warn"`, or `"fail"`.
 #'
 #' @return a data.frame-like object with one row for each rule and its results
 #' @export
@@ -22,14 +27,58 @@
 #' rs
 #'
 #' check_data(mtcars, rs)
+#'
+#' # schema + relation checks in one output
+#' orders <- data.frame(order_id = 1:3, customer_id = c(10, 99, NA), amount = c(10, -5, 20))
+#' customers <- data.frame(customer_id = c(10, 11))
+#'
+#' rs2 <- ruleset(
+#'   rule(amount >= 0, name = "amount non-negative"),
+#'   reference_rule(
+#'     local_col = "customer_id",
+#'     ref_dataset = "customers",
+#'     ref_col = "customer_id",
+#'     allow_na = TRUE
+#'   ),
+#'   data_columns = list(
+#'     data_column("order_id", type = "int", optional = FALSE),
+#'     data_column("customer_id", type = "double", optional = FALSE),
+#'     data_column("amount", type = "double", optional = FALSE)
+#'   ),
+#'   data_name = "orders"
+#' )
+#'
+#' check_data(list(orders = orders, customers = customers), rs2)
 check_data <- function(x, rules, xname = deparse(substitute(x)),
                        stop_on_fail = FALSE, stop_on_warn = FALSE,
-                       stop_on_error = FALSE) {
+                       stop_on_error = FALSE, stop_on_schema_fail = FALSE,
+                       extra_columns = c("ignore", "warn", "fail")) {
 
+  extra_columns <- match.arg(extra_columns)
   # if rules is a yaml file, read it in
   if (length(rules) == 1 && is.character(rules)) rules <- read_rules(rules)
   # treat single rule if needed
   if (hasName(rules, "expr")) rules <- ruleset(rules)
+
+  datasets <- NULL
+  if (is.list(x) && !inherits(x, "data.frame")) {
+    datasets <- x
+    data_name <- attr(rules, "data_name", exact = TRUE)
+    if (is.null(data_name)) {
+      data_name <- names(datasets)[[1]]
+    }
+    if (is.null(data_name) || is.na(data_name) || !nzchar(data_name)) {
+      stop("When `x` is a list, datasets must be named or `ruleset(..., data_name=...)` must be set.")
+    }
+    if (!data_name %in% names(datasets)) {
+      stop(sprintf("The primary dataset '%s' was not found in `x`.", data_name))
+    }
+    x <- datasets[[data_name]]
+  }
+
+  schema_res <- validate_rules_against_schema(
+    x, rules, extra_columns = extra_columns
+  )
 
   backend <- detect_backend(x)
 
@@ -42,16 +91,68 @@ check_data <- function(x, rules, xname = deparse(substitute(x)),
     }
   }
 
-  res <- check_(x, rules, backend = backend)
+  expr_rules <- Filter(function(r) !inherits(r, "reference_rule"), rules)
+  ref_rules <- Filter(function(r) inherits(r, "reference_rule"), rules)
+
+  if (length(expr_rules)) {
+    res <- check_(x, expr_rules, backend = backend)
+  } else {
+    res <- data.frame(
+      check_type = character(),
+      name = character(),
+      expr = character(),
+      allow_na = logical(),
+      negate = logical(),
+      tests = integer(),
+      pass = integer(),
+      fail = integer(),
+      warn = character(),
+      error = character(),
+      time = as.difftime(numeric(), units = "secs"),
+      stringsAsFactors = FALSE
+    )
+  }
+
+  if (length(ref_rules)) {
+    if (is.null(datasets)) {
+      stop("Reference rules require `x` to be a named list of datasets.")
+    }
+    ref_res <- do.call(rbind, lapply(ref_rules, function(r) {
+      check_reference_rule(x, r, datasets)
+    }))
+
+    res <- switch(
+      backend,
+      "base-r" = rbind(res, ref_res),
+      dplyr = dplyr::bind_rows(res, ref_res),
+      data.table = data.table::rbindlist(list(res, ref_res), fill = TRUE),
+      collectibles = dplyr::bind_rows(res, ref_res)
+    )
+  }
+
+  if (nrow(schema_res)) {
+    res <- switch(
+      backend,
+      "base-r" = rbind(schema_res, res),
+      dplyr = dplyr::bind_rows(schema_res, res),
+      data.table = data.table::rbindlist(list(schema_res, res), fill = TRUE),
+      collectibles = dplyr::bind_rows(schema_res, res)
+    )
+  }
 
   # stops on fail, warning and/or error
-  fail <- stop_on_fail && any(res$fail != 0)
+  is_schema <- if ("check_type" %in% names(res)) res$check_type == "schema" else rep(FALSE, nrow(res))
+  is_rule <- !is_schema
+
+  fail <- stop_on_fail && any(res$fail[is_rule] != 0)
+  schema_fail <- stop_on_schema_fail && any(res$fail[is_schema] != 0)
   warn <- stop_on_warn && any(res$warn != "")
   err <- stop_on_error && any(res$error != "")
 
-  if (fail || warn || err) {
+  if (fail || schema_fail || warn || err) {
     tt <- paste(c(
-      if (fail) sprintf("%s rule fails", sum(res$fail != 0)),
+      if (fail) sprintf("%s rule fails", sum(res$fail[is_rule] != 0)),
+      if (schema_fail) sprintf("%s schema fails", sum(res$fail[is_schema] != 0)),
       if (warn) sprintf("%s warnings", sum(res$warn != "")),
       if (err) sprintf("%s errors", sum(res$error != ""))
     ), collapse = ", ")
@@ -198,6 +299,7 @@ check_ <- function(x, rules, backend = c("base-r", "dplyr", "data.table", "colle
     }
     tt <- difftime(Sys.time(), t0, units = "secs")
     to_df(
+      check_type = "row_rule",
       name = r$name,
       expr = r$expr,
       allow_na = r$allow_na,

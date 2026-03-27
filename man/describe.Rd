@@ -4,7 +4,7 @@
 \alias{describe}
 \title{Describes a dataset}
 \usage{
-describe(x, skip_ones = TRUE, digits = 4)
+describe(x, skip_ones = TRUE, digits = 4, top_n = 3, fast = FALSE)
 }
 \arguments{
 \item{x}{a dataset, either a \code{\link{data.frame}}, \code{\link[dplyr:reexports]{dplyr::tibble}}, \code{\link[data.table:data.table]{data.table::data.table}},
@@ -13,6 +13,11 @@ describe(x, skip_ones = TRUE, digits = 4)
 \item{skip_ones}{logical, whether values that occur exactly once should be omitted from \code{most_frequent}}
 
 \item{digits}{integer, number of digits to round numeric values in \code{most_frequent}}
+
+\item{top_n}{integer, number of most frequent values to include in \code{most_frequent}}
+
+\item{fast}{logical, when \code{TRUE} skip expensive fields (\code{n_distinct}, \code{median})
+by returning \code{NA} for them}
 }
 \value{
 a \code{data.frame}, \code{dplyr::tibble}, or \code{data.table::data.table} containing

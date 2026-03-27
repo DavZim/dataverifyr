@@ -19,6 +19,7 @@ test_that("base-r check_ works", {
 
   expect_equal(class(res), "data.frame")
   exp <- data.frame(
+    check_type = rep("row_rule", 5),
     name = c("r1", "r2", "r3", "r4", "r5"),
     expr = vapply(rules, function(r) r$expr, character(1)),
     allow_na = c(FALSE, FALSE, TRUE, FALSE, FALSE),
@@ -41,6 +42,7 @@ test_that("dplyr check_ works", {
 
   expect_equal(class(res), c("tbl_df", "tbl", "data.frame"))
   exp <- dplyr::tibble(
+    check_type = rep("row_rule", 5),
     name = c("r1", "r2", "r3", "r4", "r5"),
     expr = vapply(rules, function(r) r$expr, character(1)),
     allow_na = c(FALSE, FALSE, TRUE, FALSE, FALSE),
@@ -63,6 +65,7 @@ test_that("data.table check_ works", {
 
   expect_equal(class(res), c("data.table", "data.frame"))
   exp <- data.table::data.table(
+    check_type = rep("row_rule", 5),
     name = c("r1", "r2", "r3", "r4", "r5"),
     expr = vapply(rules, function(r) r$expr, character(1)),
     allow_na = c(FALSE, FALSE, TRUE, FALSE, FALSE),
@@ -90,6 +93,7 @@ test_that("arrow::arrow_table check_ works", {
 
   expect_equal(class(res), c("tbl_df", "tbl", "data.frame"))
   exp <- dplyr::tibble(
+    check_type = rep("row_rule", 5),
     name = c("r1", "r2", "r3", "r4", "r5"),
     expr = vapply(rules, function(r) r$expr, character(1)),
     allow_na = c(FALSE, FALSE, TRUE, FALSE, FALSE),
@@ -116,6 +120,7 @@ test_that("arrow::open_dataset check_ works", {
 
   expect_equal(class(res), c("tbl_df", "tbl", "data.frame"))
   exp <- dplyr::tibble(
+    check_type = rep("row_rule", 5),
     name = c("r1", "r2", "r3", "r4", "r5"),
     expr = vapply(rules, function(r) r$expr, character(1)),
     allow_na = c(FALSE, FALSE, TRUE, FALSE, FALSE),
@@ -146,6 +151,7 @@ test_that("sqlite (RSQLite) check_ works", {
 
   expect_equal(class(res), c("tbl_df", "tbl", "data.frame"))
   exp <- dplyr::tibble(
+    check_type = rep("row_rule", 5),
     name = c("r1", "r2", "r3", "r4", "r5"),
     expr = vapply(rules, function(r) r$expr, character(1)),
     allow_na = c(FALSE, FALSE, TRUE, FALSE, FALSE),
@@ -180,6 +186,7 @@ test_that("duckdb check_ works", {
 
   expect_equal(class(res), c("tbl_df", "tbl", "data.frame"))
   exp <- dplyr::tibble(
+    check_type = rep("row_rule", 5),
     name = c("r1", "r2", "r3", "r4", "r5"),
     expr = vapply(rules, function(r) r$expr, character(1)),
     allow_na = c(FALSE, FALSE, TRUE, FALSE, FALSE),

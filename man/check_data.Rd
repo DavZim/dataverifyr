@@ -10,12 +10,15 @@ check_data(
   xname = deparse(substitute(x)),
   stop_on_fail = FALSE,
   stop_on_warn = FALSE,
-  stop_on_error = FALSE
+  stop_on_error = FALSE,
+  stop_on_schema_fail = FALSE,
+  extra_columns = c("ignore", "warn", "fail")
 )
 }
 \arguments{
 \item{x}{a dataset, either a \code{\link{data.frame}}, \code{\link[dplyr:reexports]{dplyr::tibble}}, \code{\link[data.table:data.table]{data.table::data.table}},
-\code{\link[arrow:table]{arrow::arrow_table}}, \code{\link[arrow:open_dataset]{arrow::open_dataset}}, or \code{\link[dplyr:tbl]{dplyr::tbl}} (SQL connection)}
+\code{\link[arrow:table]{arrow::arrow_table}}, \code{\link[arrow:open_dataset]{arrow::open_dataset}}, or \code{\link[dplyr:tbl]{dplyr::tbl}} (SQL connection).
+Can also be a named list of datasets when using reference rules.}
 
 \item{rules}{a list of \code{\link{rule}}s}
 
@@ -26,6 +29,12 @@ check_data(
 \item{stop_on_warn}{when a warning is found in the code execution, throw an error with stop}
 
 \item{stop_on_error}{when an error is found in the code execution, throw an error with stop}
+
+\item{stop_on_schema_fail}{when any schema checks fail, throw an error with stop}
+
+\item{extra_columns}{how to treat columns in \code{x} that are not declared in
+optional \code{data_columns} attached to a ruleset. One of \code{"ignore"} (default),
+\code{"warn"}, or \code{"fail"}.}
 }
 \value{
 a data.frame-like object with one row for each rule and its results
@@ -42,6 +51,28 @@ rs <- ruleset(
 rs
 
 check_data(mtcars, rs)
+
+# schema + relation checks in one output
+orders <- data.frame(order_id = 1:3, customer_id = c(10, 99, NA), amount = c(10, -5, 20))
+customers <- data.frame(customer_id = c(10, 11))
+
+rs2 <- ruleset(
+  rule(amount >= 0, name = "amount non-negative"),
+  reference_rule(
+    local_col = "customer_id",
+    ref_dataset = "customers",
+    ref_col = "customer_id",
+    allow_na = TRUE
+  ),
+  data_columns = list(
+    data_column("order_id", type = "int", optional = FALSE),
+    data_column("customer_id", type = "double", optional = FALSE),
+    data_column("amount", type = "double", optional = FALSE)
+  ),
+  data_name = "orders"
+)
+
+check_data(list(orders = orders, customers = customers), rs2)
 }
 \seealso{
 \code{\link[=detect_backend]{detect_backend()}}

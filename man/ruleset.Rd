@@ -5,12 +5,20 @@
 \alias{print.ruleset}
 \title{Creates a set of rules}
 \usage{
-ruleset(...)
+ruleset(..., data_columns = NULL, meta = NULL, data_name = NULL)
 
 \method{print}{ruleset}(x, n = 3, ...)
 }
 \arguments{
 \item{...}{a list of rules}
+
+\item{data_columns}{optional list of schema declarations created with
+internal \code{data_column()} helper.}
+
+\item{meta}{optional metadata list for v1 YAML workflows.}
+
+\item{data_name}{optional name of the primary dataset when \code{check_data()}
+receives a named list of datasets.}
 
 \item{x}{a ruleset to print}
 
@@ -38,4 +46,26 @@ rs <- ruleset(
   rule(is.numeric(disp))
 )
 rs
+
+# combine row, schema, and relational checks
+orders <- data.frame(order_id = 1:4, customer_id = c(10, 11, 99, NA), amount = c(10, 20, -5, 30))
+customers <- data.frame(customer_id = c(10, 11, 12))
+
+rs2 <- ruleset(
+  rule(amount >= 0, name = "amount must be non-negative"),
+  reference_rule(
+    local_col = "customer_id",
+    ref_dataset = "customers",
+    ref_col = "customer_id",
+    allow_na = TRUE
+  ),
+  data_columns = list(
+    data_column("order_id", type = "int", optional = FALSE),
+    data_column("customer_id", type = "int", optional = FALSE),
+    data_column("amount", type = "double", optional = FALSE)
+  ),
+  data_name = "orders"
+)
+
+check_data(list(orders = orders, customers = customers), rs2)
 }

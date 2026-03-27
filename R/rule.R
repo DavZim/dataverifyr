@@ -83,6 +83,11 @@ get_symbols <- function(expr) {
 #' Creates a set of rules
 #'
 #' @param ... a list of rules
+#' @param data_columns optional list of schema declarations created with
+#' internal `data_column()` helper.
+#' @param meta optional metadata list for v1 YAML workflows.
+#' @param data_name optional name of the primary dataset when `check_data()`
+#' receives a named list of datasets.
 #'
 #' @return the list of rules as a ruleset
 #' @export
@@ -98,13 +103,41 @@ get_symbols <- function(expr) {
 #'   rule(is.numeric(disp))
 #' )
 #' rs
-ruleset <- function(...) {
+#'
+#' # combine row, schema, and relational checks
+#' orders <- data.frame(order_id = 1:4, customer_id = c(10, 11, 99, NA), amount = c(10, 20, -5, 30))
+#' customers <- data.frame(customer_id = c(10, 11, 12))
+#'
+#' rs2 <- ruleset(
+#'   rule(amount >= 0, name = "amount must be non-negative"),
+#'   reference_rule(
+#'     local_col = "customer_id",
+#'     ref_dataset = "customers",
+#'     ref_col = "customer_id",
+#'     allow_na = TRUE
+#'   ),
+#'   data_columns = list(
+#'     data_column("order_id", type = "int", optional = FALSE),
+#'     data_column("customer_id", type = "int", optional = FALSE),
+#'     data_column("amount", type = "double", optional = FALSE)
+#'   ),
+#'   data_name = "orders"
+#' )
+#'
+#' check_data(list(orders = orders, customers = customers), rs2)
+ruleset <- function(..., data_columns = NULL, meta = NULL, data_name = NULL) {
   ll <- list(...)
   ll <- lapply(seq_along(ll), function(i) {
     l <- ll[[i]]
     if (!"index" %in% names(l)) l$index <- i
     l
   })
+
+  validate_data_columns(data_columns)
+  if (!is.null(data_columns)) attr(ll, "data_columns") <- data_columns
+  if (!is.null(meta)) attr(ll, "meta") <- meta
+  if (!is.null(data_name)) attr(ll, "data_name") <- data_name
+
   class(ll) <- "ruleset"
   ll
 }

@@ -111,6 +111,35 @@ test_that("describe duckdb", {
 })
 
 
+test_that("describe duckdb supports skip_ones/digits without full-vector semantics changes", {
+  skip_if_not(
+    requireNamespace("DBI", quietly = TRUE) &&
+      requireNamespace("dplyr", quietly = TRUE) &&
+      requireNamespace("dbplyr", quietly = TRUE) &&
+      requireNamespace("duckdb", quietly = TRUE),
+    "DBI, dplyr, dbplyr, and duckdb must be installed to test the functionality"
+  )
+
+  x <- data.frame(
+    num = c(1.234567, 1.234567, 9.876543, 9.876543, NA_real_),
+    chr = c("a", "a", "b", "c", NA_character_)
+  )
+
+  con <- DBI::dbConnect(duckdb::duckdb())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  DBI::dbWriteTable(con, "data_mf", x, overwrite = TRUE)
+  tbl <- dplyr::tbl(con, "data_mf")
+
+  d <- describe(tbl, skip_ones = FALSE, digits = 2)
+  expect_equal(normalize_mf(d$most_frequent[d$var == "num"]), "1.23 (2), 9.88 (2), NA (1)")
+  expect_match(d$most_frequent[d$var == "chr"], "^a \\(2\\)")
+
+  d2 <- describe(tbl, skip_ones = TRUE, digits = 2)
+  expect_equal(normalize_mf(d2$most_frequent[d2$var == "num"]), "1.23 (2), 9.88 (2)")
+  expect_equal(d2$most_frequent[d2$var == "chr"], "a (2)")
+})
+
+
 test_that("describe arrow", {
   skip_if_not(
     requireNamespace("dbplyr", quietly = TRUE) &&
@@ -177,6 +206,61 @@ test_that("describe supports configurable digits for most_frequent numeric round
 
   d <- describe(x, skip_ones = FALSE, digits = 2)
   expect_equal(d$most_frequent[d$var == "mixed"], "1.23 (2), 9.88 (2), NA (1)")
+})
+
+test_that("describe supports configurable top_n for most_frequent", {
+  local_mocked_bindings(has_pkg = function(...) FALSE, .package = "dataverifyr")
+
+  x <- data.frame(
+    vals = c("a", "a", "b", "b", "c", "d")
+  )
+
+  d3 <- describe(x, skip_ones = FALSE, top_n = 3)
+  expect_equal(d3$most_frequent[d3$var == "vals"], "a (2), b (2), c (1)")
+
+  d2 <- describe(x, skip_ones = FALSE, top_n = 2)
+  expect_equal(d2$most_frequent[d2$var == "vals"], "a (2), b (2)")
+})
+
+test_that("describe fast mode skips expensive fields", {
+  local_mocked_bindings(has_pkg = function(...) FALSE, .package = "dataverifyr")
+
+  x <- data.frame(
+    num = c(1, 1, 2, 3, NA_real_),
+    chr = c("a", "a", "b", "c", NA_character_)
+  )
+
+  d <- describe(x, fast = TRUE, skip_ones = FALSE, top_n = 2)
+  expect_true(all(is.na(d$n_distinct)))
+  expect_true(all(is.na(d$median)))
+  expect_true(all(is.na(d$most_frequent)))
+  expect_false(all(is.na(d$mean)))
+})
+
+test_that("describe duckdb fast mode skips expensive fields", {
+  skip_if_not(
+    requireNamespace("DBI", quietly = TRUE) &&
+      requireNamespace("dplyr", quietly = TRUE) &&
+      requireNamespace("dbplyr", quietly = TRUE) &&
+      requireNamespace("duckdb", quietly = TRUE),
+    "DBI, dplyr, dbplyr, and duckdb must be installed to test the functionality"
+  )
+
+  x <- data.frame(
+    num = c(1, 1, 2, 3, NA_real_),
+    chr = c("a", "a", "b", "c", NA_character_)
+  )
+
+  con <- DBI::dbConnect(duckdb::duckdb())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  DBI::dbWriteTable(con, "data_fast", x, overwrite = TRUE)
+  tbl <- dplyr::tbl(con, "data_fast")
+
+  d <- describe(tbl, fast = TRUE, skip_ones = FALSE, top_n = 2)
+  expect_true(all(is.na(d$n_distinct)))
+  expect_true(all(is.na(d$median)))
+  expect_true(all(is.na(d$most_frequent)))
+  expect_false(all(is.na(d$mean)))
 })
 
 test_that("describe dplyr backend supports skip_ones and digits", {

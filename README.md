@@ -59,95 +59,95 @@ This is a basic example which shows you how to
 3.  save and load the rules to a yaml-file for better maintainability
 
 Note that each rule is an R expression that is evaluated within the
-dataset. Our first rule, for example, states that we believe all values
-of the `mpg` variable are in the range 10 to 30 (exclusive). At the
-moment rules work in a window/vectorized approach only, that means that
-a rule like this will work `mpg > 10 * wt`, whereas a rule like this
-`sum(mpg) > 0` will not work as it aggregates values.
+dataset. Our first rule, for example, states that we expect all `amount`
+values to be in a sensible range. At the moment rules work in a
+window/vectorized approach only, that means that a rule like this will
+work `amount > 10 * as.numeric(paid)`, whereas a rule like this
+`sum(amount) > 0` will not work as it aggregates values.
 
 ``` r
 library(dataverifyr)
 
-# create a dataset
-data <- mtcars
+# use the packaged demo dataset (includes NAs + datetime)
+data <- sample_data
 
 # define a rule set within our R code; alternatively in a yaml file
 rules <- ruleset(
-  rule(mpg > 10 & mpg < 30), # mpg goes up to 34
-  rule(cyl %in% c(4, 8)), # missing 6 cyl
-  rule(vs %in% c(0, 1), allow_na = TRUE)
+  rule(amount >= 0 & amount <= 10000, name = "amount in valid range"),
+  rule(customer_tier %in% c("bronze", "silver", "gold"), name = "known customer tier"),
+  rule(!paid | payment_method != "none", name = "paid orders need payment method")
 )
 
 # print the rules
 rules
 #> <Verification Ruleset with 3 elements>
-#>   [1] 'Rule for: mpg' matching `mpg > 10 & mpg < 30` (allow_na: FALSE)
-#>   [2] 'Rule for: cyl' matching `cyl %in% c(4, 8)` (allow_na: FALSE)
-#>   [3] 'Rule for: vs' matching `vs %in% c(0, 1)` (allow_na: TRUE)
+#>   [1] 'amount in valid range' matching `amount >= 0 & amount <= 10000` (allow_na: FALSE)
+#>   [2] 'known customer tier' matching `customer_tier %in% c("bronze", "silver", "gold")` (allow_na: FALSE)
+#>   [3] 'paid orders need payment method' matching `!paid | payment_method != "none"` (allow_na: FALSE)
 
 # describe the dataset
 describe(data)
-#>      var    type  n n_distinct n_na                  most_frequent    min       mean  median
-#>  1:  mpg numeric 32         25    0     21 (2), 22.8 (2), 21.4 (2) 10.400  20.090625  19.200
-#>  2:  cyl numeric 32          3    0          8 (14), 4 (11), 6 (7)  4.000   6.187500   6.000
-#>  3: disp numeric 32         27    0    275.8 (3), 160 (2), 360 (2) 71.100 230.721875 196.300
-#>  4:   hp numeric 32         22    0      110 (3), 175 (3), 180 (3) 52.000 146.687500 123.000
-#>  5: drat numeric 32         22    0    3.92 (3), 3.07 (3), 3.9 (2)  2.760   3.596563   3.695
-#>  6:   wt numeric 32         29    0   3.44 (3), 3.57 (2), 2.62 (1)  1.513   3.217250   3.325
-#>  7: qsec numeric 32         30    0 17.02 (2), 18.9 (2), 16.46 (1) 14.500  17.848750  17.710
-#>  8:   vs numeric 32          2    0        0 (18), 1 (14), NA (NA)  0.000   0.437500   0.000
-#>  9:   am numeric 32          2    0        0 (19), 1 (13), NA (NA)  0.000   0.406250   0.000
-#> 10: gear numeric 32          3    0          3 (15), 4 (12), 5 (5)  3.000   3.687500   4.000
-#> 11: carb numeric 32          6    0          4 (10), 2 (10), 1 (7)  1.000   2.812500   2.000
-#>         max          sd
-#>  1:  33.900   6.0269481
-#>  2:   8.000   1.7859216
-#>  3: 472.000 123.9386938
-#>  4: 335.000  68.5628685
-#>  5:   4.930   0.5346787
-#>  6:   5.424   0.9784574
-#>  7:  22.900   1.7869432
-#>  8:   1.000   0.5040161
-#>  9:   1.000   0.4989909
-#> 10:   5.000   0.7378041
-#> 11:   8.000   1.6152000
+#>               var      type     n n_distinct  n_na                    most_frequent        min
+#>            <char>    <char> <int>      <int> <int>                           <char>      <num>
+#> 1:       order_id   integer     8          8     0                                           1
+#> 2:  customer_tier character     8          5     1 gold (2), silver (2), bronze (2)          4
+#> 3:         amount   numeric     8          8     1                                          -5
+#> 4:           paid   logical     8          3     1              TRUE (5), FALSE (2)          4
+#> 5: payment_method character     8          4     1               card (3), none (3)          4
+#> 6:     order_time   POSIXct     8          8     1                                  1735722000
+#>            mean       median          max           sd
+#>           <num>        <num>        <num>        <num>
+#> 1: 4.500000e+00          4.5 8.000000e+00 2.449490e+00
+#> 2: 5.571429e+00          6.0 7.000000e+00 1.133893e+00
+#> 3: 9.440571e+01         80.0 3.202500e+02 1.104161e+02
+#> 4: 4.285714e+00          4.0 5.000000e+00 4.879500e-01
+#> 5: 4.000000e+00          4.0 4.000000e+00 0.000000e+00
+#> 6: 1.736029e+09 1736005500.0 1.736334e+09 2.318349e+05
 
 # check if the data matches our rules
 res <- check_data(data, rules)
 res
-#>             name                expr allow_na negate tests pass fail warn error              time
-#> 1: Rule for: mpg mpg > 10 & mpg < 30    FALSE  FALSE    32   28    4            0.0010831356 secs
-#> 2: Rule for: cyl    cyl %in% c(4, 8)    FALSE  FALSE    32   25    7            0.0033519268 secs
-#> 3:  Rule for: vs     vs %in% c(0, 1)     TRUE  FALSE    32   32    0            0.0005369186 secs
+#>    check_type                            name                                             expr
+#>        <char>                          <char>                                           <char>
+#> 1:   row_rule           amount in valid range                    amount >= 0 & amount <= 10000
+#> 2:   row_rule             known customer tier customer_tier %in% c("bronze", "silver", "gold")
+#> 3:   row_rule paid orders need payment method                 !paid | payment_method != "none"
+#>    allow_na negate tests  pass  fail   warn  error              time
+#>      <lgcl> <lgcl> <int> <int> <int> <char> <char>        <difftime>
+#> 1:    FALSE  FALSE     8     6     2               0.0027768612 secs
+#> 2:    FALSE  FALSE     8     6     2               0.0051655769 secs
+#> 3:    FALSE  FALSE     8     6     2               0.0009186268 secs
 ```
 
-As we can see, our dataset `mtcars` does not conform to all of our
-rules. We have four fails (fail=rule is not met) for the first rule
-`mpg > 10 & mpg < 30` (there are `mpg` values up to 33.9) and seven
-fails for the second rule `cyl %in% c(4, 8)` (there are `cyl` values of
-6), while the third rule `vs %in% c(0, 1)` is always met.
+As we can see, this demo dataset does not conform to all of our rules.
+There is one negative amount, one unknown customer tier, and one row
+where `paid == TRUE` but `payment_method == "none"`. The dataset also
+contains missing values and a datetime column (`order_time`) to mirror
+common real data inputs.
 
 To see which values do not meet our expectations, use the
 `filter_fails()` function
 
 ``` r
-filter_fails(res, mtcars, per_rule = TRUE)
-#> $`mpg > 10 & mpg < 30`
-#>     mpg cyl disp  hp drat    wt  qsec vs am gear carb
-#> 1: 32.4   4 78.7  66 4.08 2.200 19.47  1  1    4    1
-#> 2: 30.4   4 75.7  52 4.93 1.615 18.52  1  1    4    2
-#> 3: 33.9   4 71.1  65 4.22 1.835 19.90  1  1    4    1
-#> 4: 30.4   4 95.1 113 3.77 1.513 16.90  1  1    5    2
+filter_fails(res, data, per_rule = TRUE)
+#> $`amount >= 0 & amount <= 10000`
+#>    order_id customer_tier amount   paid payment_method          order_time
+#>       <int>        <char>  <num> <lgcl>         <char>              <POSc>
+#> 1:        3        bronze     -5  FALSE           none 2025-01-03 12:15:00
+#> 2:        6        silver     NA     NA           card 2025-01-06 08:10:00
 #> 
-#> $`cyl %in% c(4, 8)`
-#>     mpg cyl  disp  hp drat    wt  qsec vs am gear carb
-#> 1: 21.0   6 160.0 110 3.90 2.620 16.46  0  1    4    4
-#> 2: 21.0   6 160.0 110 3.90 2.875 17.02  0  1    4    4
-#> 3: 21.4   6 258.0 110 3.08 3.215 19.44  1  0    3    1
-#> 4: 18.1   6 225.0 105 2.76 3.460 20.22  1  0    3    1
-#> 5: 19.2   6 167.6 123 3.92 3.440 18.30  1  0    4    4
-#> 6: 17.8   6 167.6 123 3.92 3.440 18.90  1  0    4    4
-#> 7: 19.7   6 145.0 175 3.62 2.770 15.50  0  1    5    6
+#> $`customer_tier %in% c("bronze", "silver", "gold")`
+#>    order_id customer_tier amount   paid payment_method          order_time
+#>       <int>        <char>  <num> <lgcl>         <char>              <POSc>
+#> 1:        5          <NA>  45.10  FALSE           none                <NA>
+#> 2:        8       unknown  99.99   TRUE           none 2025-01-08 11:05:00
+#> 
+#> $`!paid | payment_method != "none"`
+#>    order_id customer_tier amount   paid payment_method          order_time
+#>       <int>        <char>  <num> <lgcl>         <char>              <POSc>
+#> 1:        6        silver     NA     NA           card 2025-01-06 08:10:00
+#> 2:        7        bronze   0.00   TRUE           <NA> 2025-01-07 17:20:00
+#> 3:        8       unknown  99.99   TRUE           none 2025-01-08 11:05:00
 ```
 
 We can also visualize the results using the `plot_res()` function.
@@ -156,36 +156,43 @@ We can also visualize the results using the `plot_res()` function.
 plot_res(res)
 ```
 
-<img src="man/figures/README-plotres-1.png" width="100%" />
+<img src="man/figures/README-plotres-1.png" alt="" width="100%" />
 
-Note that you can also save and load a ruleset to and from a `yaml` file
+Note that you can also save and load a ruleset to and from a structured
+`yaml` file
 
 ``` r
-write_rules(rules, "example_rules.yaml")
-r2 <- read_rules("example_rules.yaml")
+write_rules(rules, "example_rules_v1.yaml", format = "v1")
+r2 <- read_rules("example_rules_v1.yaml")
 identical(rules, r2)
-#> [1] TRUE
+#> [1] FALSE
 ```
 
-The resulting `example_rules.yaml` looks like this
+The resulting `example_rules_v1.yaml` looks like this
 
 ``` yaml
-- name: 'Rule for: mpg'
-  expr: mpg > 10 & mpg < 30
+meta: ~
+data-columns: []
+data-rules:
+- name: amount in valid range
+  expr: amount >= 0 & amount <= 10000
   allow_na: no
   negate: no
   index: 1
-- name: 'Rule for: cyl'
-  expr: cyl %in% c(4, 8)
+- name: known customer tier
+  expr: customer_tier %in% c("bronze", "silver", "gold")
   allow_na: no
   negate: no
   index: 2
-- name: 'Rule for: vs'
-  expr: vs %in% c(0, 1)
-  allow_na: yes
+- name: paid orders need payment method
+  expr: '!paid | payment_method != "none"'
+  allow_na: no
   negate: no
   index: 3
 ```
+
+`dataverifyr` uses structured v1 YAML (`meta` + `data-columns` +
+`data-rules`) in the main workflow.
 
 One helpful use case is to use this functionality to assert that your
 data has the right values in a custom read function like so:
@@ -208,6 +215,380 @@ data <- read_custom("wrong_data.csv", rules)
 #>   In dataset 'wrong_data.csv' found 2 rule fails, 1 warnings, 1 errors
 ```
 
+## Row-Based Checks vs Column-Based Checks
+
+`dataverifyr` supports two complementary layers of validation:
+
+1.  **Row-based checks** with `rule()`  
+    These answer questions like: “Is each value in a valid range?” or
+    “Does each row satisfy a logical condition?”.
+2.  **Column-based checks** with `data_columns` in `ruleset()`  
+    These answer questions like: “Does this column exist?”, “Is it
+    required?”, and “Does it have the expected type?”.
+
+The important idea is:
+
+- `rule()` is about **values inside rows**.
+- `data_column()` is about the **declared structure (schema)** of the
+  dataset.
+
+### Row-Based Rules (value checks)
+
+``` r
+library(dataverifyr)
+
+row_rules <- ruleset(
+  rule(amount > 0, name = "amount is positive", allow_na = TRUE),
+  rule(customer_tier %in% c("bronze", "silver", "gold"), name = "known customer tier", allow_na = TRUE),
+  rule(!paid | payment_method != "none", name = "paid orders require payment method", allow_na = TRUE)
+)
+
+x <- sample_data
+
+check_data(x, row_rules)
+#>    check_type                               name                                             expr
+#>        <char>                             <char>                                           <char>
+#> 1:   row_rule                 amount is positive                                       amount > 0
+#> 2:   row_rule                known customer tier customer_tier %in% c("bronze", "silver", "gold")
+#> 3:   row_rule paid orders require payment method                 !paid | payment_method != "none"
+#>    allow_na negate tests  pass  fail   warn  error              time
+#>      <lgcl> <lgcl> <int> <int> <int> <char> <char>        <difftime>
+#> 1:     TRUE  FALSE     8     6     2               0.0009946823 secs
+#> 2:     TRUE  FALSE     8     7     1               0.0009689331 secs
+#> 3:     TRUE  FALSE     8     7     1               0.0009040833 secs
+```
+
+The result tells you, for each rule, how many rows passed/failed and
+whether warnings/errors occurred during evaluation.
+
+### Column-Based Rules (schema checks)
+
+Column checks are attached to the `ruleset()` via `data_columns`.
+
+``` r
+schema_rules <- ruleset(
+  rule(amount > 0, name = "amount is positive", allow_na = TRUE),
+  data_columns = list(
+    data_column("order_id", type = "int", optional = FALSE, description = "Primary key"),
+    data_column("customer_tier", type = "str", optional = FALSE),
+    data_column("amount", type = "double", optional = FALSE),
+    data_column("paid", type = "logical", optional = FALSE),
+    data_column("payment_method", type = "str", optional = FALSE),
+    data_column("order_time", optional = TRUE)
+  )
+)
+
+x_ok <- sample_data
+
+check_data(x_ok, schema_rules)
+#>     check_type                                           name
+#>         <char>                                         <char>
+#>  1:     schema               Schema: column 'order_id' exists
+#>  2:     schema       Schema: column 'order_id' has type 'int'
+#>  3:     schema          Schema: column 'customer_tier' exists
+#>  4:     schema  Schema: column 'customer_tier' has type 'str'
+#>  5:     schema                 Schema: column 'amount' exists
+#>  6:     schema      Schema: column 'amount' has type 'double'
+#>  7:     schema                   Schema: column 'paid' exists
+#>  8:     schema       Schema: column 'paid' has type 'logical'
+#>  9:     schema         Schema: column 'payment_method' exists
+#> 10:     schema Schema: column 'payment_method' has type 'str'
+#> 11:     schema             Schema: column 'order_time' exists
+#> 12:   row_rule                             amount is positive
+#>                                       expr allow_na negate tests  pass  fail   warn  error
+#>                                     <char>   <lgcl> <lgcl> <int> <int> <int> <char> <char>
+#>  1:              column_exists('order_id')    FALSE  FALSE     1     1     0              
+#>  2:       column_type('order_id') == 'int'    FALSE  FALSE     1     1     0              
+#>  3:         column_exists('customer_tier')    FALSE  FALSE     1     1     0              
+#>  4:  column_type('customer_tier') == 'str'    FALSE  FALSE     1     1     0              
+#>  5:                column_exists('amount')    FALSE  FALSE     1     1     0              
+#>  6:      column_type('amount') == 'double'    FALSE  FALSE     1     1     0              
+#>  7:                  column_exists('paid')    FALSE  FALSE     1     1     0              
+#>  8:       column_type('paid') == 'logical'    FALSE  FALSE     1     1     0              
+#>  9:        column_exists('payment_method')    FALSE  FALSE     1     1     0              
+#> 10: column_type('payment_method') == 'str'    FALSE  FALSE     1     1     0              
+#> 11:            column_exists('order_time')    FALSE  FALSE     1     1     0              
+#> 12:                             amount > 0     TRUE  FALSE     8     6     2              
+#>                 time
+#>           <difftime>
+#>  1: 0.000000000 secs
+#>  2: 0.000000000 secs
+#>  3: 0.000000000 secs
+#>  4: 0.000000000 secs
+#>  5: 0.000000000 secs
+#>  6: 0.000000000 secs
+#>  7: 0.000000000 secs
+#>  8: 0.000000000 secs
+#>  9: 0.000000000 secs
+#> 10: 0.000000000 secs
+#> 11: 0.000000000 secs
+#> 12: 0.000931263 secs
+```
+
+In this setup:
+
+- `order_id`, `customer_tier`, `amount`, `paid`, and `payment_method`
+  must exist (`optional = FALSE`)
+- `order_time` is optional in the schema declaration
+- row rules still run as usual (`amount > 0`)
+
+### Handling extra columns
+
+If your input has columns not declared in `data_columns`, use
+`extra_columns`:
+
+``` r
+x_extra <- sample_data
+x_extra$unexpected_col <- c("a", "b", "c", "d", "e", "f", "g", "h")
+
+# default: ignore undeclared columns
+check_data(x_extra, schema_rules, extra_columns = "ignore")
+#>     check_type                                           name
+#>         <char>                                         <char>
+#>  1:     schema               Schema: column 'order_id' exists
+#>  2:     schema       Schema: column 'order_id' has type 'int'
+#>  3:     schema          Schema: column 'customer_tier' exists
+#>  4:     schema  Schema: column 'customer_tier' has type 'str'
+#>  5:     schema                 Schema: column 'amount' exists
+#>  6:     schema      Schema: column 'amount' has type 'double'
+#>  7:     schema                   Schema: column 'paid' exists
+#>  8:     schema       Schema: column 'paid' has type 'logical'
+#>  9:     schema         Schema: column 'payment_method' exists
+#> 10:     schema Schema: column 'payment_method' has type 'str'
+#> 11:     schema             Schema: column 'order_time' exists
+#> 12:   row_rule                             amount is positive
+#>                                       expr allow_na negate tests  pass  fail   warn  error
+#>                                     <char>   <lgcl> <lgcl> <int> <int> <int> <char> <char>
+#>  1:              column_exists('order_id')    FALSE  FALSE     1     1     0              
+#>  2:       column_type('order_id') == 'int'    FALSE  FALSE     1     1     0              
+#>  3:         column_exists('customer_tier')    FALSE  FALSE     1     1     0              
+#>  4:  column_type('customer_tier') == 'str'    FALSE  FALSE     1     1     0              
+#>  5:                column_exists('amount')    FALSE  FALSE     1     1     0              
+#>  6:      column_type('amount') == 'double'    FALSE  FALSE     1     1     0              
+#>  7:                  column_exists('paid')    FALSE  FALSE     1     1     0              
+#>  8:       column_type('paid') == 'logical'    FALSE  FALSE     1     1     0              
+#>  9:        column_exists('payment_method')    FALSE  FALSE     1     1     0              
+#> 10: column_type('payment_method') == 'str'    FALSE  FALSE     1     1     0              
+#> 11:            column_exists('order_time')    FALSE  FALSE     1     1     0              
+#> 12:                             amount > 0     TRUE  FALSE     8     6     2              
+#>                 time
+#>           <difftime>
+#>  1: 0.000000000 secs
+#>  2: 0.000000000 secs
+#>  3: 0.000000000 secs
+#>  4: 0.000000000 secs
+#>  5: 0.000000000 secs
+#>  6: 0.000000000 secs
+#>  7: 0.000000000 secs
+#>  8: 0.000000000 secs
+#>  9: 0.000000000 secs
+#> 10: 0.000000000 secs
+#> 11: 0.000000000 secs
+#> 12: 0.001006603 secs
+
+# warn when undeclared columns are present
+try(check_data(x_extra, schema_rules, extra_columns = "warn"))
+#> Warning in validate_rules_against_schema(x, rules, extra_columns = extra_columns): Found extra
+#> columns not declared in `data_columns`: unexpected_col
+#>     check_type                                           name
+#>         <char>                                         <char>
+#>  1:     schema               Schema: column 'order_id' exists
+#>  2:     schema       Schema: column 'order_id' has type 'int'
+#>  3:     schema          Schema: column 'customer_tier' exists
+#>  4:     schema  Schema: column 'customer_tier' has type 'str'
+#>  5:     schema                 Schema: column 'amount' exists
+#>  6:     schema      Schema: column 'amount' has type 'double'
+#>  7:     schema                   Schema: column 'paid' exists
+#>  8:     schema       Schema: column 'paid' has type 'logical'
+#>  9:     schema         Schema: column 'payment_method' exists
+#> 10:     schema Schema: column 'payment_method' has type 'str'
+#> 11:     schema             Schema: column 'order_time' exists
+#> 12:   row_rule                             amount is positive
+#>                                       expr allow_na negate tests  pass  fail   warn  error
+#>                                     <char>   <lgcl> <lgcl> <int> <int> <int> <char> <char>
+#>  1:              column_exists('order_id')    FALSE  FALSE     1     1     0              
+#>  2:       column_type('order_id') == 'int'    FALSE  FALSE     1     1     0              
+#>  3:         column_exists('customer_tier')    FALSE  FALSE     1     1     0              
+#>  4:  column_type('customer_tier') == 'str'    FALSE  FALSE     1     1     0              
+#>  5:                column_exists('amount')    FALSE  FALSE     1     1     0              
+#>  6:      column_type('amount') == 'double'    FALSE  FALSE     1     1     0              
+#>  7:                  column_exists('paid')    FALSE  FALSE     1     1     0              
+#>  8:       column_type('paid') == 'logical'    FALSE  FALSE     1     1     0              
+#>  9:        column_exists('payment_method')    FALSE  FALSE     1     1     0              
+#> 10: column_type('payment_method') == 'str'    FALSE  FALSE     1     1     0              
+#> 11:            column_exists('order_time')    FALSE  FALSE     1     1     0              
+#> 12:                             amount > 0     TRUE  FALSE     8     6     2              
+#>                  time
+#>            <difftime>
+#>  1: 0.0000000000 secs
+#>  2: 0.0000000000 secs
+#>  3: 0.0000000000 secs
+#>  4: 0.0000000000 secs
+#>  5: 0.0000000000 secs
+#>  6: 0.0000000000 secs
+#>  7: 0.0000000000 secs
+#>  8: 0.0000000000 secs
+#>  9: 0.0000000000 secs
+#> 10: 0.0000000000 secs
+#> 11: 0.0000000000 secs
+#> 12: 0.0009269714 secs
+
+# fail immediately when undeclared columns are present
+try(check_data(x_extra, schema_rules, extra_columns = "fail"))
+#> Error in validate_rules_against_schema(x, rules, extra_columns = extra_columns) : 
+#>   Found extra columns not declared in `data_columns`: unexpected_col
+```
+
+### Missing required columns
+
+``` r
+x_missing <- sample_data[, setdiff(names(sample_data), "payment_method")]
+
+try(check_data(x_missing, schema_rules))
+#>     check_type                                          name                                  expr
+#>         <char>                                        <char>                                <char>
+#>  1:     schema              Schema: column 'order_id' exists             column_exists('order_id')
+#>  2:     schema      Schema: column 'order_id' has type 'int'      column_type('order_id') == 'int'
+#>  3:     schema         Schema: column 'customer_tier' exists        column_exists('customer_tier')
+#>  4:     schema Schema: column 'customer_tier' has type 'str' column_type('customer_tier') == 'str'
+#>  5:     schema                Schema: column 'amount' exists               column_exists('amount')
+#>  6:     schema     Schema: column 'amount' has type 'double'     column_type('amount') == 'double'
+#>  7:     schema                  Schema: column 'paid' exists                 column_exists('paid')
+#>  8:     schema      Schema: column 'paid' has type 'logical'      column_type('paid') == 'logical'
+#>  9:     schema        Schema: column 'payment_method' exists       column_exists('payment_method')
+#> 10:     schema            Schema: column 'order_time' exists           column_exists('order_time')
+#> 11:   row_rule                            amount is positive                            amount > 0
+#>     allow_na negate tests  pass  fail   warn                                        error
+#>       <lgcl> <lgcl> <int> <int> <int> <char>                                       <char>
+#>  1:    FALSE  FALSE     1     1     0                                                    
+#>  2:    FALSE  FALSE     1     1     0                                                    
+#>  3:    FALSE  FALSE     1     1     0                                                    
+#>  4:    FALSE  FALSE     1     1     0                                                    
+#>  5:    FALSE  FALSE     1     1     0                                                    
+#>  6:    FALSE  FALSE     1     1     0                                                    
+#>  7:    FALSE  FALSE     1     1     0                                                    
+#>  8:    FALSE  FALSE     1     1     0                                                    
+#>  9:    FALSE  FALSE     1     0     1        Required column 'payment_method' is missing.
+#> 10:    FALSE  FALSE     1     1     0                                                    
+#> 11:     TRUE  FALSE     8     6     2                                                    
+#>                  time
+#>            <difftime>
+#>  1: 0.0000000000 secs
+#>  2: 0.0000000000 secs
+#>  3: 0.0000000000 secs
+#>  4: 0.0000000000 secs
+#>  5: 0.0000000000 secs
+#>  6: 0.0000000000 secs
+#>  7: 0.0000000000 secs
+#>  8: 0.0000000000 secs
+#>  9: 0.0000000000 secs
+#> 10: 0.0000000000 secs
+#> 11: 0.0009188652 secs
+```
+
+### Relational Rules (cross-dataset checks)
+
+You can also validate relationships between datasets, for example ensuring
+foreign keys in one dataset exist in a lookup table.
+
+``` r
+flights <- data.frame(carrier = c("AA", "BB", NA_character_))
+carriers <- data.frame(carrier_id = c("AA"))
+
+rel_rules <- ruleset(
+  reference_rule(
+    local_col = "carrier",
+    ref_dataset = "carriers",
+    ref_col = "carrier_id",
+    name = "carrier exists in carriers",
+    allow_na = TRUE
+  ),
+  data_name = "flights"
+)
+
+check_data(
+  list(
+    flights = flights,
+    carriers = carriers
+  ),
+  rel_rules
+)
+```
+
+This returns a `reference_rule` row in `check_type`, so relational
+checks are visible in the same output table as schema and row rules.
+
+### Structured YAML (`v1`) for schema + rules
+
+`dataverifyr` supports a structured YAML format that separates metadata,
+schema, and rules.
+
+``` r
+schema_rules_v1 <- ruleset(
+  rule(amount > 0, name = "amount is positive", allow_na = TRUE),
+  data_columns = list(
+    data_column("order_id", type = "int", optional = FALSE),
+    data_column("customer_tier", type = "str", optional = FALSE),
+    data_column("amount", type = "double", optional = FALSE),
+    data_column("paid", type = "logical", optional = FALSE),
+    data_column("payment_method", type = "str", optional = FALSE),
+    data_column("order_time", optional = TRUE)
+  ),
+  meta = dataverifyr:::rule_meta(
+    title = "Order Validation",
+    version = "1.0",
+    description = "Checks for order exports"
+  )
+)
+
+write_rules(schema_rules_v1, "example_rules_v1.yaml", format = "v1")
+
+rules_back <- read_rules("example_rules_v1.yaml")
+rules_back
+#> <Verification Ruleset with 1 elements>
+#>   [1] 'amount is positive' matching `amount > 0` (allow_na: TRUE)
+```
+
+Structured v1 example:
+
+``` yaml
+meta:
+  title: Order Validation
+  version: '1.0'
+  description: Checks for order exports
+data-columns:
+- col: order_id
+  type: int
+  optional: no
+  description: .na.character
+- col: customer_tier
+  type: str
+  optional: no
+  description: .na.character
+- col: amount
+  type: double
+  optional: no
+  description: .na.character
+- col: paid
+  type: logical
+  optional: no
+  description: .na.character
+- col: payment_method
+  type: str
+  optional: no
+  description: .na.character
+- col: order_time
+  type: .na.character
+  optional: yes
+  description: .na.character
+data-rules:
+- name: amount is positive
+  expr: amount > 0
+  allow_na: yes
+  negate: no
+  index: 1
+```
+
 ## Backends
 
 At the moment the following backends are supported. Note that they are
@@ -217,39 +598,64 @@ the package will automatically choose `RSQLite`/`DBI`/`dbplyr` for the
 task. To see which backend `dataverifyr` would use for a task, you can
 use `detect_backend(data)`.
 
+Important: many backend packages are optional (`Suggests`) and may not
+be installed in all environments (for example CI runners, documentation
+builders, or minimal local setups). In particular, examples requiring
+`arrow`, `duckdb`, `DBI`, or `dplyr` may be shown but not executed
+unless those packages are available.
+
 <table>
+
 <thead class="header">
+
 <th style="text-align:left;">
+
 Backend / Library
 </th>
+
 <th style="text-align:center;">
+
 Status
 </th>
+
 <th style="text-align:left;">
+
 Data Type
 </th>
+
 <th style="text-align:left;">
+
 Example Code
 </th>
+
 <th style="text-align:left;">
+
 Comment
 </th>
+
 </thead>
+
 <tbody>
+
 <tr class="odd">
+
 <td style="text-align:left;">
 
 `base-R`
 
 </td>
+
 <td style="text-align:center;">
+
 ✔️
 </td>
+
 <td style="text-align:left;">
 
 `data.frame`
 
 </td>
+
 <td style="text-align:left;">
 
 ``` r
@@ -258,27 +664,35 @@ check_data(data, rs)
 ```
 
 </td>
+
 <td style="text-align:left;">
 
 When `data.table` or `dplyr` are available, they are used for faster
 speeds.
 
 </td>
+
 </tr>
+
 <tr class="even">
+
 <td style="text-align:left;">
 
 [`dplyr`](https://dplyr.tidyverse.org/)
 
 </td>
+
 <td style="text-align:center;">
+
 ✔️
 </td>
+
 <td style="text-align:left;">
 
 `tibble`
 
 </td>
+
 <td style="text-align:left;">
 
 ``` r
@@ -288,23 +702,32 @@ check_data(data, rs)
 ```
 
 </td>
+
 <td style="text-align:left;">
+
 </td>
+
 </tr>
+
 <tr class="odd">
+
 <td style="text-align:left;">
 
 [`data.table`](https://r-datatable.com)
 
 </td>
+
 <td style="text-align:center;">
+
 ✔️
 </td>
+
 <td style="text-align:left;">
 
 `data.table`
 
 </td>
+
 <td style="text-align:left;">
 
 ``` r
@@ -314,23 +737,32 @@ check_data(data, rs)
 ```
 
 </td>
+
 <td style="text-align:left;">
+
 </td>
+
 </tr>
+
 <tr class="even">
+
 <td style="text-align:left;">
 
 [`arrow`](https://arrow.apache.org/docs/r/)
 
 </td>
+
 <td style="text-align:center;">
+
 ✔️
 </td>
+
 <td style="text-align:left;">
 
 `Table`, `ArrowTabular`, `ArrowObject`
 
 </td>
+
 <td style="text-align:left;">
 
 ``` r
@@ -345,23 +777,32 @@ check_data(data, rs)
 ```
 
 </td>
+
 <td style="text-align:left;">
+
 </td>
+
 </tr>
+
 <tr class="odd">
+
 <td style="text-align:left;">
 
 [`arrow`](https://arrow.apache.org/docs/r/)
 
 </td>
+
 <td style="text-align:center;">
+
 ✔️
 </td>
+
 <td style="text-align:left;">
 
 `FileSystemDataset`, `Dataset`, `ArrowObject`
 
 </td>
+
 <td style="text-align:left;">
 
 ``` r
@@ -371,11 +812,16 @@ check_data(data, rs)
 ```
 
 </td>
+
 <td style="text-align:left;">
+
 Especially handy for large datasets
 </td>
+
 </tr>
+
 <tr class="even">
+
 <td style="text-align:left;">
 
 [`RSQLite`](https://rsqlite.r-dbi.org/),
@@ -383,14 +829,18 @@ Especially handy for large datasets
 [`dbplyr`](https://dbplyr.tidyverse.org/)
 
 </td>
+
 <td style="text-align:center;">
+
 ✔️
 </td>
+
 <td style="text-align:left;">
 
 `tbl_SQLiteConnection`, `tbl_dbi`, `tbl_sql`, `tbl_lazy`, `tbl`
 
 </td>
+
 <td style="text-align:left;">
 
 ``` r
@@ -404,6 +854,7 @@ dbDisconnect(con)
 ```
 
 </td>
+
 <td style="text-align:left;">
 
 Note that missing values are converted to `0` when using sqlite by
@@ -411,8 +862,11 @@ default ([c.f. this SO
 answer](https://stackoverflow.com/a/57746647/3048453))
 
 </td>
+
 </tr>
+
 <tr class="odd">
+
 <td style="text-align:left;">
 
 [`duckdb`](https://duckdb.org/docs/api/r.html),
@@ -420,14 +874,18 @@ answer](https://stackoverflow.com/a/57746647/3048453))
 [`dbplyr`](https://dbplyr.tidyverse.org/)
 
 </td>
+
 <td style="text-align:center;">
+
 ✔️
 </td>
+
 <td style="text-align:left;">
 
 `tbl_duckdb_connection`, `tbl_dbi`, `tbl_sql`, `tbl_lazy`, `tbl`
 
 </td>
+
 <td style="text-align:left;">
 
 ``` r
@@ -441,10 +899,15 @@ dbDisconnect(con, shutdown = TRUE)
 ```
 
 </td>
+
 <td style="text-align:left;">
+
 </td>
+
 </tr>
+
 <tr class="even">
+
 <td style="text-align:left;">
 
 [`RPostgres`](https://rpostgres.r-dbi.org/),
@@ -452,14 +915,18 @@ dbDisconnect(con, shutdown = TRUE)
 [`dbplyr`](https://dbplyr.tidyverse.org/)
 
 </td>
+
 <td style="text-align:center;">
+
 ❓
 </td>
+
 <td style="text-align:left;">
 
 `tbl_PqConnection`, `tbl_dbi`, `tbl_sql`, `tbl_lazy`, `tbl`
 
 </td>
+
 <td style="text-align:left;">
 
 ``` r
@@ -476,14 +943,18 @@ dbDisconnect(con)
 ```
 
 </td>
+
 <td style="text-align:left;">
 
 Not tested, but should work out-of-the-box using
 [`DBI`](https://dbi.r-dbi.org/)
 
 </td>
+
 </tr>
+
 </tbody>
+
 </table>
 
 Note that the `rs` object in the example code above refers to a
@@ -512,34 +983,10 @@ url <- "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2018-01.
 file <- "yellow_tripdata_2018-01.parquet"
 if (!file.exists(file)) download.file(url, file, method = "curl")
 file.size(file) / 1e6 # in MB
-#> [1] 123.6685
 
 # quick check of the filesize
 d <- open_dataset(file)
-describe(d)
-#> # A tibble: 19 × 10
-#>    var                  type  n_dis…¹    n_na most_…²     min      mean   median       max        sd
-#>    <chr>                <chr>   <int>   <int> <chr>     <dbl>     <dbl>    <dbl>     <dbl>     <dbl>
-#>  1 VendorID             inte…       2       0 2 (491…    1      1.5610    2           2     0.49508 
-#>  2 tpep_pickup_datetime POSI… 2311532       0 2018-0…   NA     NA        NA          NA    NA       
-#>  3 tpep_dropoff_dateti… POSI… 2315089       0 2018-0…   NA     NA        NA          NA    NA       
-#>  4 passenger_count      inte…      10       0 1 (624…    0      1.6068    1           9     1.2330  
-#>  5 trip_distance        nume…    4397       0 0.8 (2…    0      2.8040    1.5503 189484.    3.2532  
-#>  6 RatecodeID           inte…       7       0 1 (853…    1      1.0395    1          99     0.31301 
-#>  7 store_and_fwd_flag   char…       2       0 N (872…    1      1         1           1     0       
-#>  8 PULocationID         inte…     259       0 237 (3…    1    164.46    161.86      265    66.520   
-#>  9 DOLocationID         inte…     261       0 236 (3…    1    162.73    162.10      265    75.411   
-#> 10 payment_type         inte…       4       0 1 (610…    1      1.3106    1           4     0.45814 
-#> 11 fare_amount          nume…    1714       0 6 (473… -450     12.244     8.8357   8016     9.9255  
-#> 12 extra                nume…      42       0 0 (474…  -44.69   0.32469   0          60     0.068786
-#> 13 mta_tax              nume…      15       0 0.5 (8…   -0.5    0.49751   0.5        45.49  0.043389
-#> 14 tip_amount           nume…    3397       0 0 (289…  -88.8    1.8188    1.3968    441.71  2.2823  
-#> 15 tolls_amount         nume…     967       0 0 (833…  -15      0.30262   0         950.7   1.1501  
-#> 16 improvement_surchar… nume…       4       0 0.3 (8…   -0.3    0.29963   0.3         1     0.018442
-#> 17 total_amount         nume…   11514       0 7.3 (2… -450.3   15.491    11.321    8016.8  11.984   
-#> 18 congestion_surcharge nume…       2 8760675 NA (87…    2.5    2.5       2.5         2.5  NA       
-#> 19 airport_fee          nume…       2 8760675 NA (87…    0      0         0           0    NA       
-#> # … with abbreviated variable names ¹​n_distinct, ²​most_frequent
+describe(d, fast = TRUE)
 
 # write the dataset to disk
 write_dataset(d, "nyc-taxi-data")
@@ -557,6 +1004,9 @@ First we display the hand-written contents of the `nyc_data_rules.yaml`
 file.
 
 ``` yaml
+meta: ~
+data-columns: []
+data-rules:
 - name: 'Rule for: passenger_count'
   expr: passenger_count >= 0 & passenger_count <= 10
   allow_na: no
@@ -591,24 +1041,29 @@ Now we can check if the data follows our rules or if we have unexpected
 data points:
 
 ``` r
+library(arrow)
+#> 
+#> Attaching package: 'arrow'
+#> The following object is masked from 'package:utils':
+#> 
+#>     timestamp
 # open the dataset 
 ds <- open_dataset("nyc-taxi-data/")
 
 # perform the data validation check
 res <- check_data(ds, rules)
 res
-#> # A tibble: 3 × 10
-#>   name                      expr              allow…¹ negate   tests    pass  fail warn  error time 
-#>   <chr>                     <chr>             <lgl>   <lgl>    <int>   <int> <int> <chr> <chr> <drt>
-#> 1 Rule for: passenger_count passenger_count … FALSE   FALSE  8760687 8760687     0 ""    ""    0.42…
-#> 2 Rule for: trip_distance   trip_distance >=… FALSE   FALSE  8760687 8760686     1 ""    ""    0.51…
-#> 3 Rule for: payment_type    payment_type %in… FALSE   FALSE  8760687 8760687     0 ""    ""    0.45…
-#> # … with abbreviated variable name ¹​allow_na
+#> # A tibble: 3 × 11
+#>   check_type name                      expr  allow_na negate   tests    pass  fail warn  error time 
+#>   <chr>      <chr>                     <chr> <lgl>    <lgl>    <int>   <int> <int> <chr> <chr> <drt>
+#> 1 row_rule   Rule for: passenger_count pass… FALSE    FALSE  8760687 8760687     0 ""    ""    0.84…
+#> 2 row_rule   Rule for: trip_distance   trip… FALSE    FALSE  8760687 8760686     1 ""    ""    0.66…
+#> 3 row_rule   Rule for: payment_type    paym… FALSE    FALSE  8760687 8760687     0 ""    ""    0.56…
 
 plot_res(res)
 ```
 
-<img src="man/figures/README-taxi3-1.png" width="100%" />
+<img src="man/figures/README-taxi3-1.png" alt="" width="100%" />
 
 Using the power of `arrow`, we were able to scan 8+mln observations for
 three rules in about 1.5 seconds (YMMV). As we can see from the results,
@@ -624,7 +1079,7 @@ res |>
 #> # A tibble: 1 × 3
 #>   tpep_pickup_datetime tpep_dropoff_datetime trip_distance
 #>   <dttm>               <dttm>                        <dbl>
-#> 1 2018-01-30 12:41:02  2018-01-30 12:42:09         189484.
+#> 1 2018-01-30 11:41:02  2018-01-30 11:42:09         189484.
 ```
 
 As we can see, this is probably a data error (a trip distance of 190k
@@ -641,53 +1096,59 @@ library(dplyr)
 
 # connect to a duckdb database
 con <- dbConnect(duckdb::duckdb("duckdb-database.duckdb"))
-# for demo purposes write the data once
-dbWriteTable(con, "mtcars", mtcars)
+# for demo purposes write sample_data once
+dbWriteTable(con, "orders", sample_data)
 
 # create a tbl connection, which can be used in the checks
-tbl <- tbl(con, "mtcars")
+tbl <- tbl(con, "orders")
 
 # create rules
 rules <- ruleset(
-  rule(mpg > 10 & mpg < 30),
-  rule(cyl %in% c(4, 8)),
-  rule(vs %in% c(0, 1), allow_na = TRUE)
+  rule(amount >= 0 & amount <= 10000, name = "amount in valid range"),
+  rule(customer_tier %in% c("bronze", "silver", "gold"), name = "known customer tier"),
+  rule(!paid | payment_method != "none", name = "paid orders need payment method")
 )
 
 # check rules
 res <- check_data(tbl, rules)
 res
-#> # A tibble: 3 × 10
-#>   name          expr                allow_na negate tests  pass  fail warn  error time          
-#>   <chr>         <chr>               <lgl>    <lgl>  <dbl> <dbl> <dbl> <chr> <chr> <drtn>        
-#> 1 Rule for: mpg mpg > 10 & mpg < 30 FALSE    FALSE     32    28     4 ""    ""    4.4900761 secs
-#> 2 Rule for: cyl cyl %in% c(4, 8)    FALSE    FALSE     32    25     7 ""    ""    0.1926301 secs
-#> 3 Rule for: vs  vs %in% c(0, 1)     TRUE     FALSE     32    32     0 ""    ""    0.2003391 secs
 
 filter_fails(res, tbl, per_rule = TRUE)
-#> $`mpg > 10 & mpg < 30`
-#> # A tibble: 4 × 11
-#>     mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb
-#>   <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
-#> 1  32.4     4  78.7    66  4.08 2.2   19.47     1     1     4     1
-#> 2  30.4     4  75.7    52  4.93 1.615 18.52     1     1     4     2
-#> 3  33.9     4  71.1    65  4.22 1.835 19.9      1     1     4     1
-#> 4  30.4     4  95.1   113  3.77 1.513 16.9      1     1     5     2
-#> 
-#> $`cyl %in% c(4, 8)`
-#> # A tibble: 7 × 11
-#>     mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb
-#>   <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
-#> 1  21       6 160     110  3.9  2.62  16.46     0     1     4     4
-#> 2  21       6 160     110  3.9  2.875 17.02     0     1     4     4
-#> 3  21.4     6 258     110  3.08 3.215 19.44     1     0     3     1
-#> 4  18.1     6 225     105  2.76 3.46  20.22     1     0     3     1
-#> 5  19.2     6 167.6   123  3.92 3.44  18.3      1     0     4     4
-#> 6  17.8     6 167.6   123  3.92 3.44  18.9      1     0     4     4
-#> 7  19.7     6 145     175  3.62 2.77  15.5      0     1     5     6
 
 # lastly disconnect from the database again
 dbDisconnect(con, shutdown = TRUE)
+```
+
+## Pre Package Version 1.0 YAML (Compatibility)
+
+`dataverifyr` still supports the pre package version 1.0 flat-list YAML
+format for compatibility with existing rule files.
+
+``` r
+write_rules(rules, "example_rules_pre_v1.yaml", format = "pre_v1")
+rules_pre_v1 <- read_rules("example_rules_pre_v1.yaml")
+identical(rules, rules_pre_v1)
+#> [1] FALSE
+```
+
+Pre package version 1.0 YAML example:
+
+``` yaml
+- name: 'Rule for: passenger_count'
+  expr: passenger_count >= 0 & passenger_count <= 10
+  allow_na: no
+  negate: no
+  index: 1
+- name: 'Rule for: trip_distance'
+  expr: trip_distance >= 0 & trip_distance <= 1000
+  allow_na: no
+  negate: no
+  index: 2
+- name: 'Rule for: payment_type'
+  expr: payment_type %in% c(0, 1, 2, 3, 4)
+  allow_na: no
+  negate: no
+  index: 3
 ```
 
 # Alternative Data Validation R Libraries
