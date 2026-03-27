@@ -1,6 +1,3 @@
-library(testthat)
-library(dataverifyr)
-
 test_that("detect_backend works as expected", {
   data <- mtcars
 
@@ -51,17 +48,23 @@ test_that("detect_backend works as expected", {
   # test arrow dataset
   class(data) <- c("FileSystemDataset", "Dataset", "ArrowObject", "R6")
   pkgs <- NULL
-  expect_error(detect_backend(data), "The arrow package needs to be installed")
+  expect_error(
+    detect_backend(data),
+    "The arrow and dbplyr packages need to be installed in order to test an ArrowObject"
+  )
 
-  pkgs <- "arrow"
+  pkgs <- c("arrow", "dbplyr")
   expect_equal(detect_backend(data), "collectibles")
 
 
   # test DBI dataset
   class(data) <- c("tbl_SQLiteConnection", "tbl_dbi", "tbl_sql", "tbl_lazy", "tbl")
   pkgs <- NULL
-  expect_error(detect_backend(data), "The DBI package needs to be installed")
+  expect_error(
+    detect_backend(data),
+    "The DBI and dbplyr packages need to be installed in order to test a tbl_sql"
+  )
 
-  pkgs <- "DBI"
+  pkgs <- c("DBI", "dbplyr")
   expect_equal(detect_backend(data), "collectibles")
 })

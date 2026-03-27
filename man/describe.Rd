@@ -4,11 +4,15 @@
 \alias{describe}
 \title{Describes a dataset}
 \usage{
-describe(x)
+describe(x, skip_ones = TRUE, digits = 4)
 }
 \arguments{
 \item{x}{a dataset, either a \code{\link{data.frame}}, \code{\link[dplyr:reexports]{dplyr::tibble}}, \code{\link[data.table:data.table]{data.table::data.table}},
 \code{\link[arrow:table]{arrow::arrow_table}}, \code{\link[arrow:open_dataset]{arrow::open_dataset}}, or \code{\link[dplyr:tbl]{dplyr::tbl}} (SQL connection)}
+
+\item{skip_ones}{logical, whether values that occur exactly once should be omitted from \code{most_frequent}}
+
+\item{digits}{integer, number of digits to round numeric values in \code{most_frequent}}
 }
 \value{
 a \code{data.frame}, \code{dplyr::tibble}, or \code{data.table::data.table} containing
@@ -18,6 +22,11 @@ a summary of the dataset given
 Note that the current version is in the beta stadium at best, that means the
 R-native formats (data.frame, dplyr/tibble, or data.table) are a lot faster
 than arrow or SQL-based datasets.
+}
+\details{
+Numeric values in \code{most_frequent} are rounded to \code{digits} (default: 4).
+If a variable has at most 1 distinct value, \code{most_frequent} is left empty.
+By default, values with count 1 are omitted from \code{most_frequent}.
 }
 \examples{
 describe(mtcars)

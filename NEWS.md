@@ -1,3 +1,7 @@
+# dataverifyr 0.1.10
+
+* Add `describe()` to describe a dataset
+
 # dataverifyr 0.1.9
 
 * fix tests for new duckdb version (fixes #17, thanks @krlmlr for reporting)

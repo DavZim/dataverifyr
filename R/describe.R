@@ -6,9 +6,15 @@
 #'
 #' @param x a dataset, either a [`data.frame`], [`dplyr::tibble`], [`data.table::data.table`],
 #' [`arrow::arrow_table`], [`arrow::open_dataset`], or [`dplyr::tbl`] (SQL connection)
+#' @param skip_ones logical, whether values that occur exactly once should be omitted from `most_frequent`
+#' @param digits integer, number of digits to round numeric values in `most_frequent`
 #'
 #' @return a `data.frame`, `dplyr::tibble`, or `data.table::data.table` containing
 #' a summary of the dataset given
+#' @details
+#' Numeric values in `most_frequent` are rounded to `digits` (default: 4).
+#' If a variable has at most 1 distinct value, `most_frequent` is left empty.
+#' By default, values with count 1 are omitted from `most_frequent`.
 #' @export
 #'
 #' @seealso Similar to [skimr::skim()](https://cran.r-project.org/web/packages/skimr/vignettes/skimr.html),
@@ -17,7 +23,7 @@
 #'
 #' @examples
 #' describe(mtcars)
-describe <- function(x) {
+describe <- function(x, skip_ones = TRUE, digits = 4) {
 
   backend <- detect_backend(x)
 
@@ -31,16 +37,16 @@ describe <- function(x) {
   }
 
   if (backend == "base-r") {
-    describe_base_r(x)
+    describe_base_r(x, skip_ones = skip_ones, digits = digits)
   } else if (backend == "dplyr") {
-    describe_dplyr(x)
+    describe_dplyr(x, skip_ones = skip_ones, digits = digits)
   } else if (backend == "data.table") {
-    describe_data.table(x)
+    describe_data.table(x, skip_ones = skip_ones, digits = digits)
   } else if (backend == "collectibles") {
     if ("tbl_sql" %in% class(x)) {
-      describe_sql(x)
+      describe_sql(x, skip_ones = skip_ones, digits = digits)
     } else if ("ArrowObject" %in% class(x)) {
-      describe_arrow(x)
+      describe_arrow(x, skip_ones = skip_ones, digits = digits)
     }
   } else {
     stop(sprintf("Could not detect backend to describe %s", paste(class(x), collapse = ", ")))
@@ -52,8 +58,31 @@ is_numeric <- function(v) {
   any(class(v) %in% c("integer", "numeric", "POSIXt"))
 }
 
+is_roundable_numeric <- function(v) {
+  any(class(v) %in% c("integer", "numeric"))
+}
+
+format_most_frequent <- function(values, counts, skip_ones = TRUE, digits = 4) {
+  if (length(unique(values)) <= 1) return("")
+  if (skip_ones) {
+    keep <- counts > 1
+    values <- values[keep]
+    counts <- counts[keep]
+  }
+  if (length(values) == 0) return("")
+  if (is_roundable_numeric(values)) values <- round(values, digits = digits)
+  paste(sprintf("%s (%s)", values, counts), collapse = ", ")
+}
+
+top_counts <- function(v, max_n = 3) {
+  uv <- unique(v)
+  tab <- tabulate(match(v, uv))
+  od <- order(tab, decreasing = TRUE)[seq(min(max_n, length(tab)))]
+  list(values = uv[od], counts = tab[od])
+}
+
 # x <- mtcars
-describe_base_r <- function(x, max_n = 3) {
+describe_base_r <- function(x, max_n = 3, skip_ones = TRUE, digits = 4) {
   ll <- lapply(
     seq(ncol(x)),
     function(i) {
@@ -61,12 +90,7 @@ describe_base_r <- function(x, max_n = 3) {
       type <- class(v)[[1]]
       is_num <- is_numeric(v)
 
-      tbl <- table(v)
-      uv <- unique(v)
-      tab <- tabulate(match(v, uv))
-      tab_max <- which(tab == max(tab))
-      # get the indices of the three highest counts
-      od <- order(tab, decreasing = TRUE)[seq(min(max_n, length(tab)))]
+      tc <- top_counts(v, max_n = max_n)
 
       nz <- if (!is_num) nchar(as.character(v))
 
@@ -76,8 +100,7 @@ describe_base_r <- function(x, max_n = 3) {
         n = length(v),
         n_distinct = length(unique(v)),
         n_na = sum(is.na(v)),
-        most_frequent = paste(sprintf("%s (%s)", uv[od], tab[od]),
-                              collapse = ", "),
+        most_frequent = format_most_frequent(tc$values, tc$counts, skip_ones = skip_ones, digits = digits),
 
         min = as.numeric(min(if (is_num) v else nz, na.rm = TRUE)),
         mean = as.numeric(mean(if (is_num) v else nz, na.rm = TRUE)),
@@ -92,17 +115,16 @@ describe_base_r <- function(x, max_n = 3) {
 }
 
 # x <- mtcars |> tibble::as_tibble()
-describe_dplyr <- function(x, max_n = 3) {
+describe_dplyr <- function(x, max_n = 3, skip_ones = TRUE, digits = 4) {
   ll <- lapply(
     names(x),
     function(v) {
-      mc <- x |>
-        dplyr::count(.data[[v]]) |>
-        dplyr::slice_max(n, n = max_n, with_ties = FALSE)
+      vv <- x[[v]]
+      tc <- top_counts(vv, max_n = max_n)
 
-      type <- class(mc[[1]])[[1]]
-      is_num <- is_numeric(mc[[1]])
-      mf <- paste(sprintf("%s (%s)", mc[[1]], mc[[2]]), collapse = ", ")
+      type <- class(vv)[[1]]
+      is_num <- is_numeric(vv)
+      mf <- format_most_frequent(tc$values, tc$counts, skip_ones = skip_ones, digits = digits)
 
       nz <- if (!is_num) nchar(as.character(x[[v]]))
       x |>
@@ -126,15 +148,16 @@ describe_dplyr <- function(x, max_n = 3) {
 }
 
 # x <- mtcars |> data.table::as.data.table()
-describe_data.table <- function(x, max_n = 3) {
+describe_data.table <- function(x, max_n = 3, skip_ones = TRUE, digits = 4) {
   ll <- lapply(
     names(x),
     function(v) {
-      mc <- x[, .(n = .N), by = v][order(n, decreasing = TRUE)][seq(max_n)]
+      vv <- x[[v]]
+      tc <- top_counts(vv, max_n = max_n)
 
-      type <- class(mc[[1]])[[1]]
-      is_num <- is_numeric(mc[[1]])
-      mf <- paste(sprintf("%s (%s)", mc[[1]], mc[[2]]), collapse = ", ")
+      type <- class(vv)[[1]]
+      is_num <- is_numeric(vv)
+      mf <- format_most_frequent(tc$values, tc$counts, skip_ones = skip_ones, digits = digits)
 
       nz <- if (!is_num) nchar(as.character(x[[v]]))
 
@@ -160,54 +183,38 @@ describe_data.table <- function(x, max_n = 3) {
 
 
 # RSQLite, duckdb etc
-describe_sql <- function(x, max_n = 3) {
-  ll <- lapply(names(x), function(v) {
+describe_sql <- function(x, max_n = 3, skip_ones = TRUE, digits = 4) {
+  ll <- lapply(colnames(x), function(v) {
     mc <- x |>
-      dplyr::count(.data[[v]]) |>
+      dplyr::count(!!rlang::sym(v)) |>
       dplyr::slice_max(n, n = max_n, with_ties = FALSE) |>
       dplyr::collect()
 
-    type <- class(mc[[1]])[[1]]
-    is_num <- is_numeric(mc[[1]])
-    mf <- paste(sprintf("%s (%s)", mc[[1]], mc[[2]]), collapse = ", ")
-    nn <- x |>
-      dplyr::distinct(.data[[v]]) |>
-      dplyr::summarise(n = dplyr::n()) |>
-      dplyr::collect()
-    nna <- x |> dplyr::filter(is.na(.data[[v]])) |> dplyr::collect() |> nrow()
+    vv <- x |>
+      dplyr::select(dplyr::all_of(v)) |>
+      dplyr::collect() |>
+      dplyr::pull(1)
+
+    type <- class(vv)[[1]]
+    is_num <- is_numeric(vv)
+    mf <- format_most_frequent(mc[[1]], mc[[2]], skip_ones = skip_ones, digits = digits)
 
     r <- dplyr::tibble(
       var = v,
       type = type,
-      n_distinct = nn[[1]],
-      n_na = nna,
+      n = length(vv),
+      n_distinct = length(unique(vv)),
+      n_na = sum(is.na(vv)),
       most_frequent = mf
     )
-
-    xx <- x |>
-      dplyr::select(dplyr::all_of(v)) |>
-      dplyr::rename(x := dplyr::all_of(v))
-    if (!is_num) xx <- xx |> dplyr::mutate(x = nchar(as.character(x)))
-
-
-    rr <- try(
-      xx |>
-        dplyr::summarise(
-          min = min(x, na.rm = TRUE),
-          mean = mean(x, na.rm = TRUE),
-          median = stats::median(x, na.rm = TRUE),
-          max = max(x, na.rm = TRUE),
-          sd = stats::sd(x, na.rm = TRUE)
-        ) |>
-        dplyr::collect(),
-      silent = TRUE
+    nz <- if (!is_num) nchar(as.character(vv))
+    rr <- dplyr::tibble(
+      min = as.numeric(min(if (is_num) vv else nz, na.rm = TRUE)),
+      mean = as.numeric(mean(if (is_num) vv else nz, na.rm = TRUE)),
+      median = as.numeric(stats::median(if (is_num) vv else nz, na.rm = TRUE)),
+      max = as.numeric(max(if (is_num) vv else nz, na.rm = TRUE)),
+      sd = as.numeric(stats::sd(if (is_num) vv else nz, na.rm = TRUE))
     )
-    if (inherits(rr, "try-error")) {
-      rr <- dplyr::tibble(
-        min = NA_real_, mean = NA_real_, median = NA_real_, max = NA_real_,
-        sd = NA_real_
-      )
-    }
 
     dplyr::bind_cols(r, rr)
   })
@@ -217,56 +224,46 @@ describe_sql <- function(x, max_n = 3) {
 
 # arrow::write_parquet(nycflights13::flights, "flights.parquet")
 # x <- arrow::open_dataset("flights.parquet")
-describe_arrow <- function(x, max_n = 3) {
+describe_arrow <- function(x, max_n = 3, skip_ones = TRUE, digits = 4) {
   # if x is a dbplyr connection string
-  ll <- lapply(names(x), function(v) {
-    mc <- x |>
-      dplyr::count(.data[[v]]) |>
-      dplyr::slice_max(n, n = max_n, with_ties = FALSE) |>
-      dplyr::collect()
+  ll <- lapply(colnames(x), function(v) {
+    mc <- try(
+      x |>
+        dplyr::count(!!rlang::sym(v)) |>
+        dplyr::slice_max(n, n = max_n, with_ties = FALSE) |>
+        dplyr::collect(),
+      silent = TRUE
+    )
 
-    type <- class(mc[[1]])[[1]]
-    is_num <- is_numeric(mc[[1]])
-    mf <- paste(sprintf("%s (%s)", mc[[1]], mc[[2]]), collapse = ", ")
-    nn <- x |>
-      dplyr::distinct(.data[[v]]) |>
-      dplyr::summarise(n = dplyr::n()) |>
-      dplyr::collect()
-    nna <- x |> dplyr::filter(is.na(.data[[v]])) |> nrow()
+    vv <- x |>
+      dplyr::select(dplyr::all_of(v)) |>
+      dplyr::collect() |>
+      dplyr::pull(1)
+    if (inherits(mc, "try-error")) {
+      tc <- top_counts(vv, max_n = max_n)
+      mc <- data.frame(v = tc$values, n = tc$counts)
+    }
+
+    type <- class(vv)[[1]]
+    is_num <- is_numeric(vv)
+    mf <- format_most_frequent(mc[[1]], mc[[2]], skip_ones = skip_ones, digits = digits)
 
     r <- dplyr::tibble(
       var = v,
       type = type,
-      n_distinct = nn[[1]],
-      n_na = nna,
+      n = length(vv),
+      n_distinct = length(unique(vv)),
+      n_na = sum(is.na(vv)),
       most_frequent = mf
     )
-
-    if (is_num) {
-      xx <- x |> dplyr::transmute(x = get(v))
-    } else {
-      xx <- x |> dplyr::transmute(x = nchar(as.character(get(v))))
-    }
-
-    suppressWarnings({
-      rr <- try(
-        xx |>
-          dplyr::summarise(
-            min = min(x, na.rm = TRUE),
-            mean = mean(x, na.rm = TRUE),
-            median = stats::median(x, na.rm = TRUE),
-            max = max(x, na.rm = TRUE),
-            sd = stats::sd(x, na.rm = TRUE)
-          ) |>
-          dplyr::collect(),
-        silent = TRUE)
-    })
-    if (inherits(rr, "try-error")) {
-      rr <- dplyr::tibble(
-        min = NA_real_, mean = NA_real_, median = NA_real_, max = NA_real_,
-        sd = NA_real_
-      )
-    }
+    nz <- if (!is_num) nchar(as.character(vv))
+    rr <- dplyr::tibble(
+      min = as.numeric(min(if (is_num) vv else nz, na.rm = TRUE)),
+      mean = as.numeric(mean(if (is_num) vv else nz, na.rm = TRUE)),
+      median = as.numeric(stats::median(if (is_num) vv else nz, na.rm = TRUE)),
+      max = as.numeric(max(if (is_num) vv else nz, na.rm = TRUE)),
+      sd = as.numeric(stats::sd(if (is_num) vv else nz, na.rm = TRUE))
+    )
 
     dplyr::bind_cols(r, rr)
   })
