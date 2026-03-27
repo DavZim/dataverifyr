@@ -184,14 +184,14 @@ test_that("duckdb check_ works", {
     allow_na = c(FALSE, FALSE, TRUE, FALSE, FALSE),
     negate = c(FALSE, TRUE, FALSE, FALSE, FALSE),
     tests = 32,
-    pass = c(32, 32, 27, 0, 0),
-    fail = c(0, 0, 5, 32, 32),
+    pass = c(32, 32, 27, 31, 0),
+    fail = c(0, 0, 5, 1, 32),
     warn = ""
   )
   expect_equal(res |> dplyr::select(-time, -error), exp)
   # the error messages are unreliable as the wording changes over versions,
   # test that there is some error message
-  expect_equal(nchar(res$error) > 0, c(FALSE, FALSE, FALSE, TRUE, TRUE))
+  expect_equal(nchar(res$error) > 0, c(FALSE, FALSE, FALSE, FALSE, TRUE))
 })
 
 

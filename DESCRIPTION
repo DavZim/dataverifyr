@@ -1,7 +1,7 @@
 Package: dataverifyr
 Type: Package
 Title: A Lightweight, Flexible, and Fast Data Validation Package that Can Handle All Sizes of Data
-Version: 0.1.8
+Version: 0.1.9
 Authors@R: c(
       person(given = "David",
              family = "Zimmermann-Kollenda",
@@ -28,7 +28,7 @@ Suggests:
     DBI,
     dplyr,
     dbplyr,
-    duckdb,
+    duckdb (>= 1.5.1),
     RSQLite,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

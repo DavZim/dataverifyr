@@ -1,3 +1,6 @@
+# dataverifyr 0.1.9
+
+* fix tests for new duckdb version (fixes #17, thanks @krlmlr for reporting)
 
 # dataverifyr 0.1.8
 
