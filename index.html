@@ -56,7 +56,8 @@
 <p>The goal of <code>dataverifyr</code> is to allow a wide variety of flexible data validation checks (verifications). That means, you can specify a set of rules (R expressions) and compare any arbitrary dataset against it.</p>
 <p>The package is built in such a way, that it adapts to your type of data and choice of data package (data.frame, data.table, tibble, arrow, or SQL connection) and chooses the right data backend automatically, this is especially handy when large or complicated datasets are involved. That way, you can concentrate on writing the rules and making sure that your data is valid rather than spending time writing boilerplate code.</p>
 <p>The package is lightweight as all the heavy dependencies are Suggests-only, that means if you want to use <code>data.table</code> for the task, you don’t need to install the other packages (<code>arrow</code>, <code>DBI</code>, etc) unless you explicitly tell R to install all suggested packages as well when installing the package.</p>
-<p>The backend for your analysis is automatically chosen based on the type of input dataset as well as the available packages. By using the underlying technologies and handing over all evaluation of code to the backend, this package can deal with all sizes of data the backends can deal with.</p>
+<p>The backend for your analysis is automatically chosen based on the type of input dataset as well as the available packages (see also <code>?detect_backend(data)</code>). By using the underlying technologies and handing over all evaluation of code to the backend, this package can deal with all sizes of data the backends can deal with.</p>
+<p>The package also has a helper function to describe a dataset, see <code>?describe()</code>.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -81,6 +82,9 @@
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/DavZim/dataverifyr" class="external-link">dataverifyr</a></span><span class="op">)</span></span>
 <span></span>
+<span><span class="co"># create a dataset</span></span>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="va">mtcars</span></span>
+<span></span>
 <span><span class="co"># define a rule set within our R code; alternatively in a yaml file</span></span>
 <span><span class="va">rules</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ruleset.html">ruleset</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="reference/rule.html">rule</a></span><span class="op">(</span><span class="va">mpg</span> <span class="op">&gt;</span> <span class="fl">10</span> <span class="op">&amp;</span> <span class="va">mpg</span> <span class="op">&lt;</span> <span class="fl">30</span><span class="op">)</span>, <span class="co"># mpg goes up to 34</span></span>
@@ -95,13 +99,40 @@
 <span><span class="co">#&gt;   [2] 'Rule for: cyl' matching `cyl %in% c(4, 8)` (allow_na: FALSE)</span></span>
 <span><span class="co">#&gt;   [3] 'Rule for: vs' matching `vs %in% c(0, 1)` (allow_na: TRUE)</span></span>
 <span></span>
+<span><span class="co"># describe the dataset</span></span>
+<span><span class="fu"><a href="reference/describe.html">describe</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span>
+<span><span class="co">#&gt;      var    type  n n_distinct n_na                  most_frequent    min       mean  median</span></span>
+<span><span class="co">#&gt;  1:  mpg numeric 32         25    0     21 (2), 22.8 (2), 21.4 (2) 10.400  20.090625  19.200</span></span>
+<span><span class="co">#&gt;  2:  cyl numeric 32          3    0          8 (14), 4 (11), 6 (7)  4.000   6.187500   6.000</span></span>
+<span><span class="co">#&gt;  3: disp numeric 32         27    0    275.8 (3), 160 (2), 360 (2) 71.100 230.721875 196.300</span></span>
+<span><span class="co">#&gt;  4:   hp numeric 32         22    0      110 (3), 175 (3), 180 (3) 52.000 146.687500 123.000</span></span>
+<span><span class="co">#&gt;  5: drat numeric 32         22    0    3.92 (3), 3.07 (3), 3.9 (2)  2.760   3.596563   3.695</span></span>
+<span><span class="co">#&gt;  6:   wt numeric 32         29    0   3.44 (3), 3.57 (2), 2.62 (1)  1.513   3.217250   3.325</span></span>
+<span><span class="co">#&gt;  7: qsec numeric 32         30    0 17.02 (2), 18.9 (2), 16.46 (1) 14.500  17.848750  17.710</span></span>
+<span><span class="co">#&gt;  8:   vs numeric 32          2    0        0 (18), 1 (14), NA (NA)  0.000   0.437500   0.000</span></span>
+<span><span class="co">#&gt;  9:   am numeric 32          2    0        0 (19), 1 (13), NA (NA)  0.000   0.406250   0.000</span></span>
+<span><span class="co">#&gt; 10: gear numeric 32          3    0          3 (15), 4 (12), 5 (5)  3.000   3.687500   4.000</span></span>
+<span><span class="co">#&gt; 11: carb numeric 32          6    0          4 (10), 2 (10), 1 (7)  1.000   2.812500   2.000</span></span>
+<span><span class="co">#&gt;         max          sd</span></span>
+<span><span class="co">#&gt;  1:  33.900   6.0269481</span></span>
+<span><span class="co">#&gt;  2:   8.000   1.7859216</span></span>
+<span><span class="co">#&gt;  3: 472.000 123.9386938</span></span>
+<span><span class="co">#&gt;  4: 335.000  68.5628685</span></span>
+<span><span class="co">#&gt;  5:   4.930   0.5346787</span></span>
+<span><span class="co">#&gt;  6:   5.424   0.9784574</span></span>
+<span><span class="co">#&gt;  7:  22.900   1.7869432</span></span>
+<span><span class="co">#&gt;  8:   1.000   0.5040161</span></span>
+<span><span class="co">#&gt;  9:   1.000   0.4989909</span></span>
+<span><span class="co">#&gt; 10:   5.000   0.7378041</span></span>
+<span><span class="co">#&gt; 11:   8.000   1.6152000</span></span>
+<span></span>
 <span><span class="co"># check if the data matches our rules</span></span>
-<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">rules</span><span class="op">)</span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">rules</span><span class="op">)</span></span>
 <span><span class="va">res</span></span>
 <span><span class="co">#&gt;             name                expr allow_na negate tests pass fail warn error              time</span></span>
-<span><span class="co">#&gt; 1: Rule for: mpg mpg &gt; 10 &amp; mpg &lt; 30    FALSE  FALSE    32   28    4            0.0055301189 secs</span></span>
-<span><span class="co">#&gt; 2: Rule for: cyl    cyl %in% c(4, 8)    FALSE  FALSE    32   25    7            0.0034749508 secs</span></span>
-<span><span class="co">#&gt; 3:  Rule for: vs     vs %in% c(0, 1)     TRUE  FALSE    32   32    0            0.0004439354 secs</span></span></code></pre></div>
+<span><span class="co">#&gt; 1: Rule for: mpg mpg &gt; 10 &amp; mpg &lt; 30    FALSE  FALSE    32   28    4            0.0010831356 secs</span></span>
+<span><span class="co">#&gt; 2: Rule for: cyl    cyl %in% c(4, 8)    FALSE  FALSE    32   25    7            0.0033519268 secs</span></span>
+<span><span class="co">#&gt; 3:  Rule for: vs     vs %in% c(0, 1)     TRUE  FALSE    32   32    0            0.0005369186 secs</span></span></code></pre></div>
 <p>As we can see, our dataset <code>mtcars</code> does not conform to all of our rules. We have four fails (fail=rule is not met) for the first rule <code>mpg &gt; 10 &amp; mpg &lt; 30</code> (there are <code>mpg</code> values up to 33.9) and seven fails for the second rule <code>cyl %in% c(4, 8)</code> (there are <code>cyl</code> values of 6), while the third rule <code>vs %in% c(0, 1)</code> is always met.</p>
 <p>To see which values do not meet our expectations, use the <code><a href="reference/filter_fails.html">filter_fails()</a></code> function</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -385,15 +416,31 @@ Especially handy for large datasets
 <span><span class="co">#&gt; [1] 123.6685</span></span>
 <span></span>
 <span><span class="co"># quick check of the filesize</span></span>
-<span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://arrow.apache.org/docs/r/reference/read_parquet.html" class="external-link">read_parquet</a></span><span class="op">(</span><span class="va">file</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">d</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 8760687      19</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">d</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  [1] "VendorID"              "tpep_pickup_datetime"  "tpep_dropoff_datetime" "passenger_count"      </span></span>
-<span><span class="co">#&gt;  [5] "trip_distance"         "RatecodeID"            "store_and_fwd_flag"    "PULocationID"         </span></span>
-<span><span class="co">#&gt;  [9] "DOLocationID"          "payment_type"          "fare_amount"           "extra"                </span></span>
-<span><span class="co">#&gt; [13] "mta_tax"               "tip_amount"            "tolls_amount"          "improvement_surcharge"</span></span>
-<span><span class="co">#&gt; [17] "total_amount"          "congestion_surcharge"  "airport_fee"</span></span>
+<span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://arrow.apache.org/docs/r/reference/open_dataset.html" class="external-link">open_dataset</a></span><span class="op">(</span><span class="va">file</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/describe.html">describe</a></span><span class="op">(</span><span class="va">d</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 19 × 10</span></span>
+<span><span class="co">#&gt;    var                  type  n_dis…¹    n_na most_…²     min      mean   median       max        sd</span></span>
+<span><span class="co">#&gt;    &lt;chr&gt;                &lt;chr&gt;   &lt;int&gt;   &lt;int&gt; &lt;chr&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt;  1 VendorID             inte…       2       0 2 (491…    1      1.5610    2           2     0.49508 </span></span>
+<span><span class="co">#&gt;  2 tpep_pickup_datetime POSI… 2311532       0 2018-0…   NA     NA        NA          NA    NA       </span></span>
+<span><span class="co">#&gt;  3 tpep_dropoff_dateti… POSI… 2315089       0 2018-0…   NA     NA        NA          NA    NA       </span></span>
+<span><span class="co">#&gt;  4 passenger_count      inte…      10       0 1 (624…    0      1.6068    1           9     1.2330  </span></span>
+<span><span class="co">#&gt;  5 trip_distance        nume…    4397       0 0.8 (2…    0      2.8040    1.5503 189484.    3.2532  </span></span>
+<span><span class="co">#&gt;  6 RatecodeID           inte…       7       0 1 (853…    1      1.0395    1          99     0.31301 </span></span>
+<span><span class="co">#&gt;  7 store_and_fwd_flag   char…       2       0 N (872…    1      1         1           1     0       </span></span>
+<span><span class="co">#&gt;  8 PULocationID         inte…     259       0 237 (3…    1    164.46    161.86      265    66.520   </span></span>
+<span><span class="co">#&gt;  9 DOLocationID         inte…     261       0 236 (3…    1    162.73    162.10      265    75.411   </span></span>
+<span><span class="co">#&gt; 10 payment_type         inte…       4       0 1 (610…    1      1.3106    1           4     0.45814 </span></span>
+<span><span class="co">#&gt; 11 fare_amount          nume…    1714       0 6 (473… -450     12.244     8.8357   8016     9.9255  </span></span>
+<span><span class="co">#&gt; 12 extra                nume…      42       0 0 (474…  -44.69   0.32469   0          60     0.068786</span></span>
+<span><span class="co">#&gt; 13 mta_tax              nume…      15       0 0.5 (8…   -0.5    0.49751   0.5        45.49  0.043389</span></span>
+<span><span class="co">#&gt; 14 tip_amount           nume…    3397       0 0 (289…  -88.8    1.8188    1.3968    441.71  2.2823  </span></span>
+<span><span class="co">#&gt; 15 tolls_amount         nume…     967       0 0 (833…  -15      0.30262   0         950.7   1.1501  </span></span>
+<span><span class="co">#&gt; 16 improvement_surchar… nume…       4       0 0.3 (8…   -0.3    0.29963   0.3         1     0.018442</span></span>
+<span><span class="co">#&gt; 17 total_amount         nume…   11514       0 7.3 (2… -450.3   15.491    11.321    8016.8  11.984   </span></span>
+<span><span class="co">#&gt; 18 congestion_surcharge nume…       2 8760675 NA (87…    2.5    2.5       2.5         2.5  NA       </span></span>
+<span><span class="co">#&gt; 19 airport_fee          nume…       2 8760675 NA (87…    0      0         0           0    NA       </span></span>
+<span><span class="co">#&gt; # … with abbreviated variable names ¹​n_distinct, ²​most_frequent</span></span>
 <span></span>
 <span><span class="co"># write the dataset to disk</span></span>
 <span><span class="fu"><a href="https://arrow.apache.org/docs/r/reference/write_dataset.html" class="external-link">write_dataset</a></span><span class="op">(</span><span class="va">d</span>, <span class="st">"nyc-taxi-data"</span><span class="op">)</span></span></code></pre></div>
@@ -442,9 +489,9 @@ Especially handy for large datasets
 <span><span class="co">#&gt; # A tibble: 3 × 10</span></span>
 <span><span class="co">#&gt;   name                      expr              allow…¹ negate   tests    pass  fail warn  error time </span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;                     &lt;chr&gt;             &lt;lgl&gt;   &lt;lgl&gt;    &lt;int&gt;   &lt;int&gt; &lt;int&gt; &lt;chr&gt; &lt;chr&gt; &lt;drt&gt;</span></span>
-<span><span class="co">#&gt; 1 Rule for: passenger_count passenger_count … FALSE   FALSE  8760687 8760687     0 ""    ""    0.56…</span></span>
-<span><span class="co">#&gt; 2 Rule for: trip_distance   trip_distance &gt;=… FALSE   FALSE  8760687 8760686     1 ""    ""    0.43…</span></span>
-<span><span class="co">#&gt; 3 Rule for: payment_type    payment_type %in… FALSE   FALSE  8760687 8760687     0 ""    ""    0.42…</span></span>
+<span><span class="co">#&gt; 1 Rule for: passenger_count passenger_count … FALSE   FALSE  8760687 8760687     0 ""    ""    0.42…</span></span>
+<span><span class="co">#&gt; 2 Rule for: trip_distance   trip_distance &gt;=… FALSE   FALSE  8760687 8760686     1 ""    ""    0.51…</span></span>
+<span><span class="co">#&gt; 3 Rule for: payment_type    payment_type %in… FALSE   FALSE  8760687 8760687     0 ""    ""    0.45…</span></span>
 <span><span class="co">#&gt; # … with abbreviated variable name ¹​allow_na</span></span>
 <span></span>
 <span><span class="fu"><a href="reference/plot_res.html">plot_res</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span></code></pre></div>
@@ -491,9 +538,9 @@ Especially handy for large datasets
 <span><span class="co">#&gt; # A tibble: 3 × 10</span></span>
 <span><span class="co">#&gt;   name          expr                allow_na negate tests  pass  fail warn  error time          </span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;         &lt;chr&gt;               &lt;lgl&gt;    &lt;lgl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt; &lt;drtn&gt;        </span></span>
-<span><span class="co">#&gt; 1 Rule for: mpg mpg &gt; 10 &amp; mpg &lt; 30 FALSE    FALSE     32    28     4 ""    ""    1.232728 secs</span></span>
-<span><span class="co">#&gt; 2 Rule for: cyl cyl %in% c(4, 8)    FALSE    FALSE     32    25     7 ""    ""    0.2015200 secs</span></span>
-<span><span class="co">#&gt; 3 Rule for: vs  vs %in% c(0, 1)     TRUE     FALSE     32    32     0 ""    ""    0.1898661 secs</span></span>
+<span><span class="co">#&gt; 1 Rule for: mpg mpg &gt; 10 &amp; mpg &lt; 30 FALSE    FALSE     32    28     4 ""    ""    4.4900761 secs</span></span>
+<span><span class="co">#&gt; 2 Rule for: cyl cyl %in% c(4, 8)    FALSE    FALSE     32    25     7 ""    ""    0.1926301 secs</span></span>
+<span><span class="co">#&gt; 3 Rule for: vs  vs %in% c(0, 1)     TRUE     FALSE     32    32     0 ""    ""    0.2003391 secs</span></span>
 <span></span>
 <span><span class="fu"><a href="reference/filter_fails.html">filter_fails</a></span><span class="op">(</span><span class="va">res</span>, <span class="va">tbl</span>, per_rule <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; $`mpg &gt; 10 &amp; mpg &lt; 30`</span></span>

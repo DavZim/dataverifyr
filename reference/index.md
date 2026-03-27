@@ -11,6 +11,8 @@
   [`` `+`( ``*`<ruleset>`*`)`](https://davzim.github.io/dataverifyr/reference/dataverifyr_plus.md)
   [`` `+`( ``*`<rule>`*`)`](https://davzim.github.io/dataverifyr/reference/dataverifyr_plus.md)
   : Add Rules and Rulesets Together
+- [`describe()`](https://davzim.github.io/dataverifyr/reference/describe.md)
+  : Describes a dataset
 - [`detect_backend()`](https://davzim.github.io/dataverifyr/reference/detect_backend.md)
   : Detects the backend which will be used for checking the rules
 - [`filter_fails()`](https://davzim.github.io/dataverifyr/reference/filter_fails.md)

@@ -92,7 +92,7 @@ check_data(mtcars, r)
 #> 1: Rule for: mpg mpg > 10    FALSE  FALSE    32    32     0              
 #>                 time
 #>           <difftime>
-#> 1: 0.0004367828 secs
+#> 1: 0.0004281998 secs
 
 rs <- ruleset(
   rule(mpg > 10),
@@ -112,7 +112,7 @@ check_data(mtcars, rs)
 #> 3: Rule for: qsec qsec >= 14.5 & qsec <= 22.9    FALSE  FALSE    32    32     0
 #>      warn  error              time
 #>    <char> <char>        <difftime>
-#> 1:               0.0003740788 secs
-#> 2:               0.0011332035 secs
-#> 3:               0.0004291534 secs
+#> 1:               0.0003235340 secs
+#> 2:               0.0010995865 secs
+#> 3:               0.0002834797 secs
 ```

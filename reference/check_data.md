@@ -80,7 +80,7 @@ check_data(mtcars, rs)
 #> 3: Rule for: qsec qsec >= 14.5 & qsec <= 22.9    FALSE  FALSE    32    32     0
 #>      warn  error              time
 #>    <char> <char>        <difftime>
-#> 1:               0.0048604012 secs
-#> 2:               0.0024776459 secs
-#> 3:               0.0003242493 secs
+#> 1:               0.0050399303 secs
+#> 2:               0.0025241375 secs
+#> 3:               0.0003087521 secs
 ```
