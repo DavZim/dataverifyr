@@ -112,11 +112,11 @@ res
 #> 1:   row_rule           amount in valid range                    amount >= 0 & amount <= 10000
 #> 2:   row_rule             known customer tier customer_tier %in% c("bronze", "silver", "gold")
 #> 3:   row_rule paid orders need payment method                 !paid | payment_method != "none"
-#>    allow_na negate tests  pass  fail   warn  error              time
-#>      <lgcl> <lgcl> <int> <int> <int> <char> <char>        <difftime>
-#> 1:    FALSE  FALSE     8     6     2               0.0027768612 secs
-#> 2:    FALSE  FALSE     8     6     2               0.0051655769 secs
-#> 3:    FALSE  FALSE     8     6     2               0.0009186268 secs
+#>    allow_na negate tests  pass  fail   warn  error             time
+#>      <lgcl> <lgcl> <int> <int> <int> <char> <char>       <difftime>
+#> 1:    FALSE  FALSE     8     6     2               0.001594782 secs
+#> 2:    FALSE  FALSE     8     6     2               0.003151417 secs
+#> 3:    FALSE  FALSE     8     6     2               0.000392437 secs
 ```
 
 As we can see, this demo dataset does not conform to all of our rules.
@@ -253,9 +253,9 @@ check_data(x, row_rules)
 #> 3:   row_rule paid orders require payment method                 !paid | payment_method != "none"
 #>    allow_na negate tests  pass  fail   warn  error              time
 #>      <lgcl> <lgcl> <int> <int> <int> <char> <char>        <difftime>
-#> 1:     TRUE  FALSE     8     6     2               0.0009946823 secs
-#> 2:     TRUE  FALSE     8     7     1               0.0009689331 secs
-#> 3:     TRUE  FALSE     8     7     1               0.0009040833 secs
+#> 1:     TRUE  FALSE     8     6     2               0.0006306171 secs
+#> 2:     TRUE  FALSE     8     7     1               0.0004973412 secs
+#> 3:     TRUE  FALSE     8     7     1               0.0005061626 secs
 ```
 
 The result tells you, for each rule, how many rows passed/failed and
@@ -309,20 +309,20 @@ check_data(x_ok, schema_rules)
 #> 10: column_type('payment_method') == 'str'    FALSE  FALSE     1     1     0              
 #> 11:            column_exists('order_time')    FALSE  FALSE     1     1     0              
 #> 12:                             amount > 0     TRUE  FALSE     8     6     2              
-#>                 time
-#>           <difftime>
-#>  1: 0.000000000 secs
-#>  2: 0.000000000 secs
-#>  3: 0.000000000 secs
-#>  4: 0.000000000 secs
-#>  5: 0.000000000 secs
-#>  6: 0.000000000 secs
-#>  7: 0.000000000 secs
-#>  8: 0.000000000 secs
-#>  9: 0.000000000 secs
-#> 10: 0.000000000 secs
-#> 11: 0.000000000 secs
-#> 12: 0.000931263 secs
+#>                  time
+#>            <difftime>
+#>  1: 0.0000000000 secs
+#>  2: 0.0000000000 secs
+#>  3: 0.0000000000 secs
+#>  4: 0.0000000000 secs
+#>  5: 0.0000000000 secs
+#>  6: 0.0000000000 secs
+#>  7: 0.0000000000 secs
+#>  8: 0.0000000000 secs
+#>  9: 0.0000000000 secs
+#> 10: 0.0000000000 secs
+#> 11: 0.0000000000 secs
+#> 12: 0.0003817081 secs
 ```
 
 In this setup:
@@ -384,7 +384,7 @@ check_data(x_extra, schema_rules, extra_columns = "ignore")
 #>  9: 0.000000000 secs
 #> 10: 0.000000000 secs
 #> 11: 0.000000000 secs
-#> 12: 0.001006603 secs
+#> 12: 0.000430584 secs
 
 # warn when undeclared columns are present
 try(check_data(x_extra, schema_rules, extra_columns = "warn"))
@@ -431,7 +431,7 @@ try(check_data(x_extra, schema_rules, extra_columns = "warn"))
 #>  9: 0.0000000000 secs
 #> 10: 0.0000000000 secs
 #> 11: 0.0000000000 secs
-#> 12: 0.0009269714 secs
+#> 12: 0.0004563332 secs
 
 # fail immediately when undeclared columns are present
 try(check_data(x_extra, schema_rules, extra_columns = "fail"))
@@ -483,13 +483,13 @@ try(check_data(x_missing, schema_rules))
 #>  8: 0.0000000000 secs
 #>  9: 0.0000000000 secs
 #> 10: 0.0000000000 secs
-#> 11: 0.0009188652 secs
+#> 11: 0.0003526211 secs
 ```
 
 ### Relational Rules (cross-dataset checks)
 
-You can also validate relationships between datasets, for example ensuring
-foreign keys in one dataset exist in a lookup table.
+You can also validate relationships between datasets, for example
+ensuring foreign keys in one dataset exist in a lookup table.
 
 ``` r
 flights <- data.frame(carrier = c("AA", "BB", NA_character_))
@@ -513,6 +513,12 @@ check_data(
   ),
   rel_rules
 )
+#>        check_type                       name                             expr allow_na negate tests
+#>            <char>                     <char>                           <char>   <lgcl> <lgcl> <int>
+#> 1: reference_rule carrier exists in carriers carrier %in% carriers$carrier_id     TRUE  FALSE     3
+#>     pass  fail   warn  error              time
+#>    <int> <int> <char> <char>        <difftime>
+#> 1:     2     1               5.555153e-05 secs
 ```
 
 This returns a `reference_rule` row in `check_type`, so relational
@@ -983,13 +989,36 @@ url <- "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2018-01.
 file <- "yellow_tripdata_2018-01.parquet"
 if (!file.exists(file)) download.file(url, file, method = "curl")
 file.size(file) / 1e6 # in MB
+#> [1] 123.6685
 
-# quick check of the filesize
+# quick check of the filesize and the structure of the file
 d <- open_dataset(file)
 describe(d, fast = TRUE)
+#> # A tibble: 19 × 11
+#>    var                   type            n n_distinct    n_na most_frequent        min      mean median     max       sd
+#>    <chr>                 <chr>       <int>      <int>   <int> <chr>              <dbl>     <dbl>  <dbl>   <dbl>    <dbl>
+#>  1 VendorID              integer   8760687         NA       0 <NA>             1   e+0   1.56e+0     NA  2   e0  4.96e-1
+#>  2 tpep_pickup_datetime  POSIXct   8760687         NA       0 <NA>             9.79e+8   1.52e+9     NA  1.53e9  1.06e+6
+#>  3 tpep_dropoff_datetime POSIXct   8760687         NA       0 <NA>             9.79e+8   1.52e+9     NA  1.53e9  1.06e+6
+#>  4 passenger_count       integer   8760687         NA       0 <NA>             0         1.61e+0     NA  9   e0  1.26e+0
+#>  5 trip_distance         numeric   8760687         NA       0 <NA>             0         2.80e+0     NA  1.89e5  6.41e+1
+#>  6 RatecodeID            integer   8760687         NA       0 <NA>             1   e+0   1.04e+0     NA  9.9 e1  4.45e-1
+#>  7 store_and_fwd_flag    character 8760687         NA 8760687 <NA>            NA       NaN           NA NA      NA      
+#>  8 PULocationID          integer   8760687         NA       0 <NA>             1   e+0   1.64e+2     NA  2.65e2  6.64e+1
+#>  9 DOLocationID          integer   8760687         NA       0 <NA>             1   e+0   1.63e+2     NA  2.65e2  7.03e+1
+#> 10 payment_type          integer   8760687         NA       0 <NA>             1   e+0   1.31e+0     NA  4   e0  4.82e-1
+#> 11 fare_amount           numeric   8760687         NA       0 <NA>            -4.5 e+2   1.22e+1     NA  8.02e3  1.17e+1
+#> 12 extra                 numeric   8760687         NA       0 <NA>            -4.47e+1   3.25e-1     NA  6   e1  4.50e-1
+#> 13 mta_tax               numeric   8760687         NA       0 <NA>            -5   e-1   4.98e-1     NA  4.55e1  4.33e-2
+#> 14 tip_amount            numeric   8760687         NA       0 <NA>            -8.88e+1   1.82e+0     NA  4.42e2  2.49e+0
+#> 15 tolls_amount          numeric   8760687         NA       0 <NA>            -1.5 e+1   3.03e-1     NA  9.51e2  1.74e+0
+#> 16 improvement_surcharge numeric   8760687         NA       0 <NA>            -3   e-1   3.00e-1     NA  1   e0  1.44e-2
+#> 17 total_amount          numeric   8760687         NA       0 <NA>            -4.50e+2   1.55e+1     NA  8.02e3  1.42e+1
+#> 18 congestion_surcharge  numeric   8760687         NA 8760675 <NA>             2.5 e+0   2.5 e+0     NA  2.5 e0  0      
+#> 19 airport_fee           numeric   8760687         NA 8760675 <NA>             0         0           NA  0       0    
 
 # write the dataset to disk
-write_dataset(d, "nyc-taxi-data")
+if (!dir.exists("nyc-taxi-data")) write_dataset(d, "nyc-taxi-data")
 ```
 
 ### 2 Create Rules in `yaml`
@@ -1000,8 +1029,25 @@ saw earlier, we can create the rules in R using the `rule()` and
 option to separate the code from the rules by writing the rules in a
 separate yaml file and reading them into R.
 
-First we display the hand-written contents of the `nyc_data_rules.yaml`
-file.
+First we create and write the rules to a `nyc_data_rules.yaml` file,
+note for larger rulesets, you would most likely write the rules directly
+in the yml file.
+
+``` r
+rs <- ruleset(
+  rule(passenger_count >= 0 & passenger_count <= 10),
+  rule(trip_distance >= 0 & trip_distance <= 1000),
+  rule(payment_type %in% c(0, 1, 2, 3, 4))
+)
+write_rules(rs, "nyc_data_rules.yaml")
+```
+
+Which looks like this in the yaml file:
+
+``` r
+cat(paste(c("```yaml", readLines("nyc_data_rules.yaml"), "```"),
+          collapse = "\n"))
+```
 
 ``` yaml
 meta: ~
@@ -1042,11 +1088,7 @@ data points:
 
 ``` r
 library(arrow)
-#> 
-#> Attaching package: 'arrow'
-#> The following object is masked from 'package:utils':
-#> 
-#>     timestamp
+
 # open the dataset 
 ds <- open_dataset("nyc-taxi-data/")
 
@@ -1054,16 +1096,20 @@ ds <- open_dataset("nyc-taxi-data/")
 res <- check_data(ds, rules)
 res
 #> # A tibble: 3 × 11
-#>   check_type name                      expr  allow_na negate   tests    pass  fail warn  error time 
-#>   <chr>      <chr>                     <chr> <lgl>    <lgl>    <int>   <int> <int> <chr> <chr> <drt>
-#> 1 row_rule   Rule for: passenger_count pass… FALSE    FALSE  8760687 8760687     0 ""    ""    0.84…
-#> 2 row_rule   Rule for: trip_distance   trip… FALSE    FALSE  8760687 8760686     1 ""    ""    0.66…
-#> 3 row_rule   Rule for: payment_type    paym… FALSE    FALSE  8760687 8760687     0 ""    ""    0.56…
+#>   check_type name                      expr                                         allow_na negate   tests    pass  fail warn  error time          
+#>   <chr>      <chr>                     <chr>                                        <lgl>    <lgl>    <int>   <int> <int> <chr> <chr> <drtn>        
+#> 1 row_rule   Rule for: passenger_count passenger_count >= 0 & passenger_count <= 10 FALSE    FALSE  8760687 8760687     0 ""    ""    0.4102955 secs
+#> 2 row_rule   Rule for: trip_distance   trip_distance >= 0 & trip_distance <= 1000   FALSE    FALSE  8760687 8760686     1 ""    ""    0.3988464 secs
+#> 3 row_rule   Rule for: payment_type    payment_type %in% c(0, 1, 2, 3, 4)           FALSE    FALSE  8760687 8760687     0 ""    ""    0.3578835 secs
 
 plot_res(res)
 ```
 
-<img src="man/figures/README-taxi3-1.png" alt="" width="100%" />
+``` r
+knitr::include_graphics(system.file("plot_res.png", package = "dataverifyr"))
+```
+
+<img src="../../R/x86_64-pc-linux-gnu-library/4.4/dataverifyr/plot_res.png" alt="" width="100%" />
 
 Using the power of `arrow`, we were able to scan 8+mln observations for
 three rules in about 1.5 seconds (YMMV). As we can see from the results,

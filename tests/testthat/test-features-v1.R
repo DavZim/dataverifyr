@@ -112,6 +112,21 @@ test_that("check_data validates schema and supports extra_columns modes", {
   )
 })
 
+test_that("check_data supports ruleset with only data_columns", {
+  rs <- ruleset(
+    data_columns = list(
+      data_column("a", type = "int", optional = FALSE),
+      data_column("b", type = "str", optional = TRUE)
+    )
+  )
+
+  res <- check_data(data.frame(a = 1:3), rs)
+  expect_true(nrow(res) > 0)
+  expect_true(all(res$check_type == "schema"))
+  expect_false(any(res$check_type == "row_rule"))
+  expect_true(all(res$fail == 0))
+})
+
 
 test_that("check_data supports cross-reference rules across datasets", {
   flights <- data.frame(carrier = c("AA", "BB", NA_character_))

@@ -58,20 +58,20 @@ This is a basic example which shows you how to
 3.  save and load the rules to a yaml-file for better maintainability
 
 Note that each rule is an R expression that is evaluated within the dataset.
-Our first rule, for example, states that we believe all values of the `mpg` variable are in the range 10 to 30 (exclusive).
-At the moment rules work in a window/vectorized approach only, that means that a rule like this will work `mpg > 10 * wt`, whereas a rule like this `sum(mpg) > 0` will not work as it aggregates values.
+Our first rule, for example, states that we expect all `amount` values to be in a sensible range.
+At the moment rules work in a window/vectorized approach only, that means that a rule like this will work `amount > 10 * as.numeric(paid)`, whereas a rule like this `sum(amount) > 0` will not work as it aggregates values.
 
 ```{r example, message=FALSE}
 library(dataverifyr)
 
-# create a dataset
-data <- mtcars
+# use the packaged demo dataset (includes NAs + datetime)
+data <- sample_data
 
 # define a rule set within our R code; alternatively in a yaml file
 rules <- ruleset(
-  rule(mpg > 10 & mpg < 30), # mpg goes up to 34
-  rule(cyl %in% c(4, 8)), # missing 6 cyl
-  rule(vs %in% c(0, 1), allow_na = TRUE)
+  rule(amount >= 0 & amount <= 10000, name = "amount in valid range"),
+  rule(customer_tier %in% c("bronze", "silver", "gold"), name = "known customer tier"),
+  rule(!paid | payment_method != "none", name = "paid orders need payment method")
 )
 
 # print the rules
@@ -85,12 +85,13 @@ res <- check_data(data, rules)
 res
 ```
 
-As we can see, our dataset `mtcars` does not conform to all of our rules.
-We have four fails (fail=rule is not met) for the first rule `mpg > 10 & mpg < 30` (there are `mpg` values up to 33.9) and seven fails for the second rule `cyl %in% c(4, 8)` (there are `cyl` values of 6), while the third rule `vs %in% c(0, 1)` is always met.
+As we can see, this demo dataset does not conform to all of our rules.
+There is one negative amount, one unknown customer tier, and one row where `paid == TRUE` but `payment_method == "none"`.
+The dataset also contains missing values and a datetime column (`order_time`) to mirror common real data inputs.
 
 To see which values do not meet our expectations, use the `filter_fails()` function
 ```{r filterfails}
-filter_fails(res, mtcars, per_rule = TRUE)
+filter_fails(res, data, per_rule = TRUE)
 ```
 
 We can also visualize the results using the `plot_res()` function.
@@ -99,16 +100,18 @@ We can also visualize the results using the `plot_res()` function.
 plot_res(res)
 ```
 
-Note that you can also save and load a ruleset to and from a `yaml` file
+Note that you can also save and load a ruleset to and from a structured `yaml` file
 ```{r yaml_rules}
-write_rules(rules, "example_rules.yaml")
-r2 <- read_rules("example_rules.yaml")
+write_rules(rules, "example_rules_v1.yaml", format = "v1")
+r2 <- read_rules("example_rules_v1.yaml")
 identical(rules, r2)
 ```
-The resulting `example_rules.yaml` looks like this
+The resulting `example_rules_v1.yaml` looks like this
 ```{r ex_yaml, results="asis", echo=FALSE}
-cat(paste(c("```yaml", readLines("example_rules.yaml"), "```"), collapse = "\n"))
+cat(paste(c("```yaml", readLines("example_rules_v1.yaml"), "```"), collapse = "\n"))
 ```
+
+`dataverifyr` uses structured v1 YAML (`meta` + `data-columns` + `data-rules`) in the main workflow.
 
 One helpful use case is to use this functionality to assert that your data has the right values in a custom read function like so:
 
@@ -130,6 +133,158 @@ data <- read_custom("wrong_data.csv", rules)
 #>   In dataset 'wrong_data.csv' found 2 rule fails, 1 warnings, 1 errors
 ```
 
+## Row-Based Checks vs Column-Based Checks
+
+`dataverifyr` supports two complementary layers of validation:
+
+1.  **Row-based checks** with `rule()`  
+    These answer questions like: "Is each value in a valid range?" or
+    "Does each row satisfy a logical condition?".
+2.  **Column-based checks** with `data_columns` in `ruleset()`  
+    These answer questions like: "Does this column exist?", "Is it required?",
+    and "Does it have the expected type?".
+
+The important idea is:
+
+- `rule()` is about **values inside rows**.
+- `data_column()` is about the **declared structure (schema)** of the dataset.
+
+### Row-Based Rules (value checks)
+
+```{r row_based}
+library(dataverifyr)
+
+row_rules <- ruleset(
+  rule(amount > 0, name = "amount is positive", allow_na = TRUE),
+  rule(customer_tier %in% c("bronze", "silver", "gold"), name = "known customer tier", allow_na = TRUE),
+  rule(!paid | payment_method != "none", name = "paid orders require payment method", allow_na = TRUE)
+)
+
+x <- sample_data
+
+check_data(x, row_rules)
+```
+
+The result tells you, for each rule, how many rows passed/failed and whether warnings/errors occurred during evaluation.
+
+### Column-Based Rules (schema checks)
+
+Column checks are attached to the `ruleset()` via `data_columns`.
+
+```{r column_based}
+schema_rules <- ruleset(
+  rule(amount > 0, name = "amount is positive", allow_na = TRUE),
+  data_columns = list(
+    data_column("order_id", type = "int", optional = FALSE, description = "Primary key"),
+    data_column("customer_tier", type = "str", optional = FALSE),
+    data_column("amount", type = "double", optional = FALSE),
+    data_column("paid", type = "logical", optional = FALSE),
+    data_column("payment_method", type = "str", optional = FALSE),
+    data_column("order_time", optional = TRUE)
+  )
+)
+
+x_ok <- sample_data
+
+check_data(x_ok, schema_rules)
+```
+
+In this setup:
+
+- `order_id`, `customer_tier`, `amount`, `paid`, and `payment_method` must exist (`optional = FALSE`)
+- `order_time` is optional in the schema declaration
+- row rules still run as usual (`amount > 0`)
+
+### Handling extra columns
+
+If your input has columns not declared in `data_columns`, use `extra_columns`:
+
+```{r extra_columns}
+x_extra <- sample_data
+x_extra$unexpected_col <- c("a", "b", "c", "d", "e", "f", "g", "h")
+
+# default: ignore undeclared columns
+check_data(x_extra, schema_rules, extra_columns = "ignore")
+
+# warn when undeclared columns are present
+try(check_data(x_extra, schema_rules, extra_columns = "warn"))
+
+# fail immediately when undeclared columns are present
+try(check_data(x_extra, schema_rules, extra_columns = "fail"))
+```
+
+### Missing required columns
+
+```{r missing_required}
+x_missing <- sample_data[, setdiff(names(sample_data), "payment_method")]
+
+try(check_data(x_missing, schema_rules))
+```
+
+### Relational Rules (cross-dataset checks)
+
+You can also validate relationships between datasets, for example ensuring
+foreign keys in one dataset exist in a lookup table.
+
+```{r relational_rules}
+flights <- data.frame(carrier = c("AA", "BB", NA_character_))
+carriers <- data.frame(carrier_id = c("AA"))
+
+rel_rules <- ruleset(
+  reference_rule(
+    local_col = "carrier",
+    ref_dataset = "carriers",
+    ref_col = "carrier_id",
+    name = "carrier exists in carriers",
+    allow_na = TRUE
+  ),
+  data_name = "flights"
+)
+
+check_data(
+  list(
+    flights = flights,
+    carriers = carriers
+  ),
+  rel_rules
+)
+```
+
+This returns a `reference_rule` row in `check_type`, so relational checks are
+visible in the same output table as schema and row rules.
+
+### Structured YAML (`v1`) for schema + rules
+
+`dataverifyr` supports a structured YAML format that separates metadata, schema, and rules.
+
+```{r yaml_v1}
+schema_rules_v1 <- ruleset(
+  rule(amount > 0, name = "amount is positive", allow_na = TRUE),
+  data_columns = list(
+    data_column("order_id", type = "int", optional = FALSE),
+    data_column("customer_tier", type = "str", optional = FALSE),
+    data_column("amount", type = "double", optional = FALSE),
+    data_column("paid", type = "logical", optional = FALSE),
+    data_column("payment_method", type = "str", optional = FALSE),
+    data_column("order_time", optional = TRUE)
+  ),
+  meta = dataverifyr:::rule_meta(
+    title = "Order Validation",
+    version = "1.0",
+    description = "Checks for order exports"
+  )
+)
+
+write_rules(schema_rules_v1, "example_rules_v1.yaml", format = "v1")
+
+rules_back <- read_rules("example_rules_v1.yaml")
+rules_back
+```
+
+Structured v1 example:
+```{r ex_yaml_v1, results="asis", echo=FALSE}
+cat(paste(c("```yaml", readLines("example_rules_v1.yaml"), "```"), collapse = "\n"))
+```
 
 ## Backends
 
@@ -137,6 +292,8 @@ At the moment the following backends are supported.
 Note that they are automatically chosen based on data type and package availability.
 Eg, when the dataset is a `dplyr::tbl()` connected to an `SQLite` database, the package will automatically choose `RSQLite`/`DBI`/`dbplyr` for the task.
 To see which backend `dataverifyr` would use for a task, you can use `detect_backend(data)`.
+
+Important: many backend packages are optional (`Suggests`) and may not be installed in all environments (for example CI runners, documentation builders, or minimal local setups). In particular, examples requiring `arrow`, `duckdb`, `DBI`, or `dplyr` may be shown but not executed unless those packages are available.
 
 ```{r backends, echo=FALSE, results="asis"}
 # setup the table of backends in R... base markdown is not nice with this formatting...
@@ -205,19 +362,42 @@ For a more involved example, using a different backend, let's say we have a larg
 First we prepare the data by downloading it and writing the dataset to `.parquet` files.
 This needs to be done only once and is shown for reproducibility reasons only, the actual `dataverifyr` code is shown below the next block
 
-```{r taxi1, eval=requireNamespace("arrow", quietly=TRUE), message=FALSE, warning=FALSE}
+```{r taxi1, eval=FALSE}
 library(arrow)
 url <- "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2018-01.parquet"
 file <- "yellow_tripdata_2018-01.parquet"
 if (!file.exists(file)) download.file(url, file, method = "curl")
 file.size(file) / 1e6 # in MB
+#> [1] 123.6685
 
-# quick check of the filesize
+# quick check of the filesize and the structure of the file
 d <- open_dataset(file)
-describe(d)
+describe(d, fast = TRUE)
+#> # A tibble: 19 × 11
+#>    var                   type            n n_distinct    n_na most_frequent        min      mean median     max       sd
+#>    <chr>                 <chr>       <int>      <int>   <int> <chr>              <dbl>     <dbl>  <dbl>   <dbl>    <dbl>
+#>  1 VendorID              integer   8760687         NA       0 <NA>             1   e+0   1.56e+0     NA  2   e0  4.96e-1
+#>  2 tpep_pickup_datetime  POSIXct   8760687         NA       0 <NA>             9.79e+8   1.52e+9     NA  1.53e9  1.06e+6
+#>  3 tpep_dropoff_datetime POSIXct   8760687         NA       0 <NA>             9.79e+8   1.52e+9     NA  1.53e9  1.06e+6
+#>  4 passenger_count       integer   8760687         NA       0 <NA>             0         1.61e+0     NA  9   e0  1.26e+0
+#>  5 trip_distance         numeric   8760687         NA       0 <NA>             0         2.80e+0     NA  1.89e5  6.41e+1
+#>  6 RatecodeID            integer   8760687         NA       0 <NA>             1   e+0   1.04e+0     NA  9.9 e1  4.45e-1
+#>  7 store_and_fwd_flag    character 8760687         NA 8760687 <NA>            NA       NaN           NA NA      NA      
+#>  8 PULocationID          integer   8760687         NA       0 <NA>             1   e+0   1.64e+2     NA  2.65e2  6.64e+1
+#>  9 DOLocationID          integer   8760687         NA       0 <NA>             1   e+0   1.63e+2     NA  2.65e2  7.03e+1
+#> 10 payment_type          integer   8760687         NA       0 <NA>             1   e+0   1.31e+0     NA  4   e0  4.82e-1
+#> 11 fare_amount           numeric   8760687         NA       0 <NA>            -4.5 e+2   1.22e+1     NA  8.02e3  1.17e+1
+#> 12 extra                 numeric   8760687         NA       0 <NA>            -4.47e+1   3.25e-1     NA  6   e1  4.50e-1
+#> 13 mta_tax               numeric   8760687         NA       0 <NA>            -5   e-1   4.98e-1     NA  4.55e1  4.33e-2
+#> 14 tip_amount            numeric   8760687         NA       0 <NA>            -8.88e+1   1.82e+0     NA  4.42e2  2.49e+0
+#> 15 tolls_amount          numeric   8760687         NA       0 <NA>            -1.5 e+1   3.03e-1     NA  9.51e2  1.74e+0
+#> 16 improvement_surcharge numeric   8760687         NA       0 <NA>            -3   e-1   3.00e-1     NA  1   e0  1.44e-2
+#> 17 total_amount          numeric   8760687         NA       0 <NA>            -4.50e+2   1.55e+1     NA  8.02e3  1.42e+1
+#> 18 congestion_surcharge  numeric   8760687         NA 8760675 <NA>             2.5 e+0   2.5 e+0     NA  2.5 e0  0      
+#> 19 airport_fee           numeric   8760687         NA 8760675 <NA>             0         0           NA  0       0    
 
 # write the dataset to disk
-write_dataset(d, "nyc-taxi-data")
+if (!dir.exists("nyc-taxi-data")) write_dataset(d, "nyc-taxi-data")
 ```
 
 
@@ -226,22 +406,26 @@ write_dataset(d, "nyc-taxi-data")
 Next, we can create some rules that we will use to check our data.
 As we saw earlier, we can create the rules in R using the `rule()` and `ruleset()` functions, there is however, the (in my opinion) preferred option to separate the code from the rules by writing the rules in a separate yaml file and reading them into R.
 
-First we display the hand-written contents of the `nyc_data_rules.yaml` file.
+First we create and write the rules to a `nyc_data_rules.yaml` file, note for larger rulesets, you would most likely write the rules directly in the yml file.
 
-```{r nycrules, echo=FALSE, results="asis"}
+```{r nycrules}
 rs <- ruleset(
   rule(passenger_count >= 0 & passenger_count <= 10),
   rule(trip_distance >= 0 & trip_distance <= 1000),
   rule(payment_type %in% c(0, 1, 2, 3, 4))
 )
 write_rules(rs, "nyc_data_rules.yaml")
+```
+
+Which looks like this in the yaml file:
+```{r nycrules2, results="asis"}
 cat(paste(c("```yaml", readLines("nyc_data_rules.yaml"), "```"),
           collapse = "\n"))
 ```
 
 Then, we can load, display, and finally check the rules against the data
 
-```{r taxi2, eval=requireNamespace("arrow", quietly=TRUE)}
+```{r taxi2}
 rules <- read_rules("nyc_data_rules.yaml")
 rules
 ```
@@ -250,25 +434,47 @@ rules
 
 Now we can check if the data follows our rules or if we have unexpected data points:
 
-```{r taxi3, eval=requireNamespace("arrow", quietly=TRUE)}
+```{r taxi3, eval=FALSE}
+library(arrow)
+
 # open the dataset 
 ds <- open_dataset("nyc-taxi-data/")
 
 # perform the data validation check
 res <- check_data(ds, rules)
 res
+#> # A tibble: 3 × 11
+#>   check_type name                      expr                                         allow_na negate   tests    pass  fail warn  error time          
+#>   <chr>      <chr>                     <chr>                                        <lgl>    <lgl>    <int>   <int> <int> <chr> <chr> <drtn>        
+#> 1 row_rule   Rule for: passenger_count passenger_count >= 0 & passenger_count <= 10 FALSE    FALSE  8760687 8760687     0 ""    ""    0.4102955 secs
+#> 2 row_rule   Rule for: trip_distance   trip_distance >= 0 & trip_distance <= 1000   FALSE    FALSE  8760687 8760686     1 ""    ""    0.3988464 secs
+#> 3 row_rule   Rule for: payment_type    payment_type %in% c(0, 1, 2, 3, 4)           FALSE    FALSE  8760687 8760687     0 ""    ""    0.3578835 secs
 
 plot_res(res)
+```
+
+```{r, eval=FALSE, echo=FALSE}
+png("inst/plot_res.png", height = 400, width = 500)
+plot_res(res)
+dev.off()
+```
+
+```{r}
+knitr::include_graphics(system.file("plot_res.png", package = "dataverifyr"))
 ```
 
 Using the power of `arrow`, we were able to scan 8+mln observations for three rules in about 1.5 seconds (YMMV).
 As we can see from the results, there is one unexpected value, lets quickly investigate using the `filter_fails()` function, which filters a dataset for the failed rule matches
 
-```{r taxi4, eval=requireNamespace("arrow", quietly=TRUE)}
+```{r taxi4, eval=FALSE}
 res |>
   filter_fails(ds) |> 
   # only select a couple of variables for brevity
   dplyr::select(tpep_pickup_datetime, tpep_dropoff_datetime, trip_distance)
+#> # A tibble: 1 × 3
+#>   tpep_pickup_datetime tpep_dropoff_datetime trip_distance
+#>   <dttm>               <dttm>                        <dbl>
+#> 1 2018-01-30 11:41:02  2018-01-30 11:42:09         189484.
 ```
 
 As we can see, this is probably a data error (a trip distance of 190k miles in 1 minute seems - ehm stellar...).
@@ -277,23 +483,23 @@ As we can see, this is probably a data error (a trip distance of 190k miles in 1
 
 If you have a `SQLite` or `duckdb` database, you can use the package like this
 
-```{r duckdb, eval=requireNamespace("duckdb", quietly = TRUE) & requireNamespace("dplyr", quietly = TRUE) & requireNamespace("DBI", quietly = TRUE), message=FALSE, warning=FALSE}
+```{r duckdb, eval=FALSE, message=FALSE, warning=FALSE}
 library(DBI)
 library(dplyr)
 
 # connect to a duckdb database
 con <- dbConnect(duckdb::duckdb("duckdb-database.duckdb"))
-# for demo purposes write the data once
-dbWriteTable(con, "mtcars", mtcars)
+# for demo purposes write sample_data once
+dbWriteTable(con, "orders", sample_data)
 
 # create a tbl connection, which can be used in the checks
-tbl <- tbl(con, "mtcars")
+tbl <- tbl(con, "orders")
 
 # create rules
 rules <- ruleset(
-  rule(mpg > 10 & mpg < 30),
-  rule(cyl %in% c(4, 8)),
-  rule(vs %in% c(0, 1), allow_na = TRUE)
+  rule(amount >= 0 & amount <= 10000, name = "amount in valid range"),
+  rule(customer_tier %in% c("bronze", "silver", "gold"), name = "known customer tier"),
+  rule(!paid | payment_method != "none", name = "paid orders need payment method")
 )
 
 # check rules
@@ -306,6 +512,21 @@ filter_fails(res, tbl, per_rule = TRUE)
 dbDisconnect(con, shutdown = TRUE)
 ```
 
+## Pre Package Version 1.0 YAML (Compatibility)
+
+`dataverifyr` still supports the pre package version 1.0 flat-list YAML format for compatibility with existing rule files.
+
+```{r yaml_pre_v1}
+write_rules(rules, "example_rules_pre_v1.yaml", format = "pre_v1")
+rules_pre_v1 <- read_rules("example_rules_pre_v1.yaml")
+identical(rules, rules_pre_v1)
+```
+
+Pre package version 1.0 YAML example:
+```{r ex_yaml_pre_v1_bottom, results="asis", echo=FALSE}
+cat(paste(c("```yaml", readLines("example_rules_pre_v1.yaml"), "```"), collapse = "\n"))
+```
+
 
 # Alternative Data Validation R Libraries
 
@@ -316,8 +537,8 @@ If this library is not what you are looking for, the following might be good alt
 - [`data.validator`](https://github.com/Appsilon/data.validator)
 
 ```{r cleanup, echo=FALSE}
-unlink("example_rules.yaml")
-unlink("nyc-taxi-data", recursive = TRUE)
+unlink("example_rules_v1.yaml")
+unlink("example_rules_pre_v1.yaml")
 unlink("nyc_data_rules.yaml")
 unlink("duckdb-database.duckdb")
 ```
