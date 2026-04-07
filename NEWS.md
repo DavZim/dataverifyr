@@ -9,6 +9,7 @@
 * Extend `ruleset()`, `check_data()`, `read_rules()`, and `write_rules()` for v1 schema-aware workflows; keep `rule()` as row-level API (no `col_rule()`)
 * Add exported `sample_data` dataset (mixed types, NAs, datetime) for examples and tests
 * export `reference_rule()` and extend examples in `ruleset()`, `check_data()`, `reference_rule()`, and `data_column()` to show combined schema + relational workflows
+* Require DuckDB version `>= 1.5.2` in all DuckDB-backed tests via `skip_if_not_installed("duckdb", "1.5.2")`
 
 # dataverifyr 0.1.9
 

@@ -171,6 +171,7 @@ test_that("sqlite (RSQLite) check_ works", {
 
 
 test_that("duckdb check_ works", {
+  skip_if_not_installed("duckdb", "1.5.2")
   skip_if_not(requireNamespace("DBI", quietly = TRUE) |
                 requireNamespace("dbplyr", quietly = TRUE) |
                 requireNamespace("duckdb", quietly = TRUE),

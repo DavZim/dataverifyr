@@ -88,6 +88,7 @@ test_that("describe sqlite", {
 
 
 test_that("describe duckdb", {
+  skip_if_not_installed("duckdb", "1.5.2")
   skip_if_not(
     requireNamespace("DBI", quietly = TRUE) &&
       requireNamespace("dplyr", quietly = TRUE) &&
@@ -112,6 +113,7 @@ test_that("describe duckdb", {
 
 
 test_that("describe duckdb supports skip_ones/digits without full-vector semantics changes", {
+  skip_if_not_installed("duckdb", "1.5.2")
   skip_if_not(
     requireNamespace("DBI", quietly = TRUE) &&
       requireNamespace("dplyr", quietly = TRUE) &&
@@ -238,6 +240,7 @@ test_that("describe fast mode skips expensive fields", {
 })
 
 test_that("describe duckdb fast mode skips expensive fields", {
+  skip_if_not_installed("duckdb", "1.5.2")
   skip_if_not(
     requireNamespace("DBI", quietly = TRUE) &&
       requireNamespace("dplyr", quietly = TRUE) &&
