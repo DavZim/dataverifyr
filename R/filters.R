@@ -39,7 +39,12 @@ filter_fails <- function(res, x, per_rule = FALSE) {
       c("name", "expr", "allow_na", "negate", "pass", "fail", "tests") %in% names(res)
     ))
 
-    fails <- res$fail != 0
+    is_row_rule <- if ("check_type" %in% names(res)) {
+      res$check_type == "row_rule"
+    } else {
+      rep(TRUE, nrow(res))
+    }
+    fails <- is_row_rule & res$fail != 0
     eorig <- res$expr[fails]
     negated <- res$negate[fails]
     allow_na <- res$allow_na[fails]

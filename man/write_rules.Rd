@@ -5,7 +5,7 @@
 \alias{read_rules}
 \title{Read and write rules to a yaml file}
 \usage{
-write_rules(x, file)
+write_rules(x, file, format = c("v1", "pre_v1"))
 
 read_rules(file)
 }
@@ -13,6 +13,10 @@ read_rules(file)
 \item{x}{a list of rules}
 
 \item{file}{a filename}
+
+\item{format}{output format. \code{"v1"} writes structured YAML with \code{meta},
+\code{data-columns}, and \code{data-rules}. \code{"pre_v1"} keeps the pre package version 1.0
+flat-list structure.}
 }
 \value{
 the filename invisibly

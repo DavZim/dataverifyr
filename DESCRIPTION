@@ -1,7 +1,7 @@
 Package: dataverifyr
 Type: Package
 Title: A Lightweight, Flexible, and Fast Data Validation Package that Can Handle All Sizes of Data
-Version: 0.1.9
+Version: 0.1.10
 Authors@R: c(
       person(given = "David",
              family = "Zimmermann-Kollenda",
@@ -35,4 +35,4 @@ Config/testthat/edition: 3
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.3

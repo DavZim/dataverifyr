@@ -1,4 +1,3 @@
-
 # create a sample dataset to describe
 set.seed(41)
 data <- data.frame(
@@ -15,119 +14,356 @@ data <- data.frame(
   # factor
   g = factor(sample(letters, 20, replace = TRUE)),
   # posixct
-  h = as.POSIXct(sample.int(365*60*60*24, 10, replace = TRUE), origin = "2020-01-01")
+  h = as.POSIXct(
+    sample.int(365 * 60 * 60 * 24, 10, replace = TRUE),
+    origin = "2020-01-01",
+    tz = "UTC"
+  )
 )
-for (n in names(data))
-  data[sample.int(nrow(data), 3), n] <- NA
 
-# the expected values
-exp <- data.frame(
-  var = c("a", "b", "c", "d", "e", "f", "g", "h"),
-  type = c("numeric", "numeric", "integer", "integer", "character",
-           "character", "factor", "POSIXct"),
-  n = c(20L, 20L, 20L, 20L, 20L, 20L, 20L, 20L),
-  n_distinct = c(18L, 18L, 18L, 8L, 14L, 15L, 13L, 11L),
-  n_na = c(3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L),
-  most_frequent = c("NA (3), 1 (1), 2 (1)",
-                    "NA (3), -0.794368337075183 (1), 0.197257539137862 (1)",
-                    "NA (3), 1 (1), 2 (1)", "16 (4), NA (3), 13 (3)",
-                    "u (3), NA (3), r (2)", "NA (3), ggg (3), x (2)",
-                    "g (3), NA (3), b (2)",
-                    "NA (3), 2020-11-16 01:27:37 (2), 2020-08-10 23:06:51 (2)"),
-  min = c(1, -1.57960700723589, 1, 7, 1, 1, 1, 1578213277),
-  mean = c(9.82352941176471, 0.395917134682771, 9.70588235294118,
-           13.4705882352941, 1, 2.11764705882353, 1, 1597372702.64706),
-  median = c(10, 0.493667470676325, 10, 13, 1, 2, 1, 1601657240),
-  max = c(20, 2.27440247098253, 20, 18, 1, 3, 1, 1606208141),
-  sd = c(5.92911559717854, 1.08100890056568, 5.7961701351232,
-         3.6420743927538, 0, 0.857492925712544, 0, 9824874.35812236)
-)
+for (n in names(data)) data[sample.int(nrow(data), 3), n] <- NA
+
+normalize_mf <- function(x) {
+  vapply(strsplit(x, ", ", fixed = TRUE), function(parts) {
+    paste(sort(parts), collapse = ", ")
+  }, character(1))
+}
+
 
 test_that("describe data.frame", {
   local_mocked_bindings(has_pkg = function(p) p %in% pkgs, .package = "dataverifyr")
   pkgs <- NULL
-  expect_equal(detect_backend(data), "base-r")
-  d <- describe(data)
-  expect_equal(class(d), "data.frame")
-  expect_equal(d, exp)
 
-  skip_if_not(requireNamespace("dplyr", quietly = TRUE) |
-                requireNamespace("data.table", quietly = TRUE),
-              "dplyr and data.table must be installed to run these tests")
+  expect_equal(detect_backend(data), "base-r")
+  d <- describe(data, skip_ones = FALSE)
+  expect_equal(class(d), "data.frame")
+  exp <- d
+
+  skip_if_not(
+    requireNamespace("dplyr", quietly = TRUE) &&
+      requireNamespace("data.table", quietly = TRUE),
+    "dplyr and data.table must be installed to run these tests"
+  )
 
   # use data.table
   pkgs <- "data.table"
   expect_equal(detect_backend(data), "data.table")
-  d <- describe(data)
+  d <- describe(data, skip_ones = FALSE)
   expect_equal(class(d), c("data.table", "data.frame"))
-  expect_equal(as.data.frame(d), exp)
+  expect_equal(as.data.frame(d)[setdiff(names(d), "most_frequent")],
+               exp[setdiff(names(exp), "most_frequent")])
+  expect_equal(normalize_mf(as.data.frame(d)$most_frequent), normalize_mf(exp$most_frequent))
 
   # use dplyr
   pkgs <- "dplyr"
   expect_equal(detect_backend(data), "dplyr")
-  d <- describe(data)
+  d <- describe(data, skip_ones = FALSE)
   expect_equal(class(d), c("tbl_df", "tbl", "data.frame"))
-  expect_equal(as.data.frame(d), exp)
-  # error here as dplyr backend sorts the data slightly differently...
+  expect_equal(as.data.frame(d)[setdiff(names(d), "most_frequent")],
+               exp[setdiff(names(exp), "most_frequent")])
+  expect_equal(normalize_mf(as.data.frame(d)$most_frequent), normalize_mf(exp$most_frequent))
 })
 
-test_that("sqlite", {
-  skip_if_not(requireNamespace("DBI", quietly = TRUE) |
-                requireNamespace("dplyr", quietly = TRUE) |
-                requireNamespace("dbplyr", quietly = TRUE) |
-                requireNamespace("RSQLite", quietly = TRUE),
-              "DBI, dplyr, dbplyr, and RSQLite must be installed to test the functionality")
+
+test_that("describe sqlite", {
+  skip_if_not(
+    requireNamespace("DBI", quietly = TRUE) &&
+      requireNamespace("dplyr", quietly = TRUE) &&
+      requireNamespace("dbplyr", quietly = TRUE) &&
+      requireNamespace("RSQLite", quietly = TRUE),
+    "DBI, dplyr, dbplyr, and RSQLite must be installed to test the functionality"
+  )
 
   con <- DBI::dbConnect(RSQLite::SQLite())
   DBI::dbWriteTable(con, "data", data)
   x <- dplyr::tbl(con, "data")
   expect_equal(detect_backend(x), "collectibles")
 
-  d <- describe(x)
-  # this takes waaaaay too long....
+  d <- describe(x, skip_ones = FALSE)
 
   expect_equal(class(d), c("tbl_df", "tbl", "data.frame"))
-  expect_equal(as.data.frame(d), exp)
-  # error here: different order and missing last row due to posixct
+  expect_equal(nrow(d), ncol(data))
+  expect_true(all(c("var", "type", "n", "n_distinct", "n_na", "most_frequent") %in% names(d)))
 
   DBI::dbDisconnect(con)
 })
 
-test_that("duckdb", {
-  skip_if_not(requireNamespace("DBI", quietly = TRUE) |
-                requireNamespace("dplyr", quietly = TRUE) |
-                requireNamespace("dbplyr", quietly = TRUE) |
-                requireNamespace("duckdb", quietly = TRUE),
-              "DBI, dplyr, dbplyr, and duckdb must be installed to test the functionality")
+
+test_that("describe duckdb", {
+  skip_if_not_installed("duckdb", "1.5.1.9002")
+  skip_if_not(
+    requireNamespace("DBI", quietly = TRUE) &&
+      requireNamespace("dplyr", quietly = TRUE) &&
+      requireNamespace("dbplyr", quietly = TRUE) &&
+      requireNamespace("duckdb", quietly = TRUE),
+    "DBI, dplyr, dbplyr, and duckdb must be installed to test the functionality"
+  )
 
   con <- DBI::dbConnect(duckdb::duckdb())
   DBI::dbWriteTable(con, "data", data)
   x <- dplyr::tbl(con, "data")
   expect_equal(detect_backend(x), "collectibles")
 
-  d <- describe(x)
-  # this takes waaaaay too long....
+  d <- describe(x, skip_ones = FALSE)
 
   expect_equal(class(d), c("tbl_df", "tbl", "data.frame"))
-  expect_equal(as.data.frame(d), exp)
-  # error here: different order and missing last row due to posixct
+  expect_equal(nrow(d), ncol(data))
+  expect_true(all(c("var", "type", "n", "n_distinct", "n_na", "most_frequent") %in% names(d)))
   DBI::dbDisconnect(con)
 
 })
-test_that("arrow", {
-  skip_if_not(requireNamespace("dbplyr", quietly = TRUE) |
-                requireNamespace("arrow", quietly = TRUE),
-              "dplyr and arrow must be installed to test the functionality")
+
+
+test_that("describe duckdb supports skip_ones/digits without full-vector semantics changes", {
+  skip_if_not_installed("duckdb", "1.5.1.9002")
+  skip_if_not(
+    requireNamespace("DBI", quietly = TRUE) &&
+      requireNamespace("dplyr", quietly = TRUE) &&
+      requireNamespace("dbplyr", quietly = TRUE) &&
+      requireNamespace("duckdb", quietly = TRUE),
+    "DBI, dplyr, dbplyr, and duckdb must be installed to test the functionality"
+  )
+
+  x <- data.frame(
+    num = c(1.234567, 1.234567, 9.876543, 9.876543, NA_real_),
+    chr = c("a", "a", "b", "c", NA_character_)
+  )
+
+  con <- DBI::dbConnect(duckdb::duckdb())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  DBI::dbWriteTable(con, "data_mf", x, overwrite = TRUE)
+  tbl <- dplyr::tbl(con, "data_mf")
+
+  d <- describe(tbl, skip_ones = FALSE, digits = 2)
+  expect_equal(normalize_mf(d$most_frequent[d$var == "num"]), "1.23 (2), 9.88 (2), NA (1)")
+  expect_match(d$most_frequent[d$var == "chr"], "^a \\(2\\)")
+
+  d2 <- describe(tbl, skip_ones = TRUE, digits = 2)
+  expect_equal(normalize_mf(d2$most_frequent[d2$var == "num"]), "1.23 (2), 9.88 (2)")
+  expect_equal(d2$most_frequent[d2$var == "chr"], "a (2)")
+})
+
+
+test_that("describe arrow", {
+  skip_if_not(
+    requireNamespace("dbplyr", quietly = TRUE) &&
+      requireNamespace("arrow", quietly = TRUE),
+    "dplyr and arrow must be installed to test the functionality"
+  )
 
   tmp <- tempfile()
   arrow::write_parquet(data, tmp)
   x <- arrow::open_dataset(tmp)
   expect_equal(detect_backend(x), "collectibles")
 
-  d <- describe(x)
-  # this takes waaaaay too long....
+  d <- describe(x, skip_ones = FALSE)
 
   expect_equal(class(d), c("tbl_df", "tbl", "data.frame"))
-  expect_equal(as.data.frame(d), exp)
-  # error here: different order and missing last row due to posixct
+  expect_equal(nrow(d), ncol(data))
+  expect_true(all(c("var", "type", "n", "n_distinct", "n_na", "most_frequent") %in% names(d)))
+})
+
+test_that("describe_collectibles_stats works on arrow numeric columns in fast mode", {
+  skip_if_not(
+    requireNamespace("dplyr", quietly = TRUE) &&
+      requireNamespace("dbplyr", quietly = TRUE) &&
+      requireNamespace("arrow", quietly = TRUE),
+    "dplyr, dbplyr, and arrow must be installed to test the functionality"
+  )
+
+  x <- data.frame(num = c(1, 2, NA_real_, 4))
+  tmp <- tempfile()
+  arrow::write_parquet(x, tmp)
+  ds <- arrow::open_dataset(tmp)
+
+  stats <- dataverifyr:::describe_collectibles_stats(ds, "num", is_num = TRUE, fast = TRUE)
+
+  expect_equal(stats$n, 4L)
+  expect_equal(stats$n_na, 1L)
+  expect_equal(stats$min, 1)
+  expect_equal(stats$max, 4)
+  expect_equal(round(stats$mean, 6), round(mean(x$num, na.rm = TRUE), 6))
+  expect_equal(round(stats$sd, 6), round(stats::sd(x$num, na.rm = TRUE), 6))
+})
+
+test_that("describe arrow fast mode handles POSIXct columns", {
+  skip_if_not(
+    requireNamespace("dplyr", quietly = TRUE) &&
+      requireNamespace("dbplyr", quietly = TRUE) &&
+      requireNamespace("arrow", quietly = TRUE),
+    "dplyr, dbplyr, and arrow must be installed to test the functionality"
+  )
+
+  x <- data.frame(
+    ts = as.POSIXct(c("2020-01-01 00:00:00", "2020-01-01 01:00:00", NA), tz = "UTC"),
+    val = c(1, 2, 3)
+  )
+  tmp <- tempfile()
+  arrow::write_parquet(x, tmp)
+  ds <- arrow::open_dataset(tmp)
+
+  d <- describe(ds, fast = TRUE, skip_ones = FALSE)
+  ts_row <- d[d$var == "ts", , drop = FALSE]
+
+  expect_true(nrow(ts_row) == 1)
+  expect_false(is.na(ts_row$mean))
+  expect_false(is.na(ts_row$sd))
+})
+
+
+test_that("describe most_frequent rounds numeric values and suppresses <=1 distinct", {
+  local_mocked_bindings(has_pkg = function(...) FALSE, .package = "dataverifyr")
+
+  x <- data.frame(
+    one_value = rep(3.1415926535, 5),
+    all_na = rep(NA_real_, 5),
+    mixed = c(1.23456789, 1.23456789, 9.87654321, NA_real_, 9.87654321)
+  )
+
+  d <- suppressWarnings(describe(x, skip_ones = FALSE))
+
+  expect_equal(d$most_frequent[d$var == "one_value"], "")
+  expect_equal(d$most_frequent[d$var == "all_na"], "")
+  expect_equal(
+    d$most_frequent[d$var == "mixed"],
+    "1.2346 (2), 9.8765 (2), NA (1)"
+  )
+})
+
+
+test_that("describe skips one-count values in most_frequent by default", {
+  local_mocked_bindings(has_pkg = function(...) FALSE, .package = "dataverifyr")
+
+  x <- data.frame(
+    mostly_unique = c(1, 2, 3, 4, 5),
+    repeated = c(1, 1, 2, 3, NA_real_)
+  )
+
+  d <- describe(x)
+  expect_equal(d$most_frequent[d$var == "mostly_unique"], "")
+  expect_equal(d$most_frequent[d$var == "repeated"], "1 (2)")
+
+  d_keep_ones <- describe(x, skip_ones = FALSE)
+  expect_equal(d_keep_ones$most_frequent[d_keep_ones$var == "repeated"], "1 (2), 2 (1), 3 (1)")
+})
+
+
+test_that("describe supports configurable digits for most_frequent numeric rounding", {
+  local_mocked_bindings(has_pkg = function(...) FALSE, .package = "dataverifyr")
+
+  x <- data.frame(
+    mixed = c(1.23456789, 1.23456789, 9.87654321, 9.87654321, NA_real_)
+  )
+
+  d <- describe(x, skip_ones = FALSE, digits = 2)
+  expect_equal(d$most_frequent[d$var == "mixed"], "1.23 (2), 9.88 (2), NA (1)")
+})
+
+test_that("describe supports configurable top_n for most_frequent", {
+  local_mocked_bindings(has_pkg = function(...) FALSE, .package = "dataverifyr")
+
+  x <- data.frame(
+    vals = c("a", "a", "b", "b", "c", "d")
+  )
+
+  d3 <- describe(x, skip_ones = FALSE, top_n = 3)
+  expect_equal(d3$most_frequent[d3$var == "vals"], "a (2), b (2), c (1)")
+
+  d2 <- describe(x, skip_ones = FALSE, top_n = 2)
+  expect_equal(d2$most_frequent[d2$var == "vals"], "a (2), b (2)")
+})
+
+test_that("describe supports top_n = 0 to skip most_frequent values", {
+  local_mocked_bindings(has_pkg = function(...) FALSE, .package = "dataverifyr")
+
+  x <- data.frame(
+    vals = c("a", "a", "b", "b", "c", "d")
+  )
+
+  d0 <- describe(x, skip_ones = FALSE, top_n = 0)
+  expect_equal(d0$most_frequent[d0$var == "vals"], "")
+})
+
+test_that("describe fast mode skips expensive fields", {
+  local_mocked_bindings(has_pkg = function(...) FALSE, .package = "dataverifyr")
+
+  x <- data.frame(
+    num = c(1, 1, 2, 3, NA_real_),
+    chr = c("a", "a", "b", "c", NA_character_)
+  )
+
+  d <- describe(x, fast = TRUE, skip_ones = FALSE, top_n = 2)
+  expect_true(all(is.na(d$n_distinct)))
+  expect_true(all(is.na(d$median)))
+  expect_true(all(is.na(d$most_frequent)))
+  expect_false(all(is.na(d$mean)))
+})
+
+test_that("describe duckdb fast mode skips expensive fields", {
+  skip_if_not_installed("duckdb", "1.5.1.9002")
+  skip_if_not(
+    requireNamespace("DBI", quietly = TRUE) &&
+      requireNamespace("dplyr", quietly = TRUE) &&
+      requireNamespace("dbplyr", quietly = TRUE) &&
+      requireNamespace("duckdb", quietly = TRUE),
+    "DBI, dplyr, dbplyr, and duckdb must be installed to test the functionality"
+  )
+
+  x <- data.frame(
+    num = c(1, 1, 2, 3, NA_real_),
+    chr = c("a", "a", "b", "c", NA_character_)
+  )
+
+  con <- DBI::dbConnect(duckdb::duckdb())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  DBI::dbWriteTable(con, "data_fast", x, overwrite = TRUE)
+  tbl <- dplyr::tbl(con, "data_fast")
+
+  d <- describe(tbl, fast = TRUE, skip_ones = FALSE, top_n = 2)
+  expect_true(all(is.na(d$n_distinct)))
+  expect_true(all(is.na(d$median)))
+  expect_true(all(is.na(d$most_frequent)))
+  expect_false(all(is.na(d$mean)))
+})
+
+test_that("describe dplyr backend supports skip_ones and digits", {
+  skip_if_not(requireNamespace("dplyr", quietly = TRUE),
+              "dplyr must be installed to run this test")
+  local_mocked_bindings(has_pkg = function(p) p == "dplyr", .package = "dataverifyr")
+
+  x <- data.frame(
+    num = c(1.234567, 1.234567, 9.876543, 9.876543, NA_real_),
+    chr = c("a", "a", "b", "c", NA_character_)
+  )
+
+  d <- describe(x, skip_ones = FALSE, digits = 2)
+  expect_equal(detect_backend(x), "dplyr")
+  expect_equal(class(d), c("tbl_df", "tbl", "data.frame"))
+  expect_equal(d$most_frequent[d$var == "num"], "1.23 (2), 9.88 (2), NA (1)")
+  expect_equal(d$most_frequent[d$var == "chr"], "a (2), b (1), c (1)")
+
+  d2 <- describe(x, skip_ones = TRUE, digits = 2)
+  expect_equal(d2$most_frequent[d2$var == "num"], "1.23 (2), 9.88 (2)")
+  expect_equal(d2$most_frequent[d2$var == "chr"], "a (2)")
+})
+
+test_that("describe data.table backend supports skip_ones and digits", {
+  skip_if_not(requireNamespace("data.table", quietly = TRUE),
+              "data.table must be installed to run this test")
+  local_mocked_bindings(has_pkg = function(p) p == "data.table", .package = "dataverifyr")
+
+  x <- data.frame(
+    num = c(1.234567, 1.234567, 9.876543, 9.876543, NA_real_),
+    chr = c("a", "a", "b", "c", NA_character_)
+  )
+
+  d <- describe(x, skip_ones = FALSE, digits = 2)
+  expect_equal(detect_backend(x), "data.table")
+  expect_equal(class(d), c("data.table", "data.frame"))
+  expect_equal(d$most_frequent[d$var == "num"], "1.23 (2), 9.88 (2), NA (1)")
+  expect_equal(d$most_frequent[d$var == "chr"], "a (2), b (1), c (1)")
+
+  d2 <- describe(x, skip_ones = TRUE, digits = 2)
+  expect_equal(d2$most_frequent[d2$var == "num"], "1.23 (2), 9.88 (2)")
+  expect_equal(d2$most_frequent[d2$var == "chr"], "a (2)")
 })

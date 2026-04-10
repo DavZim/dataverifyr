@@ -13,11 +13,13 @@ rules <- ruleset(
   rule(does_not_exist %in% c("a", "b", "c"), "r5") # creates a stop
 )
 
+
 test_that("base-r check_ works", {
   res <- check_(data, rules, backend = "base-r")
 
   expect_equal(class(res), "data.frame")
   exp <- data.frame(
+    check_type = rep("row_rule", 5),
     name = c("r1", "r2", "r3", "r4", "r5"),
     expr = vapply(rules, function(r) r$expr, character(1)),
     allow_na = c(FALSE, FALSE, TRUE, FALSE, FALSE),
@@ -40,6 +42,7 @@ test_that("dplyr check_ works", {
 
   expect_equal(class(res), c("tbl_df", "tbl", "data.frame"))
   exp <- dplyr::tibble(
+    check_type = rep("row_rule", 5),
     name = c("r1", "r2", "r3", "r4", "r5"),
     expr = vapply(rules, function(r) r$expr, character(1)),
     allow_na = c(FALSE, FALSE, TRUE, FALSE, FALSE),
@@ -62,6 +65,7 @@ test_that("data.table check_ works", {
 
   expect_equal(class(res), c("data.table", "data.frame"))
   exp <- data.table::data.table(
+    check_type = rep("row_rule", 5),
     name = c("r1", "r2", "r3", "r4", "r5"),
     expr = vapply(rules, function(r) r$expr, character(1)),
     allow_na = c(FALSE, FALSE, TRUE, FALSE, FALSE),
@@ -89,6 +93,7 @@ test_that("arrow::arrow_table check_ works", {
 
   expect_equal(class(res), c("tbl_df", "tbl", "data.frame"))
   exp <- dplyr::tibble(
+    check_type = rep("row_rule", 5),
     name = c("r1", "r2", "r3", "r4", "r5"),
     expr = vapply(rules, function(r) r$expr, character(1)),
     allow_na = c(FALSE, FALSE, TRUE, FALSE, FALSE),
@@ -97,7 +102,8 @@ test_that("arrow::arrow_table check_ works", {
     pass = c(32, 32, 27, 0, 0),
     fail = c(0, 0, 5, 32, 32),
     warn = c("", "", "", "", ""),
-    error = c("", "", "", "Invalid: Failed to parse string: 'asd' as a scalar of type double", "object 'does_not_exist' not found")
+    error = c("", "", "", "Invalid: Failed to parse string: 'asd' as a scalar of type double",
+              "object 'does_not_exist' not found")
   )
   expect_equal(res |> dplyr::select(-time), exp)
 })
@@ -115,6 +121,7 @@ test_that("arrow::open_dataset check_ works", {
 
   expect_equal(class(res), c("tbl_df", "tbl", "data.frame"))
   exp <- dplyr::tibble(
+    check_type = rep("row_rule", 5),
     name = c("r1", "r2", "r3", "r4", "r5"),
     expr = vapply(rules, function(r) r$expr, character(1)),
     allow_na = c(FALSE, FALSE, TRUE, FALSE, FALSE),
@@ -123,7 +130,8 @@ test_that("arrow::open_dataset check_ works", {
     pass = c(32, 32, 27, 0, 0),
     fail = c(0, 0, 5, 32, 32),
     warn = c("", "", "", "", ""),
-    error = c("", "", "", "Invalid: Failed to parse string: 'asd' as a scalar of type double", "object 'does_not_exist' not found")
+    error = c("", "", "", "Invalid: Failed to parse string: 'asd' as a scalar of type double",
+              "object 'does_not_exist' not found")
   )
   expect_equal(res |> dplyr::select(-time), exp)
 })
@@ -145,6 +153,7 @@ test_that("sqlite (RSQLite) check_ works", {
 
   expect_equal(class(res), c("tbl_df", "tbl", "data.frame"))
   exp <- dplyr::tibble(
+    check_type = rep("row_rule", 5),
     name = c("r1", "r2", "r3", "r4", "r5"),
     expr = vapply(rules, function(r) r$expr, character(1)),
     allow_na = c(FALSE, FALSE, TRUE, FALSE, FALSE),
@@ -164,6 +173,7 @@ test_that("sqlite (RSQLite) check_ works", {
 
 
 test_that("duckdb check_ works", {
+  skip_if_not_installed("duckdb", "1.5.1.9002")
   skip_if_not(requireNamespace("DBI", quietly = TRUE) |
                 requireNamespace("dbplyr", quietly = TRUE) |
                 requireNamespace("duckdb", quietly = TRUE),
@@ -179,6 +189,7 @@ test_that("duckdb check_ works", {
 
   expect_equal(class(res), c("tbl_df", "tbl", "data.frame"))
   exp <- dplyr::tibble(
+    check_type = rep("row_rule", 5),
     name = c("r1", "r2", "r3", "r4", "r5"),
     expr = vapply(rules, function(r) r$expr, character(1)),
     allow_na = c(FALSE, FALSE, TRUE, FALSE, FALSE),

@@ -27,10 +27,10 @@ simple_table <- function(d, align = paste(rep("l", ncol(d)), collapse = "")) {
     s('    <th style="text-align:%s;">%s</th>', a, names(d)),
     "  </thead>",
     "  <tbody>",
-    paste(sapply(seq(nrow(d)), function(r) {
+    paste(sapply(seq_len(nrow(d)), function(r) {
       c(
         s('<tr class="%s">', ifelse(r %% 2 == 0, "even", "odd")),
-        paste(sapply(seq(ncol(d)), function(cc) {
+        paste(sapply(seq_len(ncol(d)), function(cc) {
           v <- d[r, cc]
           s('      <td style="text-align:%s;">%s%s%s</td>',
             a[cc],

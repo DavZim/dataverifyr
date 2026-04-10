@@ -4,11 +4,22 @@
 \alias{describe}
 \title{Describes a dataset}
 \usage{
-describe(x)
+describe(x, skip_ones = TRUE, digits = 4, top_n = 3, fast = FALSE)
 }
 \arguments{
 \item{x}{a dataset, either a \code{\link{data.frame}}, \code{\link[dplyr:reexports]{dplyr::tibble}}, \code{\link[data.table:data.table]{data.table::data.table}},
-\code{\link[arrow:Table]{arrow::arrow_table}}, \code{\link[arrow:open_dataset]{arrow::open_dataset}}, or \code{\link[dplyr:tbl]{dplyr::tbl}} (SQL connection)}
+\code{\link[arrow:table]{arrow::arrow_table}}, \code{\link[arrow:open_dataset]{arrow::open_dataset}}, or \code{\link[dplyr:tbl]{dplyr::tbl}} (SQL connection)}
+
+\item{skip_ones}{logical, whether values that occur exactly once should be omitted
+from \code{most_frequent}}
+
+\item{digits}{integer, number of digits to round numeric values in \code{most_frequent}}
+
+\item{top_n}{integer, number of most frequent values to include in \code{most_frequent};
+set to \code{0} to skip the \code{most_frequent} computation}
+
+\item{fast}{logical, when \code{TRUE} skip expensive fields (\code{n_distinct}, \code{median})
+by returning \code{NA} for them}
 }
 \value{
 a \code{data.frame}, \code{dplyr::tibble}, or \code{data.table::data.table} containing
@@ -19,11 +30,17 @@ Note that the current version is in the beta stadium at best, that means the
 R-native formats (data.frame, dplyr/tibble, or data.table) are a lot faster
 than arrow or SQL-based datasets.
 }
+\details{
+Numeric values in \code{most_frequent} are rounded to \code{digits} (default: 4).
+If a variable has at most 1 distinct value, \code{most_frequent} is left empty.
+By default, values with count 1 are omitted from \code{most_frequent}.
+}
 \examples{
 describe(mtcars)
 }
 \seealso{
-Similar to \href{https://cran.r-project.org/web/packages/skimr/vignettes/skimr.html}{skimr::skim()},
+Similar to
+\href{https://cran.r-project.org/web/packages/skimr/vignettes/skimr.html}{skimr::skim()},
 \href{https://cran.r-project.org/web/packages/summarytools/vignettes/introduction.html#data-frame-summaries-dfsummary}{summarytools::dfSummary()},
 and \href{https://jthomasmock.github.io/gtExtras/reference/gt_plt_summary.html}{gtExtras::gt_plt_summary()}
 }

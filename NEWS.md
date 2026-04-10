@@ -1,3 +1,16 @@
+# dataverifyr 0.1.10
+
+* Add `describe()` to describe a dataset
+* `check_data()` now includes schema checks in the output by default (`check_type` as first result column), including explicit rows for column existence and declared type checks
+* add `stop_on_schema_fail` to `check_data()` to optionally stop when schema checks fail
+* update `filter_fails()` to ignore schema/reference rows and only process row rules from `check_data()` results
+* Add explicit regression test for `detect_backend()` fallback to `dplyr` when input is a `data.frame` and `data.table` is unavailable
+* Add structured ruleset internals for schema metadata (`data_column()`, `rule_meta()`) and reference checks (`reference_rule()`)
+* Extend `ruleset()`, `check_data()`, `read_rules()`, and `write_rules()` for v1 schema-aware workflows; keep `rule()` as row-level API (no `col_rule()`)
+* Add exported `sample_data` dataset (mixed types, NAs, datetime) for examples and tests
+* export `reference_rule()` and extend examples in `ruleset()`, `check_data()`, `reference_rule()`, and `data_column()` to show combined schema + relational workflows
+* Require DuckDB version `>= 1.5.1.9002` in all DuckDB-backed tests via `skip_if_not_installed("duckdb", "1.5.1.9002")`
+
 # dataverifyr 0.1.9
 
 * fix tests for new duckdb version (fixes #17, thanks @krlmlr for reporting)
