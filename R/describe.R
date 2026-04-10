@@ -23,9 +23,9 @@
 #' @export
 #'
 #' @seealso Similar to
-#' [skimr::skim()](https://cran.r-project.org/web/packages/skimr/vignettes/skimr.html),
-#' [summarytools::dfSummary()](https://cran.r-project.org/web/packages/summarytools/vignettes/introduction.html#data-frame-summaries-dfsummary),
-#' and [gtExtras::gt_plt_summary()](https://jthomasmock.github.io/gtExtras/reference/gt_plt_summary.html)
+#' [skimr::skim()]( https://CRAN.R-project.org/package=skimr),
+#' [summarytools::dfSummary()]( https://CRAN.R-project.org/package=summarytools),
+#' and [gtExtras::gt_plt_summary()]( https://CRAN.R-project.org/package=gtExtras)
 #'
 #' @examples
 #' describe(mtcars)
@@ -133,7 +133,7 @@ describe_base_r <- function(x, max_n = 3, skip_ones = TRUE, digits = 4, fast = F
   do.call(rbind, ll)
 }
 
-# eg x <- mtcars |> tibble::as_tibble()
+# eg x <- tibble::as_tibble(mtcars)
 describe_dplyr <- function(x, max_n = 3, skip_ones = TRUE, digits = 4, fast = FALSE) {
   ll <- lapply(
     names(x),
@@ -151,35 +151,35 @@ describe_dplyr <- function(x, max_n = 3, skip_ones = TRUE, digits = 4, fast = FA
 
       nz <- if (!is_num) nchar(as.character(x[[v]]))
       if (fast) {
-        x |>
-          dplyr::summarise(
-            var = v,
-            type = type,
-            n = dplyr::n(),
-            n_distinct = as.integer(NA),
-            n_na = sum(is.na(.data[[v]])),
-            most_frequent = mf,
-            min = as.numeric(min(if (is_num) .data[[v]] else nz, na.rm = TRUE)),
-            mean = as.numeric(mean(if (is_num) .data[[v]] else nz, na.rm = TRUE)),
-            median = as.numeric(NA),
-            max = as.numeric(max(if (is_num) .data[[v]] else nz, na.rm = TRUE)),
-            sd = as.numeric(stats::sd(if (is_num) .data[[v]] else nz, na.rm = TRUE))
-          )
+        dplyr::summarise(
+          x,
+          var = v,
+          type = type,
+          n = dplyr::n(),
+          n_distinct = as.integer(NA),
+          n_na = sum(is.na(.data[[v]])),
+          most_frequent = mf,
+          min = as.numeric(min(if (is_num) .data[[v]] else nz, na.rm = TRUE)),
+          mean = as.numeric(mean(if (is_num) .data[[v]] else nz, na.rm = TRUE)),
+          median = as.numeric(NA),
+          max = as.numeric(max(if (is_num) .data[[v]] else nz, na.rm = TRUE)),
+          sd = as.numeric(stats::sd(if (is_num) .data[[v]] else nz, na.rm = TRUE))
+        )
       } else {
-        x |>
-          dplyr::summarise(
-            var = v,
-            type = type,
-            n = dplyr::n(),
-            n_distinct = dplyr::n_distinct(.data[[v]]),
-            n_na = sum(is.na(.data[[v]])),
-            most_frequent = mf,
-            min = as.numeric(min(if (is_num) .data[[v]] else nz, na.rm = TRUE)),
-            mean = as.numeric(mean(if (is_num) .data[[v]] else nz, na.rm = TRUE)),
-            median = as.numeric(stats::median(if (is_num) .data[[v]] else nz, na.rm = TRUE)),
-            max = as.numeric(max(if (is_num) .data[[v]] else nz, na.rm = TRUE)),
-            sd = as.numeric(stats::sd(if (is_num) .data[[v]] else nz, na.rm = TRUE))
-          )
+        dplyr::summarise(
+          x,
+          var = v,
+          type = type,
+          n = dplyr::n(),
+          n_distinct = dplyr::n_distinct(.data[[v]]),
+          n_na = sum(is.na(.data[[v]])),
+          most_frequent = mf,
+          min = as.numeric(min(if (is_num) .data[[v]] else nz, na.rm = TRUE)),
+          mean = as.numeric(mean(if (is_num) .data[[v]] else nz, na.rm = TRUE)),
+          median = as.numeric(stats::median(if (is_num) .data[[v]] else nz, na.rm = TRUE)),
+          max = as.numeric(max(if (is_num) .data[[v]] else nz, na.rm = TRUE)),
+          sd = as.numeric(stats::sd(if (is_num) .data[[v]] else nz, na.rm = TRUE))
+        )
       }
     }
   )
@@ -187,7 +187,7 @@ describe_dplyr <- function(x, max_n = 3, skip_ones = TRUE, digits = 4, fast = FA
   dplyr::bind_rows(ll)
 }
 
-# eg x <- mtcars |> data.table::as.data.table()
+# eg x <- data.table::as.data.table(mtcars)
 describe_data.table <- function(x, max_n = 3, skip_ones = TRUE, digits = 4, fast = FALSE) { # nolint
   ll <- lapply(
     names(x),
@@ -280,10 +280,12 @@ describe_collectibles_stats <- function(x, v, is_num, fast = FALSE) {
   )
   if (!inherits(out, "try-error")) return(out)
 
-  vals <- x |>
-    dplyr::select(dplyr::all_of(v)) |>
-    dplyr::collect() |>
-    dplyr::pull(1)
+  vals <- dplyr::pull(
+    dplyr::collect(
+      dplyr::select(x, dplyr::all_of(v))
+    ),
+    1
+  )
   describe_vector_stats(vals, is_num = is_num, fast = fast)
 }
 
@@ -310,9 +312,9 @@ describe_collectibles_stats_with_fallback <- function(x, colmeta, fast = FALSE) 
   }
 
   if (length(failed)) {
-    vals <- x |>
-      dplyr::select(dplyr::all_of(failed)) |>
-      dplyr::collect()
+    vals <- dplyr::collect(
+      dplyr::select(x, dplyr::all_of(failed))
+    )
 
     for (v in failed) {
       is_num <- colmeta$is_num[[which(colmeta$var == v)[[1]]]]
@@ -399,8 +401,7 @@ describe_collectibles_stats_batched <- function(x, colmeta, fast = FALSE) {
     }
   }
 
-  summed <- dplyr::summarise(x, !!!exprs) |>
-    dplyr::collect()
+  summed <- dplyr::collect(dplyr::summarise(x, !!!exprs))
 
   n <- as.integer(summed$n[[1]])
   out <- lapply(seq_len(nrow(colmeta)), function(i) {
@@ -424,59 +425,71 @@ describe_collectibles_stats_batched <- function(x, colmeta, fast = FALSE) {
 describe_collectibles_stats_single_query <- function(x, v, is_num, fast = FALSE) {
   if (is_num) {
     if (fast) {
-      dplyr::summarise(
-        x,
-        n = dplyr::n(),
-        n_na = sum(is.na(.data[[v]]), na.rm = TRUE),
-        min = min(.data[[v]], na.rm = TRUE),
-        mean = mean(.data[[v]], na.rm = TRUE),
-        max = max(.data[[v]], na.rm = TRUE),
-        sd = stats::sd(.data[[v]], na.rm = TRUE)
-      ) |>
-        dplyr::collect() |>
-        coerce_collectibles_stats(fast = fast)
+      coerce_collectibles_stats(
+        dplyr::collect(
+          dplyr::summarise(
+            x,
+            n = dplyr::n(),
+            n_na = sum(is.na(.data[[v]]), na.rm = TRUE),
+            min = min(.data[[v]], na.rm = TRUE),
+            mean = mean(.data[[v]], na.rm = TRUE),
+            max = max(.data[[v]], na.rm = TRUE),
+            sd = stats::sd(.data[[v]], na.rm = TRUE)
+          )
+        ),
+        fast = fast
+      )
     } else {
-      dplyr::summarise(
-        x,
-        n = dplyr::n(),
-        n_distinct = dplyr::n_distinct(.data[[v]]),
-        n_na = sum(is.na(.data[[v]]), na.rm = TRUE),
-        min = min(.data[[v]], na.rm = TRUE),
-        mean = mean(.data[[v]], na.rm = TRUE),
-        median = stats::median(.data[[v]], na.rm = TRUE),
-        max = max(.data[[v]], na.rm = TRUE),
-        sd = stats::sd(.data[[v]], na.rm = TRUE)
-      ) |>
-        dplyr::collect() |>
-        coerce_collectibles_stats(fast = fast)
+      coerce_collectibles_stats(
+        dplyr::collect(
+          dplyr::summarise(
+            x,
+            n = dplyr::n(),
+            n_distinct = dplyr::n_distinct(.data[[v]]),
+            n_na = sum(is.na(.data[[v]]), na.rm = TRUE),
+            min = min(.data[[v]], na.rm = TRUE),
+            mean = mean(.data[[v]], na.rm = TRUE),
+            median = stats::median(.data[[v]], na.rm = TRUE),
+            max = max(.data[[v]], na.rm = TRUE),
+            sd = stats::sd(.data[[v]], na.rm = TRUE)
+          )
+        ),
+        fast = fast
+      )
     }
   } else {
     if (fast) {
-      dplyr::summarise(
-        x,
-        n = dplyr::n(),
-        n_na = sum(is.na(.data[[v]]), na.rm = TRUE),
-        min = min(nchar(as.character(.data[[v]])), na.rm = TRUE),
-        mean = mean(nchar(as.character(.data[[v]])), na.rm = TRUE),
-        max = max(nchar(as.character(.data[[v]])), na.rm = TRUE),
-        sd = stats::sd(nchar(as.character(.data[[v]])), na.rm = TRUE)
-      ) |>
-        dplyr::collect() |>
-        coerce_collectibles_stats(fast = fast)
+      coerce_collectibles_stats(
+        dplyr::collect(
+          dplyr::summarise(
+            x,
+            n = dplyr::n(),
+            n_na = sum(is.na(.data[[v]]), na.rm = TRUE),
+            min = min(nchar(as.character(.data[[v]])), na.rm = TRUE),
+            mean = mean(nchar(as.character(.data[[v]])), na.rm = TRUE),
+            max = max(nchar(as.character(.data[[v]])), na.rm = TRUE),
+            sd = stats::sd(nchar(as.character(.data[[v]])), na.rm = TRUE)
+          )
+        ),
+        fast = fast
+      )
     } else {
-      dplyr::summarise(
-        x,
-        n = dplyr::n(),
-        n_distinct = dplyr::n_distinct(.data[[v]]),
-        n_na = sum(is.na(.data[[v]]), na.rm = TRUE),
-        min = min(nchar(as.character(.data[[v]])), na.rm = TRUE),
-        mean = mean(nchar(as.character(.data[[v]])), na.rm = TRUE),
-        median = stats::median(nchar(as.character(.data[[v]])), na.rm = TRUE),
-        max = max(nchar(as.character(.data[[v]])), na.rm = TRUE),
-        sd = stats::sd(nchar(as.character(.data[[v]])), na.rm = TRUE)
-      ) |>
-        dplyr::collect() |>
-        coerce_collectibles_stats(fast = fast)
+      coerce_collectibles_stats(
+        dplyr::collect(
+          dplyr::summarise(
+            x,
+            n = dplyr::n(),
+            n_distinct = dplyr::n_distinct(.data[[v]]),
+            n_na = sum(is.na(.data[[v]]), na.rm = TRUE),
+            min = min(nchar(as.character(.data[[v]])), na.rm = TRUE),
+            mean = mean(nchar(as.character(.data[[v]])), na.rm = TRUE),
+            median = stats::median(nchar(as.character(.data[[v]])), na.rm = TRUE),
+            max = max(nchar(as.character(.data[[v]])), na.rm = TRUE),
+            sd = stats::sd(nchar(as.character(.data[[v]])), na.rm = TRUE)
+          )
+        ),
+        fast = fast
+      )
     }
   }
 }
@@ -488,10 +501,14 @@ describe_collectibles_most_frequent <- function(x, vars, max_n = 3, skip_ones = 
 
   for (v in vars) {
     mc <- try(
-      x |>
-        dplyr::count(.data[[v]]) |>
-        dplyr::slice_max(n, n = max_n, with_ties = FALSE) |>
-        dplyr::collect(),
+      dplyr::collect(
+        dplyr::slice_max(
+          dplyr::count(x, .data[[v]]),
+          n,
+          n = max_n,
+          with_ties = FALSE
+        )
+      ),
       silent = TRUE
     )
     if (inherits(mc, "try-error")) {
@@ -502,9 +519,9 @@ describe_collectibles_most_frequent <- function(x, vars, max_n = 3, skip_ones = 
   }
 
   if (length(failed)) {
-    vals <- x |>
-      dplyr::select(dplyr::all_of(failed)) |>
-      dplyr::collect()
+    vals <- dplyr::collect(
+      dplyr::select(x, dplyr::all_of(failed))
+    )
     for (v in failed) {
       tc <- top_counts(vals[[v]], max_n = max_n)
       out[[v]] <- format_most_frequent(tc$values, tc$counts, skip_ones = skip_ones, digits = digits)

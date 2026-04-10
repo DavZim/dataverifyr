@@ -53,7 +53,7 @@ test_that("dplyr check_ works", {
     warn = c("", "", "", "NAs introduced by coercion", ""),
     error = c("", "", "", "", "object 'does_not_exist' not found")
   )
-  expect_equal(res |> dplyr::select(-time), exp)
+  expect_equal(dplyr::select(res, -time), exp)
 })
 
 
@@ -105,7 +105,7 @@ test_that("arrow::arrow_table check_ works", {
     error = c("", "", "", "Invalid: Failed to parse string: 'asd' as a scalar of type double",
               "object 'does_not_exist' not found")
   )
-  expect_equal(res |> dplyr::select(-time), exp)
+  expect_equal(dplyr::select(res, -time), exp)
 })
 
 
@@ -133,7 +133,7 @@ test_that("arrow::open_dataset check_ works", {
     error = c("", "", "", "Invalid: Failed to parse string: 'asd' as a scalar of type double",
               "object 'does_not_exist' not found")
   )
-  expect_equal(res |> dplyr::select(-time), exp)
+  expect_equal(dplyr::select(res, -time), exp)
 })
 
 
@@ -165,7 +165,7 @@ test_that("sqlite (RSQLite) check_ works", {
     # note that RSQLite silently converts the 'asd' hp value to 0!
     # c.f. https://stackoverflow.com/a/57746647/3048453
   )
-  expect_equal(res |> dplyr::select(-time, -error), exp)
+  expect_equal(dplyr::select(res, -time, -error), exp)
   # the error messages are unreliable as the wording changes over versions,
   # test that there is some error message
   expect_equal(nchar(res$error) > 0, c(FALSE, FALSE, FALSE, FALSE, TRUE))
@@ -199,7 +199,7 @@ test_that("duckdb check_ works", {
     fail = c(0, 0, 5, 1, 32),
     warn = ""
   )
-  expect_equal(res |> dplyr::select(-time, -error), exp)
+  expect_equal(dplyr::select(res, -time, -error), exp)
   # the error messages are unreliable as the wording changes over versions,
   # test that there is some error message
   expect_equal(nchar(res$error) > 0, c(FALSE, FALSE, FALSE, FALSE, TRUE))

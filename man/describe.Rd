@@ -40,7 +40,7 @@ describe(mtcars)
 }
 \seealso{
 Similar to
-\href{https://cran.r-project.org/web/packages/skimr/vignettes/skimr.html}{skimr::skim()},
-\href{https://cran.r-project.org/web/packages/summarytools/vignettes/introduction.html#data-frame-summaries-dfsummary}{summarytools::dfSummary()},
-and \href{https://jthomasmock.github.io/gtExtras/reference/gt_plt_summary.html}{gtExtras::gt_plt_summary()}
+\href{https://CRAN.R-project.org/package=skimr}{skimr::skim()},
+\href{https://CRAN.R-project.org/package=summarytools}{summarytools::dfSummary()},
+and \href{https://CRAN.R-project.org/package=gtExtras}{gtExtras::gt_plt_summary()}
 }

@@ -1,3 +1,7 @@
+# dataverifyr 0.1.11
+
+* Replace all base pipe operator usages with explicit function calls/assignments
+
 # dataverifyr 0.1.10
 
 * Add `describe()` to describe a dataset

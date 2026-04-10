@@ -1109,10 +1109,9 @@ there is one unexpected value, lets quickly investigate using the
 matches
 
 ``` r
-res |>
-  filter_fails(ds) |>
-  # only select a couple of variables for brevity
-  dplyr::select(tpep_pickup_datetime, tpep_dropoff_datetime, trip_distance)
+failed_rows <- filter_fails(res, ds)
+# only select a couple of variables for brevity
+dplyr::select(failed_rows, tpep_pickup_datetime, tpep_dropoff_datetime, trip_distance)
 #> # A tibble: 1 × 3
 #>   tpep_pickup_datetime tpep_dropoff_datetime trip_distance
 #>   <dttm>               <dttm>                        <dbl>

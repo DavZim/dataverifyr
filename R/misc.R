@@ -11,7 +11,7 @@
 #' @examples
 #' d <- data.frame(
 #'   library = "[`arrow`](https://arrow.apache.org/docs/r/)",
-#'   code = "```R\nlibrary(arrow)\nds <- open_dataset('myfile')\nds |>\n  dplyr::collect()\n```"
+#'   code = "```R\nlibrary(arrow)\nds <- open_dataset('myfile')\ndplyr::collect(ds)\n```"
 #' )
 #' simple_table(d, align = "cl")
 simple_table <- function(d, align = paste(rep("l", ncol(d)), collapse = "")) {
