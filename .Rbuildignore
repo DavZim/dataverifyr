@@ -10,3 +10,7 @@
 ^\.github$
 ^CRAN-SUBMISSION$
 ^cran-comments\.md$
+^.lintr$
+^yellow_tripdata_2018-01.parquet$
+^AGENTS.md$
+^duckdb_*.tar.gz$

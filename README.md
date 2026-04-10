@@ -114,9 +114,9 @@ res
 #> 3:   row_rule paid orders need payment method                 !paid | payment_method != "none"
 #>    allow_na negate tests  pass  fail   warn  error             time
 #>      <lgcl> <lgcl> <int> <int> <int> <char> <char>       <difftime>
-#> 1:    FALSE  FALSE     8     6     2               0.001594782 secs
-#> 2:    FALSE  FALSE     8     6     2               0.003151417 secs
-#> 3:    FALSE  FALSE     8     6     2               0.000392437 secs
+#> 1:    FALSE  FALSE     8     6     2               0.001636744 secs
+#> 2:    FALSE  FALSE     8     6     2               0.003160954 secs
+#> 3:    FALSE  FALSE     8     6     2               0.000418663 secs
 ```
 
 As we can see, this demo dataset does not conform to all of our rules.
@@ -211,7 +211,7 @@ data <- read_custom("correct_data.csv", rules)
 
 # an error is thrown when warnings or errors are found
 data <- read_custom("wrong_data.csv", rules)
-#> Error in check_data(data, rules, stop_on_fail = TRUE, stop_on_error = TRUE, stop_on_warn = TRUE) : 
+#> Error in check_data(data, rules, stop_on_fail = TRUE, stop_on_error = TRUE, stop_on_warn = TRUE) :
 #>   In dataset 'wrong_data.csv' found 2 rule fails, 1 warnings, 1 errors
 ```
 
@@ -253,9 +253,9 @@ check_data(x, row_rules)
 #> 3:   row_rule paid orders require payment method                 !paid | payment_method != "none"
 #>    allow_na negate tests  pass  fail   warn  error              time
 #>      <lgcl> <lgcl> <int> <int> <int> <char> <char>        <difftime>
-#> 1:     TRUE  FALSE     8     6     2               0.0006306171 secs
-#> 2:     TRUE  FALSE     8     7     1               0.0004973412 secs
-#> 3:     TRUE  FALSE     8     7     1               0.0005061626 secs
+#> 1:     TRUE  FALSE     8     6     2               0.0005500317 secs
+#> 2:     TRUE  FALSE     8     7     1               0.0004150867 secs
+#> 3:     TRUE  FALSE     8     7     1               0.0004053116 secs
 ```
 
 The result tells you, for each rule, how many rows passed/failed and
@@ -322,7 +322,7 @@ check_data(x_ok, schema_rules)
 #>  9: 0.0000000000 secs
 #> 10: 0.0000000000 secs
 #> 11: 0.0000000000 secs
-#> 12: 0.0003817081 secs
+#> 12: 0.0003836155 secs
 ```
 
 In this setup:
@@ -384,7 +384,7 @@ check_data(x_extra, schema_rules, extra_columns = "ignore")
 #>  9: 0.000000000 secs
 #> 10: 0.000000000 secs
 #> 11: 0.000000000 secs
-#> 12: 0.000430584 secs
+#> 12: 0.000389576 secs
 
 # warn when undeclared columns are present
 try(check_data(x_extra, schema_rules, extra_columns = "warn"))
@@ -431,7 +431,7 @@ try(check_data(x_extra, schema_rules, extra_columns = "warn"))
 #>  9: 0.0000000000 secs
 #> 10: 0.0000000000 secs
 #> 11: 0.0000000000 secs
-#> 12: 0.0004563332 secs
+#> 12: 0.0003600121 secs
 
 # fail immediately when undeclared columns are present
 try(check_data(x_extra, schema_rules, extra_columns = "fail"))
@@ -483,7 +483,7 @@ try(check_data(x_missing, schema_rules))
 #>  8: 0.0000000000 secs
 #>  9: 0.0000000000 secs
 #> 10: 0.0000000000 secs
-#> 11: 0.0003526211 secs
+#> 11: 0.0006048679 secs
 ```
 
 ### Relational Rules (cross-dataset checks)
@@ -518,7 +518,7 @@ check_data(
 #> 1: reference_rule carrier exists in carriers carrier %in% carriers$carrier_id     TRUE  FALSE     3
 #>     pass  fail   warn  error              time
 #>    <int> <int> <char> <char>        <difftime>
-#> 1:     2     1               5.555153e-05 secs
+#> 1:     2     1               5.149841e-05 secs
 ```
 
 This returns a `reference_rule` row in `check_type`, so relational
@@ -986,13 +986,13 @@ below the next block
 ``` r
 library(arrow)
 url <- "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2018-01.parquet"
-file <- "yellow_tripdata_2018-01.parquet"
-if (!file.exists(file)) download.file(url, file, method = "curl")
-file.size(file) / 1e6 # in MB
+pq_file <- "yellow_tripdata_2018-01.parquet"
+if (!file.exists(pq_file)) download.file(url, file, method = "curl")
+file.size(pq_file) / 1e6 # in MB
 #> [1] 123.6685
 
 # quick check of the filesize and the structure of the file
-d <- open_dataset(file)
+d <- open_dataset(pq_file)
 describe(d, fast = TRUE)
 #> # A tibble: 19 × 11
 #>    var                   type            n n_distinct    n_na most_frequent        min      mean median     max       sd
@@ -1003,7 +1003,7 @@ describe(d, fast = TRUE)
 #>  4 passenger_count       integer   8760687         NA       0 <NA>             0         1.61e+0     NA  9   e0  1.26e+0
 #>  5 trip_distance         numeric   8760687         NA       0 <NA>             0         2.80e+0     NA  1.89e5  6.41e+1
 #>  6 RatecodeID            integer   8760687         NA       0 <NA>             1   e+0   1.04e+0     NA  9.9 e1  4.45e-1
-#>  7 store_and_fwd_flag    character 8760687         NA 8760687 <NA>            NA       NaN           NA NA      NA      
+#>  7 store_and_fwd_flag    character 8760687         NA 8760687 <NA>            NA       NaN           NA NA      NA
 #>  8 PULocationID          integer   8760687         NA       0 <NA>             1   e+0   1.64e+2     NA  2.65e2  6.64e+1
 #>  9 DOLocationID          integer   8760687         NA       0 <NA>             1   e+0   1.63e+2     NA  2.65e2  7.03e+1
 #> 10 payment_type          integer   8760687         NA       0 <NA>             1   e+0   1.31e+0     NA  4   e0  4.82e-1
@@ -1014,8 +1014,8 @@ describe(d, fast = TRUE)
 #> 15 tolls_amount          numeric   8760687         NA       0 <NA>            -1.5 e+1   3.03e-1     NA  9.51e2  1.74e+0
 #> 16 improvement_surcharge numeric   8760687         NA       0 <NA>            -3   e-1   3.00e-1     NA  1   e0  1.44e-2
 #> 17 total_amount          numeric   8760687         NA       0 <NA>            -4.50e+2   1.55e+1     NA  8.02e3  1.42e+1
-#> 18 congestion_surcharge  numeric   8760687         NA 8760675 <NA>             2.5 e+0   2.5 e+0     NA  2.5 e0  0      
-#> 19 airport_fee           numeric   8760687         NA 8760675 <NA>             0         0           NA  0       0    
+#> 18 congestion_surcharge  numeric   8760687         NA 8760675 <NA>             2.5 e+0   2.5 e+0     NA  2.5 e0  0
+#> 19 airport_fee           numeric   8760687         NA 8760675 <NA>             0         0           NA  0       0
 
 # write the dataset to disk
 if (!dir.exists("nyc-taxi-data")) write_dataset(d, "nyc-taxi-data")
@@ -1043,11 +1043,6 @@ write_rules(rs, "nyc_data_rules.yaml")
 ```
 
 Which looks like this in the yaml file:
-
-``` r
-cat(paste(c("```yaml", readLines("nyc_data_rules.yaml"), "```"),
-          collapse = "\n"))
-```
 
 ``` yaml
 meta: ~
@@ -1089,15 +1084,15 @@ data points:
 ``` r
 library(arrow)
 
-# open the dataset 
-ds <- open_dataset("nyc-taxi-data/")
+# open the dataset
+ds <- open_dataset(pq_file)
 
 # perform the data validation check
 res <- check_data(ds, rules)
 res
 #> # A tibble: 3 × 11
-#>   check_type name                      expr                                         allow_na negate   tests    pass  fail warn  error time          
-#>   <chr>      <chr>                     <chr>                                        <lgl>    <lgl>    <int>   <int> <int> <chr> <chr> <drtn>        
+#>   check_type name                      expr                                         allow_na negate   tests    pass  fail warn  error time
+#>   <chr>      <chr>                     <chr>                                        <lgl>    <lgl>    <int>   <int> <int> <chr> <chr> <drtn>
 #> 1 row_rule   Rule for: passenger_count passenger_count >= 0 & passenger_count <= 10 FALSE    FALSE  8760687 8760687     0 ""    ""    0.4102955 secs
 #> 2 row_rule   Rule for: trip_distance   trip_distance >= 0 & trip_distance <= 1000   FALSE    FALSE  8760687 8760686     1 ""    ""    0.3988464 secs
 #> 3 row_rule   Rule for: payment_type    payment_type %in% c(0, 1, 2, 3, 4)           FALSE    FALSE  8760687 8760687     0 ""    ""    0.3578835 secs
@@ -1105,11 +1100,7 @@ res
 plot_res(res)
 ```
 
-``` r
-knitr::include_graphics(system.file("plot_res.png", package = "dataverifyr"))
-```
-
-<img src="../../R/x86_64-pc-linux-gnu-library/4.4/dataverifyr/plot_res.png" alt="" width="100%" />
+<img src="man/figures/README-taxi3-1.png" alt="" width="100%" />
 
 Using the power of `arrow`, we were able to scan 8+mln observations for
 three rules in about 1.5 seconds (YMMV). As we can see from the results,
@@ -1119,7 +1110,7 @@ matches
 
 ``` r
 res |>
-  filter_fails(ds) |> 
+  filter_fails(ds) |>
   # only select a couple of variables for brevity
   dplyr::select(tpep_pickup_datetime, tpep_dropoff_datetime, trip_distance)
 #> # A tibble: 1 × 3
