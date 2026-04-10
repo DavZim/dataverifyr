@@ -1,5 +1,53 @@
 # Changelog
 
+## dataverifyr 0.1.10
+
+- Add
+  [`describe()`](https://davzim.github.io/dataverifyr/reference/describe.md)
+  to describe a dataset
+- [`check_data()`](https://davzim.github.io/dataverifyr/reference/check_data.md)
+  now includes schema checks in the output by default (`check_type` as
+  first result column), including explicit rows for column existence and
+  declared type checks
+- add `stop_on_schema_fail` to
+  [`check_data()`](https://davzim.github.io/dataverifyr/reference/check_data.md)
+  to optionally stop when schema checks fail
+- update
+  [`filter_fails()`](https://davzim.github.io/dataverifyr/reference/filter_fails.md)
+  to ignore schema/reference rows and only process row rules from
+  [`check_data()`](https://davzim.github.io/dataverifyr/reference/check_data.md)
+  results
+- Add explicit regression test for
+  [`detect_backend()`](https://davzim.github.io/dataverifyr/reference/detect_backend.md)
+  fallback to `dplyr` when input is a `data.frame` and `data.table` is
+  unavailable
+- Add structured ruleset internals for schema metadata
+  ([`data_column()`](https://davzim.github.io/dataverifyr/reference/data_column.md),
+  `rule_meta()`) and reference checks
+  ([`reference_rule()`](https://davzim.github.io/dataverifyr/reference/reference_rule.md))
+- Extend
+  [`ruleset()`](https://davzim.github.io/dataverifyr/reference/ruleset.md),
+  [`check_data()`](https://davzim.github.io/dataverifyr/reference/check_data.md),
+  [`read_rules()`](https://davzim.github.io/dataverifyr/reference/write_rules.md),
+  and
+  [`write_rules()`](https://davzim.github.io/dataverifyr/reference/write_rules.md)
+  for v1 schema-aware workflows; keep
+  [`rule()`](https://davzim.github.io/dataverifyr/reference/rule.md) as
+  row-level API (no `col_rule()`)
+- Add exported `sample_data` dataset (mixed types, NAs, datetime) for
+  examples and tests
+- export
+  [`reference_rule()`](https://davzim.github.io/dataverifyr/reference/reference_rule.md)
+  and extend examples in
+  [`ruleset()`](https://davzim.github.io/dataverifyr/reference/ruleset.md),
+  [`check_data()`](https://davzim.github.io/dataverifyr/reference/check_data.md),
+  [`reference_rule()`](https://davzim.github.io/dataverifyr/reference/reference_rule.md),
+  and
+  [`data_column()`](https://davzim.github.io/dataverifyr/reference/data_column.md)
+  to show combined schema + relational workflows
+- Require DuckDB version `>= 1.5.1.9002` in all DuckDB-backed tests via
+  `skip_if_not_installed("duckdb", "1.5.1.9002")`
+
 ## dataverifyr 0.1.9
 
 - fix tests for new duckdb version (fixes

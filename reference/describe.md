@@ -7,7 +7,7 @@ faster than arrow or SQL-based datasets.
 ## Usage
 
 ``` r
-describe(x)
+describe(x, skip_ones = TRUE, digits = 4, top_n = 3, fast = FALSE)
 ```
 
 ## Arguments
@@ -18,10 +18,29 @@ describe(x)
   [`data.frame`](https://rdrr.io/r/base/data.frame.html),
   [`dplyr::tibble`](https://dplyr.tidyverse.org/reference/reexports.html),
   [`data.table::data.table`](https://rdrr.io/pkg/data.table/man/data.table.html),
-  [`arrow::arrow_table`](https://arrow.apache.org/docs/r/reference/Table-class.html),
+  [`arrow::arrow_table`](https://arrow.apache.org/docs/r/reference/table.html),
   [`arrow::open_dataset`](https://arrow.apache.org/docs/r/reference/open_dataset.html),
   or [`dplyr::tbl`](https://dplyr.tidyverse.org/reference/tbl.html) (SQL
   connection)
+
+- skip_ones:
+
+  logical, whether values that occur exactly once should be omitted from
+  `most_frequent`
+
+- digits:
+
+  integer, number of digits to round numeric values in `most_frequent`
+
+- top_n:
+
+  integer, number of most frequent values to include in `most_frequent`;
+  set to `0` to skip the `most_frequent` computation
+
+- fast:
+
+  logical, when `TRUE` skip expensive fields (`n_distinct`, `median`) by
+  returning `NA` for them
 
 ## Value
 
@@ -30,6 +49,12 @@ a `data.frame`,
 or
 [`data.table::data.table`](https://rdrr.io/pkg/data.table/man/data.table.html)
 containing a summary of the dataset given
+
+## Details
+
+Numeric values in `most_frequent` are rounded to `digits` (default: 4).
+If a variable has at most 1 distinct value, `most_frequent` is left
+empty. By default, values with count 1 are omitted from `most_frequent`.
 
 ## See also
 
@@ -43,19 +68,19 @@ and
 
 ``` r
 describe(mtcars)
-#>        var    type     n n_distinct  n_na                  most_frequent    min
-#>     <char>  <char> <int>      <int> <int>                         <char>  <num>
-#>  1:    mpg numeric    32         25     0     21 (2), 22.8 (2), 21.4 (2) 10.400
-#>  2:    cyl numeric    32          3     0          8 (14), 4 (11), 6 (7)  4.000
-#>  3:   disp numeric    32         27     0    275.8 (3), 160 (2), 360 (2) 71.100
-#>  4:     hp numeric    32         22     0      110 (3), 175 (3), 180 (3) 52.000
-#>  5:   drat numeric    32         22     0    3.92 (3), 3.07 (3), 3.9 (2)  2.760
-#>  6:     wt numeric    32         29     0   3.44 (3), 3.57 (2), 2.62 (1)  1.513
-#>  7:   qsec numeric    32         30     0 17.02 (2), 18.9 (2), 16.46 (1) 14.500
-#>  8:     vs numeric    32          2     0        0 (18), 1 (14), NA (NA)  0.000
-#>  9:     am numeric    32          2     0        0 (19), 1 (13), NA (NA)  0.000
-#> 10:   gear numeric    32          3     0          3 (15), 4 (12), 5 (5)  3.000
-#> 11:   carb numeric    32          6     0          4 (10), 2 (10), 1 (7)  1.000
+#>        var    type     n n_distinct  n_na               most_frequent    min
+#>     <char>  <char> <int>      <int> <int>                      <char>  <num>
+#>  1:    mpg numeric    32         25     0  21 (2), 22.8 (2), 21.4 (2) 10.400
+#>  2:    cyl numeric    32          3     0       8 (14), 4 (11), 6 (7)  4.000
+#>  3:   disp numeric    32         27     0 275.8 (3), 160 (2), 360 (2) 71.100
+#>  4:     hp numeric    32         22     0   110 (3), 175 (3), 180 (3) 52.000
+#>  5:   drat numeric    32         22     0 3.92 (3), 3.07 (3), 3.9 (2)  2.760
+#>  6:     wt numeric    32         29     0          3.44 (3), 3.57 (2)  1.513
+#>  7:   qsec numeric    32         30     0         17.02 (2), 18.9 (2) 14.500
+#>  8:     vs numeric    32          2     0              0 (18), 1 (14)  0.000
+#>  9:     am numeric    32          2     0              0 (19), 1 (13)  0.000
+#> 10:   gear numeric    32          3     0       3 (15), 4 (12), 5 (5)  3.000
+#> 11:   carb numeric    32          6     0       4 (10), 2 (10), 1 (7)  1.000
 #>           mean  median     max          sd
 #>          <num>   <num>   <num>       <num>
 #>  1:  20.090625  19.200  33.900   6.0269481

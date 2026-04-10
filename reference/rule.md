@@ -84,15 +84,15 @@ r2
 #>   allow NA: TRUE
 #>   negated:  FALSE
 #>   author: 'me'
-#>   date: '2026-03-27'
+#>   date: '2026-04-10'
 
 check_data(mtcars, r)
-#>             name     expr allow_na negate tests  pass  fail   warn  error
-#>           <char>   <char>   <lgcl> <lgcl> <int> <int> <int> <char> <char>
-#> 1: Rule for: mpg mpg > 10    FALSE  FALSE    32    32     0              
-#>                 time
-#>           <difftime>
-#> 1: 0.0004281998 secs
+#>    check_type          name     expr allow_na negate tests  pass  fail   warn
+#>        <char>        <char>   <char>   <lgcl> <lgcl> <int> <int> <int> <char>
+#> 1:   row_rule Rule for: mpg mpg > 10    FALSE  FALSE    32    32     0       
+#>     error              time
+#>    <char>        <difftime>
+#> 1:        0.0004096031 secs
 
 rs <- ruleset(
   rule(mpg > 10),
@@ -105,14 +105,14 @@ rs
 #>   [2] 'Rule for: cyl' matching `cyl %in% c(4, 6)` (allow_na: FALSE)
 #>   [3] 'Rule for: qsec' matching `qsec >= 14.5 & qsec <= 22.9` (allow_na: FALSE)
 check_data(mtcars, rs)
-#>              name                        expr allow_na negate tests  pass  fail
-#>            <char>                      <char>   <lgcl> <lgcl> <int> <int> <int>
-#> 1:  Rule for: mpg                    mpg > 10    FALSE  FALSE    32    32     0
-#> 2:  Rule for: cyl            cyl %in% c(4, 6)    FALSE  FALSE    32    18    14
-#> 3: Rule for: qsec qsec >= 14.5 & qsec <= 22.9    FALSE  FALSE    32    32     0
-#>      warn  error              time
-#>    <char> <char>        <difftime>
-#> 1:               0.0003235340 secs
-#> 2:               0.0010995865 secs
-#> 3:               0.0002834797 secs
+#>    check_type           name                        expr allow_na negate tests
+#>        <char>         <char>                      <char>   <lgcl> <lgcl> <int>
+#> 1:   row_rule  Rule for: mpg                    mpg > 10    FALSE  FALSE    32
+#> 2:   row_rule  Rule for: cyl            cyl %in% c(4, 6)    FALSE  FALSE    32
+#> 3:   row_rule Rule for: qsec qsec >= 14.5 & qsec <= 22.9    FALSE  FALSE    32
+#>     pass  fail   warn  error              time
+#>    <int> <int> <char> <char>        <difftime>
+#> 1:    32     0               0.0003001690 secs
+#> 2:    18    14               0.0010302067 secs
+#> 3:    32     0               0.0002906322 secs
 ```

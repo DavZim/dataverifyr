@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">dataverifyr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.10</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -78,107 +78,111 @@
 <li>check if a dataset matches all given rules</li>
 <li>save and load the rules to a yaml-file for better maintainability</li>
 </ol>
-<p>Note that each rule is an R expression that is evaluated within the dataset. Our first rule, for example, states that we believe all values of the <code>mpg</code> variable are in the range 10 to 30 (exclusive). At the moment rules work in a window/vectorized approach only, that means that a rule like this will work <code>mpg &gt; 10 * wt</code>, whereas a rule like this <code>sum(mpg) &gt; 0</code> will not work as it aggregates values.</p>
+<p>Note that each rule is an R expression that is evaluated within the dataset. Our first rule, for example, states that we expect all <code>amount</code> values to be in a sensible range. At the moment rules work in a window/vectorized approach only, that means that a rule like this will work <code>amount &gt; 10 * as.numeric(paid)</code>, whereas a rule like this <code>sum(amount) &gt; 0</code> will not work as it aggregates values.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/DavZim/dataverifyr" class="external-link">dataverifyr</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># create a dataset</span></span>
-<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="va">mtcars</span></span>
+<span><span class="co"># use the packaged demo dataset (includes NAs + datetime)</span></span>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="va">sample_data</span></span>
 <span></span>
 <span><span class="co"># define a rule set within our R code; alternatively in a yaml file</span></span>
 <span><span class="va">rules</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ruleset.html">ruleset</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="reference/rule.html">rule</a></span><span class="op">(</span><span class="va">mpg</span> <span class="op">&gt;</span> <span class="fl">10</span> <span class="op">&amp;</span> <span class="va">mpg</span> <span class="op">&lt;</span> <span class="fl">30</span><span class="op">)</span>, <span class="co"># mpg goes up to 34</span></span>
-<span>  <span class="fu"><a href="reference/rule.html">rule</a></span><span class="op">(</span><span class="va">cyl</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">8</span><span class="op">)</span><span class="op">)</span>, <span class="co"># missing 6 cyl</span></span>
-<span>  <span class="fu"><a href="reference/rule.html">rule</a></span><span class="op">(</span><span class="va">vs</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, allow_na <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="reference/rule.html">rule</a></span><span class="op">(</span><span class="va">amount</span> <span class="op">&gt;=</span> <span class="fl">0</span> <span class="op">&amp;</span> <span class="va">amount</span> <span class="op">&lt;=</span> <span class="fl">10000</span>, name <span class="op">=</span> <span class="st">"amount in valid range"</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="reference/rule.html">rule</a></span><span class="op">(</span><span class="va">customer_tier</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"bronze"</span>, <span class="st">"silver"</span>, <span class="st">"gold"</span><span class="op">)</span>, name <span class="op">=</span> <span class="st">"known customer tier"</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="reference/rule.html">rule</a></span><span class="op">(</span><span class="op">!</span><span class="va">paid</span> <span class="op">|</span> <span class="va">payment_method</span> <span class="op">!=</span> <span class="st">"none"</span>, name <span class="op">=</span> <span class="st">"paid orders need payment method"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># print the rules</span></span>
 <span><span class="va">rules</span></span>
 <span><span class="co">#&gt; &lt;Verification Ruleset with 3 elements&gt;</span></span>
-<span><span class="co">#&gt;   [1] 'Rule for: mpg' matching `mpg &gt; 10 &amp; mpg &lt; 30` (allow_na: FALSE)</span></span>
-<span><span class="co">#&gt;   [2] 'Rule for: cyl' matching `cyl %in% c(4, 8)` (allow_na: FALSE)</span></span>
-<span><span class="co">#&gt;   [3] 'Rule for: vs' matching `vs %in% c(0, 1)` (allow_na: TRUE)</span></span>
+<span><span class="co">#&gt;   [1] 'amount in valid range' matching `amount &gt;= 0 &amp; amount &lt;= 10000` (allow_na: FALSE)</span></span>
+<span><span class="co">#&gt;   [2] 'known customer tier' matching `customer_tier %in% c("bronze", "silver", "gold")` (allow_na: FALSE)</span></span>
+<span><span class="co">#&gt;   [3] 'paid orders need payment method' matching `!paid | payment_method != "none"` (allow_na: FALSE)</span></span>
 <span></span>
 <span><span class="co"># describe the dataset</span></span>
 <span><span class="fu"><a href="reference/describe.html">describe</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span>
-<span><span class="co">#&gt;      var    type  n n_distinct n_na                  most_frequent    min       mean  median</span></span>
-<span><span class="co">#&gt;  1:  mpg numeric 32         25    0     21 (2), 22.8 (2), 21.4 (2) 10.400  20.090625  19.200</span></span>
-<span><span class="co">#&gt;  2:  cyl numeric 32          3    0          8 (14), 4 (11), 6 (7)  4.000   6.187500   6.000</span></span>
-<span><span class="co">#&gt;  3: disp numeric 32         27    0    275.8 (3), 160 (2), 360 (2) 71.100 230.721875 196.300</span></span>
-<span><span class="co">#&gt;  4:   hp numeric 32         22    0      110 (3), 175 (3), 180 (3) 52.000 146.687500 123.000</span></span>
-<span><span class="co">#&gt;  5: drat numeric 32         22    0    3.92 (3), 3.07 (3), 3.9 (2)  2.760   3.596563   3.695</span></span>
-<span><span class="co">#&gt;  6:   wt numeric 32         29    0   3.44 (3), 3.57 (2), 2.62 (1)  1.513   3.217250   3.325</span></span>
-<span><span class="co">#&gt;  7: qsec numeric 32         30    0 17.02 (2), 18.9 (2), 16.46 (1) 14.500  17.848750  17.710</span></span>
-<span><span class="co">#&gt;  8:   vs numeric 32          2    0        0 (18), 1 (14), NA (NA)  0.000   0.437500   0.000</span></span>
-<span><span class="co">#&gt;  9:   am numeric 32          2    0        0 (19), 1 (13), NA (NA)  0.000   0.406250   0.000</span></span>
-<span><span class="co">#&gt; 10: gear numeric 32          3    0          3 (15), 4 (12), 5 (5)  3.000   3.687500   4.000</span></span>
-<span><span class="co">#&gt; 11: carb numeric 32          6    0          4 (10), 2 (10), 1 (7)  1.000   2.812500   2.000</span></span>
-<span><span class="co">#&gt;         max          sd</span></span>
-<span><span class="co">#&gt;  1:  33.900   6.0269481</span></span>
-<span><span class="co">#&gt;  2:   8.000   1.7859216</span></span>
-<span><span class="co">#&gt;  3: 472.000 123.9386938</span></span>
-<span><span class="co">#&gt;  4: 335.000  68.5628685</span></span>
-<span><span class="co">#&gt;  5:   4.930   0.5346787</span></span>
-<span><span class="co">#&gt;  6:   5.424   0.9784574</span></span>
-<span><span class="co">#&gt;  7:  22.900   1.7869432</span></span>
-<span><span class="co">#&gt;  8:   1.000   0.5040161</span></span>
-<span><span class="co">#&gt;  9:   1.000   0.4989909</span></span>
-<span><span class="co">#&gt; 10:   5.000   0.7378041</span></span>
-<span><span class="co">#&gt; 11:   8.000   1.6152000</span></span>
+<span><span class="co">#&gt;               var      type     n n_distinct  n_na                    most_frequent        min</span></span>
+<span><span class="co">#&gt;            &lt;char&gt;    &lt;char&gt; &lt;int&gt;      &lt;int&gt; &lt;int&gt;                           &lt;char&gt;      &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:       order_id   integer     8          8     0                                           1</span></span>
+<span><span class="co">#&gt; 2:  customer_tier character     8          5     1 gold (2), silver (2), bronze (2)          4</span></span>
+<span><span class="co">#&gt; 3:         amount   numeric     8          8     1                                          -5</span></span>
+<span><span class="co">#&gt; 4:           paid   logical     8          3     1              TRUE (5), FALSE (2)          4</span></span>
+<span><span class="co">#&gt; 5: payment_method character     8          4     1               card (3), none (3)          4</span></span>
+<span><span class="co">#&gt; 6:     order_time   POSIXct     8          8     1                                  1735722000</span></span>
+<span><span class="co">#&gt;            mean       median          max           sd</span></span>
+<span><span class="co">#&gt;           &lt;num&gt;        &lt;num&gt;        &lt;num&gt;        &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1: 4.500000e+00          4.5 8.000000e+00 2.449490e+00</span></span>
+<span><span class="co">#&gt; 2: 5.571429e+00          6.0 7.000000e+00 1.133893e+00</span></span>
+<span><span class="co">#&gt; 3: 9.440571e+01         80.0 3.202500e+02 1.104161e+02</span></span>
+<span><span class="co">#&gt; 4: 4.285714e+00          4.0 5.000000e+00 4.879500e-01</span></span>
+<span><span class="co">#&gt; 5: 4.000000e+00          4.0 4.000000e+00 0.000000e+00</span></span>
+<span><span class="co">#&gt; 6: 1.736029e+09 1736005500.0 1.736334e+09 2.318349e+05</span></span>
 <span></span>
 <span><span class="co"># check if the data matches our rules</span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">rules</span><span class="op">)</span></span>
 <span><span class="va">res</span></span>
-<span><span class="co">#&gt;             name                expr allow_na negate tests pass fail warn error              time</span></span>
-<span><span class="co">#&gt; 1: Rule for: mpg mpg &gt; 10 &amp; mpg &lt; 30    FALSE  FALSE    32   28    4            0.0010831356 secs</span></span>
-<span><span class="co">#&gt; 2: Rule for: cyl    cyl %in% c(4, 8)    FALSE  FALSE    32   25    7            0.0033519268 secs</span></span>
-<span><span class="co">#&gt; 3:  Rule for: vs     vs %in% c(0, 1)     TRUE  FALSE    32   32    0            0.0005369186 secs</span></span></code></pre></div>
-<p>As we can see, our dataset <code>mtcars</code> does not conform to all of our rules. We have four fails (fail=rule is not met) for the first rule <code>mpg &gt; 10 &amp; mpg &lt; 30</code> (there are <code>mpg</code> values up to 33.9) and seven fails for the second rule <code>cyl %in% c(4, 8)</code> (there are <code>cyl</code> values of 6), while the third rule <code>vs %in% c(0, 1)</code> is always met.</p>
+<span><span class="co">#&gt;    check_type                            name                                             expr</span></span>
+<span><span class="co">#&gt;        &lt;char&gt;                          &lt;char&gt;                                           &lt;char&gt;</span></span>
+<span><span class="co">#&gt; 1:   row_rule           amount in valid range                    amount &gt;= 0 &amp; amount &lt;= 10000</span></span>
+<span><span class="co">#&gt; 2:   row_rule             known customer tier customer_tier %in% c("bronze", "silver", "gold")</span></span>
+<span><span class="co">#&gt; 3:   row_rule paid orders need payment method                 !paid | payment_method != "none"</span></span>
+<span><span class="co">#&gt;    allow_na negate tests  pass  fail   warn  error             time</span></span>
+<span><span class="co">#&gt;      &lt;lgcl&gt; &lt;lgcl&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;char&gt; &lt;char&gt;       &lt;difftime&gt;</span></span>
+<span><span class="co">#&gt; 1:    FALSE  FALSE     8     6     2               0.001636744 secs</span></span>
+<span><span class="co">#&gt; 2:    FALSE  FALSE     8     6     2               0.003160954 secs</span></span>
+<span><span class="co">#&gt; 3:    FALSE  FALSE     8     6     2               0.000418663 secs</span></span></code></pre></div>
+<p>As we can see, this demo dataset does not conform to all of our rules. There is one negative amount, one unknown customer tier, and one row where <code>paid == TRUE</code> but <code>payment_method == "none"</code>. The dataset also contains missing values and a datetime column (<code>order_time</code>) to mirror common real data inputs.</p>
 <p>To see which values do not meet our expectations, use the <code><a href="reference/filter_fails.html">filter_fails()</a></code> function</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/filter_fails.html">filter_fails</a></span><span class="op">(</span><span class="va">res</span>, <span class="va">mtcars</span>, per_rule <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; $`mpg &gt; 10 &amp; mpg &lt; 30`</span></span>
-<span><span class="co">#&gt;     mpg cyl disp  hp drat    wt  qsec vs am gear carb</span></span>
-<span><span class="co">#&gt; 1: 32.4   4 78.7  66 4.08 2.200 19.47  1  1    4    1</span></span>
-<span><span class="co">#&gt; 2: 30.4   4 75.7  52 4.93 1.615 18.52  1  1    4    2</span></span>
-<span><span class="co">#&gt; 3: 33.9   4 71.1  65 4.22 1.835 19.90  1  1    4    1</span></span>
-<span><span class="co">#&gt; 4: 30.4   4 95.1 113 3.77 1.513 16.90  1  1    5    2</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/filter_fails.html">filter_fails</a></span><span class="op">(</span><span class="va">res</span>, <span class="va">data</span>, per_rule <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; $`amount &gt;= 0 &amp; amount &lt;= 10000`</span></span>
+<span><span class="co">#&gt;    order_id customer_tier amount   paid payment_method          order_time</span></span>
+<span><span class="co">#&gt;       &lt;int&gt;        &lt;char&gt;  &lt;num&gt; &lt;lgcl&gt;         &lt;char&gt;              &lt;POSc&gt;</span></span>
+<span><span class="co">#&gt; 1:        3        bronze     -5  FALSE           none 2025-01-03 12:15:00</span></span>
+<span><span class="co">#&gt; 2:        6        silver     NA     NA           card 2025-01-06 08:10:00</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $`cyl %in% c(4, 8)`</span></span>
-<span><span class="co">#&gt;     mpg cyl  disp  hp drat    wt  qsec vs am gear carb</span></span>
-<span><span class="co">#&gt; 1: 21.0   6 160.0 110 3.90 2.620 16.46  0  1    4    4</span></span>
-<span><span class="co">#&gt; 2: 21.0   6 160.0 110 3.90 2.875 17.02  0  1    4    4</span></span>
-<span><span class="co">#&gt; 3: 21.4   6 258.0 110 3.08 3.215 19.44  1  0    3    1</span></span>
-<span><span class="co">#&gt; 4: 18.1   6 225.0 105 2.76 3.460 20.22  1  0    3    1</span></span>
-<span><span class="co">#&gt; 5: 19.2   6 167.6 123 3.92 3.440 18.30  1  0    4    4</span></span>
-<span><span class="co">#&gt; 6: 17.8   6 167.6 123 3.92 3.440 18.90  1  0    4    4</span></span>
-<span><span class="co">#&gt; 7: 19.7   6 145.0 175 3.62 2.770 15.50  0  1    5    6</span></span></code></pre></div>
+<span><span class="co">#&gt; $`customer_tier %in% c("bronze", "silver", "gold")`</span></span>
+<span><span class="co">#&gt;    order_id customer_tier amount   paid payment_method          order_time</span></span>
+<span><span class="co">#&gt;       &lt;int&gt;        &lt;char&gt;  &lt;num&gt; &lt;lgcl&gt;         &lt;char&gt;              &lt;POSc&gt;</span></span>
+<span><span class="co">#&gt; 1:        5          &lt;NA&gt;  45.10  FALSE           none                &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 2:        8       unknown  99.99   TRUE           none 2025-01-08 11:05:00</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $`!paid | payment_method != "none"`</span></span>
+<span><span class="co">#&gt;    order_id customer_tier amount   paid payment_method          order_time</span></span>
+<span><span class="co">#&gt;       &lt;int&gt;        &lt;char&gt;  &lt;num&gt; &lt;lgcl&gt;         &lt;char&gt;              &lt;POSc&gt;</span></span>
+<span><span class="co">#&gt; 1:        6        silver     NA     NA           card 2025-01-06 08:10:00</span></span>
+<span><span class="co">#&gt; 2:        7        bronze   0.00   TRUE           &lt;NA&gt; 2025-01-07 17:20:00</span></span>
+<span><span class="co">#&gt; 3:        8       unknown  99.99   TRUE           none 2025-01-08 11:05:00</span></span></code></pre></div>
 <p>We can also visualize the results using the <code><a href="reference/plot_res.html">plot_res()</a></code> function.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/plot_res.html">plot_res</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-plotres-1.png" width="100%"></p>
-<p>Note that you can also save and load a ruleset to and from a <code>yaml</code> file</p>
+<p><img src="reference/figures/README-plotres-1.png" alt="" width="100%"></p>
+<p>Note that you can also save and load a ruleset to and from a structured <code>yaml</code> file</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/write_rules.html">write_rules</a></span><span class="op">(</span><span class="va">rules</span>, <span class="st">"example_rules.yaml"</span><span class="op">)</span></span>
-<span><span class="va">r2</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/write_rules.html">read_rules</a></span><span class="op">(</span><span class="st">"example_rules.yaml"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/write_rules.html">write_rules</a></span><span class="op">(</span><span class="va">rules</span>, <span class="st">"example_rules_v1.yaml"</span>, format <span class="op">=</span> <span class="st">"v1"</span><span class="op">)</span></span>
+<span><span class="va">r2</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/write_rules.html">read_rules</a></span><span class="op">(</span><span class="st">"example_rules_v1.yaml"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="va">rules</span>, <span class="va">r2</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
-<p>The resulting <code>example_rules.yaml</code> looks like this</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">'Rule for: mpg'</span></span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="at">  </span><span class="fu">expr</span><span class="kw">:</span><span class="at"> mpg &gt; 10 &amp; mpg &lt; 30</span></span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="at">  </span><span class="fu">allow_na</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
-<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="at">  </span><span class="fu">negate</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
-<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="at">  </span><span class="fu">index</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
-<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">'Rule for: cyl'</span></span>
-<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="at">  </span><span class="fu">expr</span><span class="kw">:</span><span class="at"> cyl %in% c(4, 8)</span></span>
-<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="at">  </span><span class="fu">allow_na</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
-<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="at">  </span><span class="fu">negate</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
-<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="at">  </span><span class="fu">index</span><span class="kw">:</span><span class="at"> </span><span class="dv">2</span></span>
-<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">'Rule for: vs'</span></span>
-<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="at">  </span><span class="fu">expr</span><span class="kw">:</span><span class="at"> vs %in% c(0, 1)</span></span>
-<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="at">  </span><span class="fu">allow_na</span><span class="kw">:</span><span class="at"> </span><span class="ch">yes</span></span>
-<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="at">  </span><span class="fu">negate</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
-<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="at">  </span><span class="fu">index</span><span class="kw">:</span><span class="at"> </span><span class="dv">3</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] FALSE</span></span></code></pre></div>
+<p>The resulting <code>example_rules_v1.yaml</code> looks like this</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">meta</span><span class="kw">:</span><span class="at"> </span><span class="ch">~</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="fu">data-columns</span><span class="kw">:</span><span class="at"> </span><span class="kw">[]</span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="fu">data-rules</span><span class="kw">:</span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> amount in valid range</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="at">  </span><span class="fu">expr</span><span class="kw">:</span><span class="at"> amount &gt;= 0 &amp; amount &lt;= 10000</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="at">  </span><span class="fu">allow_na</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="at">  </span><span class="fu">negate</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="at">  </span><span class="fu">index</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> known customer tier</span></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="at">  </span><span class="fu">expr</span><span class="kw">:</span><span class="at"> customer_tier %in% c("bronze", "silver", "gold")</span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="at">  </span><span class="fu">allow_na</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="at">  </span><span class="fu">negate</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="at">  </span><span class="fu">index</span><span class="kw">:</span><span class="at"> </span><span class="dv">2</span></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> paid orders need payment method</span></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="at">  </span><span class="fu">expr</span><span class="kw">:</span><span class="at"> </span><span class="st">'!paid | payment_method != "none"'</span></span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="at">  </span><span class="fu">allow_na</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="at">  </span><span class="fu">negate</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a><span class="at">  </span><span class="fu">index</span><span class="kw">:</span><span class="at"> </span><span class="dv">3</span></span></code></pre></div>
+<p><code>dataverifyr</code> uses structured v1 YAML (<code>meta</code> + <code>data-columns</code> + <code>data-rules</code>) in the main workflow.</p>
 <p>One helpful use case is to use this functionality to assert that your data has the right values in a custom read function like so:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">read_custom</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">file</span>, <span class="va">rules</span><span class="op">)</span> <span class="op">{</span></span>
@@ -194,13 +198,383 @@
 <span></span>
 <span><span class="co"># an error is thrown when warnings or errors are found</span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">read_custom</span><span class="op">(</span><span class="st">"wrong_data.csv"</span>, <span class="va">rules</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Error in check_data(data, rules, stop_on_fail = TRUE, stop_on_error = TRUE, stop_on_warn = TRUE) : </span></span>
+<span><span class="co">#&gt; Error in check_data(data, rules, stop_on_fail = TRUE, stop_on_error = TRUE, stop_on_warn = TRUE) :</span></span>
 <span><span class="co">#&gt;   In dataset 'wrong_data.csv' found 2 rule fails, 1 warnings, 1 errors</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="row-based-checks-vs-column-based-checks">Row-Based Checks vs Column-Based Checks<a class="anchor" aria-label="anchor" href="#row-based-checks-vs-column-based-checks"></a>
+</h2>
+<p><code>dataverifyr</code> supports two complementary layers of validation:</p>
+<ol style="list-style-type: decimal">
+<li>
+<strong>Row-based checks</strong> with <code><a href="reference/rule.html">rule()</a></code><br>
+These answer questions like: “Is each value in a valid range?” or “Does each row satisfy a logical condition?”.</li>
+<li>
+<strong>Column-based checks</strong> with <code>data_columns</code> in <code><a href="reference/ruleset.html">ruleset()</a></code><br>
+These answer questions like: “Does this column exist?”, “Is it required?”, and “Does it have the expected type?”.</li>
+</ol>
+<p>The important idea is:</p>
+<ul>
+<li>
+<code><a href="reference/rule.html">rule()</a></code> is about <strong>values inside rows</strong>.</li>
+<li>
+<code><a href="reference/data_column.html">data_column()</a></code> is about the <strong>declared structure (schema)</strong> of the dataset.</li>
+</ul>
+<div class="section level3">
+<h3 id="row-based-rules-value-checks">Row-Based Rules (value checks)<a class="anchor" aria-label="anchor" href="#row-based-rules-value-checks"></a>
+</h3>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/DavZim/dataverifyr" class="external-link">dataverifyr</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">row_rules</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ruleset.html">ruleset</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="reference/rule.html">rule</a></span><span class="op">(</span><span class="va">amount</span> <span class="op">&gt;</span> <span class="fl">0</span>, name <span class="op">=</span> <span class="st">"amount is positive"</span>, allow_na <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="reference/rule.html">rule</a></span><span class="op">(</span><span class="va">customer_tier</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"bronze"</span>, <span class="st">"silver"</span>, <span class="st">"gold"</span><span class="op">)</span>, name <span class="op">=</span> <span class="st">"known customer tier"</span>, allow_na <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="reference/rule.html">rule</a></span><span class="op">(</span><span class="op">!</span><span class="va">paid</span> <span class="op">|</span> <span class="va">payment_method</span> <span class="op">!=</span> <span class="st">"none"</span>, name <span class="op">=</span> <span class="st">"paid orders require payment method"</span>, allow_na <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">sample_data</span></span>
+<span></span>
+<span><span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">row_rules</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    check_type                               name                                             expr</span></span>
+<span><span class="co">#&gt;        &lt;char&gt;                             &lt;char&gt;                                           &lt;char&gt;</span></span>
+<span><span class="co">#&gt; 1:   row_rule                 amount is positive                                       amount &gt; 0</span></span>
+<span><span class="co">#&gt; 2:   row_rule                known customer tier customer_tier %in% c("bronze", "silver", "gold")</span></span>
+<span><span class="co">#&gt; 3:   row_rule paid orders require payment method                 !paid | payment_method != "none"</span></span>
+<span><span class="co">#&gt;    allow_na negate tests  pass  fail   warn  error              time</span></span>
+<span><span class="co">#&gt;      &lt;lgcl&gt; &lt;lgcl&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;char&gt; &lt;char&gt;        &lt;difftime&gt;</span></span>
+<span><span class="co">#&gt; 1:     TRUE  FALSE     8     6     2               0.0005500317 secs</span></span>
+<span><span class="co">#&gt; 2:     TRUE  FALSE     8     7     1               0.0004150867 secs</span></span>
+<span><span class="co">#&gt; 3:     TRUE  FALSE     8     7     1               0.0004053116 secs</span></span></code></pre></div>
+<p>The result tells you, for each rule, how many rows passed/failed and whether warnings/errors occurred during evaluation.</p>
+</div>
+<div class="section level3">
+<h3 id="column-based-rules-schema-checks">Column-Based Rules (schema checks)<a class="anchor" aria-label="anchor" href="#column-based-rules-schema-checks"></a>
+</h3>
+<p>Column checks are attached to the <code><a href="reference/ruleset.html">ruleset()</a></code> via <code>data_columns</code>.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">schema_rules</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ruleset.html">ruleset</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="reference/rule.html">rule</a></span><span class="op">(</span><span class="va">amount</span> <span class="op">&gt;</span> <span class="fl">0</span>, name <span class="op">=</span> <span class="st">"amount is positive"</span>, allow_na <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>  data_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="reference/data_column.html">data_column</a></span><span class="op">(</span><span class="st">"order_id"</span>, type <span class="op">=</span> <span class="st">"int"</span>, optional <span class="op">=</span> <span class="cn">FALSE</span>, description <span class="op">=</span> <span class="st">"Primary key"</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="reference/data_column.html">data_column</a></span><span class="op">(</span><span class="st">"customer_tier"</span>, type <span class="op">=</span> <span class="st">"str"</span>, optional <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="reference/data_column.html">data_column</a></span><span class="op">(</span><span class="st">"amount"</span>, type <span class="op">=</span> <span class="st">"double"</span>, optional <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="reference/data_column.html">data_column</a></span><span class="op">(</span><span class="st">"paid"</span>, type <span class="op">=</span> <span class="st">"logical"</span>, optional <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="reference/data_column.html">data_column</a></span><span class="op">(</span><span class="st">"payment_method"</span>, type <span class="op">=</span> <span class="st">"str"</span>, optional <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="reference/data_column.html">data_column</a></span><span class="op">(</span><span class="st">"order_time"</span>, optional <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">x_ok</span> <span class="op">&lt;-</span> <span class="va">sample_data</span></span>
+<span></span>
+<span><span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">x_ok</span>, <span class="va">schema_rules</span><span class="op">)</span></span>
+<span><span class="co">#&gt;     check_type                                           name</span></span>
+<span><span class="co">#&gt;         &lt;char&gt;                                         &lt;char&gt;</span></span>
+<span><span class="co">#&gt;  1:     schema               Schema: column 'order_id' exists</span></span>
+<span><span class="co">#&gt;  2:     schema       Schema: column 'order_id' has type 'int'</span></span>
+<span><span class="co">#&gt;  3:     schema          Schema: column 'customer_tier' exists</span></span>
+<span><span class="co">#&gt;  4:     schema  Schema: column 'customer_tier' has type 'str'</span></span>
+<span><span class="co">#&gt;  5:     schema                 Schema: column 'amount' exists</span></span>
+<span><span class="co">#&gt;  6:     schema      Schema: column 'amount' has type 'double'</span></span>
+<span><span class="co">#&gt;  7:     schema                   Schema: column 'paid' exists</span></span>
+<span><span class="co">#&gt;  8:     schema       Schema: column 'paid' has type 'logical'</span></span>
+<span><span class="co">#&gt;  9:     schema         Schema: column 'payment_method' exists</span></span>
+<span><span class="co">#&gt; 10:     schema Schema: column 'payment_method' has type 'str'</span></span>
+<span><span class="co">#&gt; 11:     schema             Schema: column 'order_time' exists</span></span>
+<span><span class="co">#&gt; 12:   row_rule                             amount is positive</span></span>
+<span><span class="co">#&gt;                                       expr allow_na negate tests  pass  fail   warn  error</span></span>
+<span><span class="co">#&gt;                                     &lt;char&gt;   &lt;lgcl&gt; &lt;lgcl&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;char&gt; &lt;char&gt;</span></span>
+<span><span class="co">#&gt;  1:              column_exists('order_id')    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt;  2:       column_type('order_id') == 'int'    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt;  3:         column_exists('customer_tier')    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt;  4:  column_type('customer_tier') == 'str'    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt;  5:                column_exists('amount')    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt;  6:      column_type('amount') == 'double'    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt;  7:                  column_exists('paid')    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt;  8:       column_type('paid') == 'logical'    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt;  9:        column_exists('payment_method')    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt; 10: column_type('payment_method') == 'str'    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt; 11:            column_exists('order_time')    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt; 12:                             amount &gt; 0     TRUE  FALSE     8     6     2              </span></span>
+<span><span class="co">#&gt;                  time</span></span>
+<span><span class="co">#&gt;            &lt;difftime&gt;</span></span>
+<span><span class="co">#&gt;  1: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt;  2: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt;  3: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt;  4: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt;  5: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt;  6: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt;  7: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt;  8: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt;  9: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt; 10: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt; 11: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt; 12: 0.0003836155 secs</span></span></code></pre></div>
+<p>In this setup:</p>
+<ul>
+<li>
+<code>order_id</code>, <code>customer_tier</code>, <code>amount</code>, <code>paid</code>, and <code>payment_method</code> must exist (<code>optional = FALSE</code>)</li>
+<li>
+<code>order_time</code> is optional in the schema declaration</li>
+<li>row rules still run as usual (<code>amount &gt; 0</code>)</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="handling-extra-columns">Handling extra columns<a class="anchor" aria-label="anchor" href="#handling-extra-columns"></a>
+</h3>
+<p>If your input has columns not declared in <code>data_columns</code>, use <code>extra_columns</code>:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">x_extra</span> <span class="op">&lt;-</span> <span class="va">sample_data</span></span>
+<span><span class="va">x_extra</span><span class="op">$</span><span class="va">unexpected_col</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"c"</span>, <span class="st">"d"</span>, <span class="st">"e"</span>, <span class="st">"f"</span>, <span class="st">"g"</span>, <span class="st">"h"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># default: ignore undeclared columns</span></span>
+<span><span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">x_extra</span>, <span class="va">schema_rules</span>, extra_columns <span class="op">=</span> <span class="st">"ignore"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;     check_type                                           name</span></span>
+<span><span class="co">#&gt;         &lt;char&gt;                                         &lt;char&gt;</span></span>
+<span><span class="co">#&gt;  1:     schema               Schema: column 'order_id' exists</span></span>
+<span><span class="co">#&gt;  2:     schema       Schema: column 'order_id' has type 'int'</span></span>
+<span><span class="co">#&gt;  3:     schema          Schema: column 'customer_tier' exists</span></span>
+<span><span class="co">#&gt;  4:     schema  Schema: column 'customer_tier' has type 'str'</span></span>
+<span><span class="co">#&gt;  5:     schema                 Schema: column 'amount' exists</span></span>
+<span><span class="co">#&gt;  6:     schema      Schema: column 'amount' has type 'double'</span></span>
+<span><span class="co">#&gt;  7:     schema                   Schema: column 'paid' exists</span></span>
+<span><span class="co">#&gt;  8:     schema       Schema: column 'paid' has type 'logical'</span></span>
+<span><span class="co">#&gt;  9:     schema         Schema: column 'payment_method' exists</span></span>
+<span><span class="co">#&gt; 10:     schema Schema: column 'payment_method' has type 'str'</span></span>
+<span><span class="co">#&gt; 11:     schema             Schema: column 'order_time' exists</span></span>
+<span><span class="co">#&gt; 12:   row_rule                             amount is positive</span></span>
+<span><span class="co">#&gt;                                       expr allow_na negate tests  pass  fail   warn  error</span></span>
+<span><span class="co">#&gt;                                     &lt;char&gt;   &lt;lgcl&gt; &lt;lgcl&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;char&gt; &lt;char&gt;</span></span>
+<span><span class="co">#&gt;  1:              column_exists('order_id')    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt;  2:       column_type('order_id') == 'int'    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt;  3:         column_exists('customer_tier')    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt;  4:  column_type('customer_tier') == 'str'    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt;  5:                column_exists('amount')    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt;  6:      column_type('amount') == 'double'    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt;  7:                  column_exists('paid')    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt;  8:       column_type('paid') == 'logical'    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt;  9:        column_exists('payment_method')    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt; 10: column_type('payment_method') == 'str'    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt; 11:            column_exists('order_time')    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt; 12:                             amount &gt; 0     TRUE  FALSE     8     6     2              </span></span>
+<span><span class="co">#&gt;                 time</span></span>
+<span><span class="co">#&gt;           &lt;difftime&gt;</span></span>
+<span><span class="co">#&gt;  1: 0.000000000 secs</span></span>
+<span><span class="co">#&gt;  2: 0.000000000 secs</span></span>
+<span><span class="co">#&gt;  3: 0.000000000 secs</span></span>
+<span><span class="co">#&gt;  4: 0.000000000 secs</span></span>
+<span><span class="co">#&gt;  5: 0.000000000 secs</span></span>
+<span><span class="co">#&gt;  6: 0.000000000 secs</span></span>
+<span><span class="co">#&gt;  7: 0.000000000 secs</span></span>
+<span><span class="co">#&gt;  8: 0.000000000 secs</span></span>
+<span><span class="co">#&gt;  9: 0.000000000 secs</span></span>
+<span><span class="co">#&gt; 10: 0.000000000 secs</span></span>
+<span><span class="co">#&gt; 11: 0.000000000 secs</span></span>
+<span><span class="co">#&gt; 12: 0.000389576 secs</span></span>
+<span></span>
+<span><span class="co"># warn when undeclared columns are present</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">x_extra</span>, <span class="va">schema_rules</span>, extra_columns <span class="op">=</span> <span class="st">"warn"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning in validate_rules_against_schema(x, rules, extra_columns = extra_columns): Found extra</span></span>
+<span><span class="co">#&gt; columns not declared in `data_columns`: unexpected_col</span></span>
+<span><span class="co">#&gt;     check_type                                           name</span></span>
+<span><span class="co">#&gt;         &lt;char&gt;                                         &lt;char&gt;</span></span>
+<span><span class="co">#&gt;  1:     schema               Schema: column 'order_id' exists</span></span>
+<span><span class="co">#&gt;  2:     schema       Schema: column 'order_id' has type 'int'</span></span>
+<span><span class="co">#&gt;  3:     schema          Schema: column 'customer_tier' exists</span></span>
+<span><span class="co">#&gt;  4:     schema  Schema: column 'customer_tier' has type 'str'</span></span>
+<span><span class="co">#&gt;  5:     schema                 Schema: column 'amount' exists</span></span>
+<span><span class="co">#&gt;  6:     schema      Schema: column 'amount' has type 'double'</span></span>
+<span><span class="co">#&gt;  7:     schema                   Schema: column 'paid' exists</span></span>
+<span><span class="co">#&gt;  8:     schema       Schema: column 'paid' has type 'logical'</span></span>
+<span><span class="co">#&gt;  9:     schema         Schema: column 'payment_method' exists</span></span>
+<span><span class="co">#&gt; 10:     schema Schema: column 'payment_method' has type 'str'</span></span>
+<span><span class="co">#&gt; 11:     schema             Schema: column 'order_time' exists</span></span>
+<span><span class="co">#&gt; 12:   row_rule                             amount is positive</span></span>
+<span><span class="co">#&gt;                                       expr allow_na negate tests  pass  fail   warn  error</span></span>
+<span><span class="co">#&gt;                                     &lt;char&gt;   &lt;lgcl&gt; &lt;lgcl&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;char&gt; &lt;char&gt;</span></span>
+<span><span class="co">#&gt;  1:              column_exists('order_id')    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt;  2:       column_type('order_id') == 'int'    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt;  3:         column_exists('customer_tier')    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt;  4:  column_type('customer_tier') == 'str'    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt;  5:                column_exists('amount')    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt;  6:      column_type('amount') == 'double'    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt;  7:                  column_exists('paid')    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt;  8:       column_type('paid') == 'logical'    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt;  9:        column_exists('payment_method')    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt; 10: column_type('payment_method') == 'str'    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt; 11:            column_exists('order_time')    FALSE  FALSE     1     1     0              </span></span>
+<span><span class="co">#&gt; 12:                             amount &gt; 0     TRUE  FALSE     8     6     2              </span></span>
+<span><span class="co">#&gt;                  time</span></span>
+<span><span class="co">#&gt;            &lt;difftime&gt;</span></span>
+<span><span class="co">#&gt;  1: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt;  2: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt;  3: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt;  4: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt;  5: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt;  6: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt;  7: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt;  8: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt;  9: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt; 10: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt; 11: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt; 12: 0.0003600121 secs</span></span>
+<span></span>
+<span><span class="co"># fail immediately when undeclared columns are present</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">x_extra</span>, <span class="va">schema_rules</span>, extra_columns <span class="op">=</span> <span class="st">"fail"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Error in validate_rules_against_schema(x, rules, extra_columns = extra_columns) : </span></span>
+<span><span class="co">#&gt;   Found extra columns not declared in `data_columns`: unexpected_col</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="missing-required-columns">Missing required columns<a class="anchor" aria-label="anchor" href="#missing-required-columns"></a>
+</h3>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">x_missing</span> <span class="op">&lt;-</span> <span class="va">sample_data</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sample_data</span><span class="op">)</span>, <span class="st">"payment_method"</span><span class="op">)</span><span class="op">]</span></span>
+<span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">x_missing</span>, <span class="va">schema_rules</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;     check_type                                          name                                  expr</span></span>
+<span><span class="co">#&gt;         &lt;char&gt;                                        &lt;char&gt;                                &lt;char&gt;</span></span>
+<span><span class="co">#&gt;  1:     schema              Schema: column 'order_id' exists             column_exists('order_id')</span></span>
+<span><span class="co">#&gt;  2:     schema      Schema: column 'order_id' has type 'int'      column_type('order_id') == 'int'</span></span>
+<span><span class="co">#&gt;  3:     schema         Schema: column 'customer_tier' exists        column_exists('customer_tier')</span></span>
+<span><span class="co">#&gt;  4:     schema Schema: column 'customer_tier' has type 'str' column_type('customer_tier') == 'str'</span></span>
+<span><span class="co">#&gt;  5:     schema                Schema: column 'amount' exists               column_exists('amount')</span></span>
+<span><span class="co">#&gt;  6:     schema     Schema: column 'amount' has type 'double'     column_type('amount') == 'double'</span></span>
+<span><span class="co">#&gt;  7:     schema                  Schema: column 'paid' exists                 column_exists('paid')</span></span>
+<span><span class="co">#&gt;  8:     schema      Schema: column 'paid' has type 'logical'      column_type('paid') == 'logical'</span></span>
+<span><span class="co">#&gt;  9:     schema        Schema: column 'payment_method' exists       column_exists('payment_method')</span></span>
+<span><span class="co">#&gt; 10:     schema            Schema: column 'order_time' exists           column_exists('order_time')</span></span>
+<span><span class="co">#&gt; 11:   row_rule                            amount is positive                            amount &gt; 0</span></span>
+<span><span class="co">#&gt;     allow_na negate tests  pass  fail   warn                                        error</span></span>
+<span><span class="co">#&gt;       &lt;lgcl&gt; &lt;lgcl&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;char&gt;                                       &lt;char&gt;</span></span>
+<span><span class="co">#&gt;  1:    FALSE  FALSE     1     1     0                                                    </span></span>
+<span><span class="co">#&gt;  2:    FALSE  FALSE     1     1     0                                                    </span></span>
+<span><span class="co">#&gt;  3:    FALSE  FALSE     1     1     0                                                    </span></span>
+<span><span class="co">#&gt;  4:    FALSE  FALSE     1     1     0                                                    </span></span>
+<span><span class="co">#&gt;  5:    FALSE  FALSE     1     1     0                                                    </span></span>
+<span><span class="co">#&gt;  6:    FALSE  FALSE     1     1     0                                                    </span></span>
+<span><span class="co">#&gt;  7:    FALSE  FALSE     1     1     0                                                    </span></span>
+<span><span class="co">#&gt;  8:    FALSE  FALSE     1     1     0                                                    </span></span>
+<span><span class="co">#&gt;  9:    FALSE  FALSE     1     0     1        Required column 'payment_method' is missing.</span></span>
+<span><span class="co">#&gt; 10:    FALSE  FALSE     1     1     0                                                    </span></span>
+<span><span class="co">#&gt; 11:     TRUE  FALSE     8     6     2                                                    </span></span>
+<span><span class="co">#&gt;                  time</span></span>
+<span><span class="co">#&gt;            &lt;difftime&gt;</span></span>
+<span><span class="co">#&gt;  1: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt;  2: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt;  3: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt;  4: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt;  5: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt;  6: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt;  7: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt;  8: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt;  9: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt; 10: 0.0000000000 secs</span></span>
+<span><span class="co">#&gt; 11: 0.0006048679 secs</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="relational-rules-cross-dataset-checks">Relational Rules (cross-dataset checks)<a class="anchor" aria-label="anchor" href="#relational-rules-cross-dataset-checks"></a>
+</h3>
+<p>You can also validate relationships between datasets, for example ensuring foreign keys in one dataset exist in a lookup table.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">flights</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>carrier <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"AA"</span>, <span class="st">"BB"</span>, <span class="cn">NA_character_</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">carriers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>carrier_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"AA"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">rel_rules</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ruleset.html">ruleset</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="reference/reference_rule.html">reference_rule</a></span><span class="op">(</span></span>
+<span>    local_col <span class="op">=</span> <span class="st">"carrier"</span>,</span>
+<span>    ref_dataset <span class="op">=</span> <span class="st">"carriers"</span>,</span>
+<span>    ref_col <span class="op">=</span> <span class="st">"carrier_id"</span>,</span>
+<span>    name <span class="op">=</span> <span class="st">"carrier exists in carriers"</span>,</span>
+<span>    allow_na <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  data_name <span class="op">=</span> <span class="st">"flights"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    flights <span class="op">=</span> <span class="va">flights</span>,</span>
+<span>    carriers <span class="op">=</span> <span class="va">carriers</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  <span class="va">rel_rules</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt;        check_type                       name                             expr allow_na negate tests</span></span>
+<span><span class="co">#&gt;            &lt;char&gt;                     &lt;char&gt;                           &lt;char&gt;   &lt;lgcl&gt; &lt;lgcl&gt; &lt;int&gt;</span></span>
+<span><span class="co">#&gt; 1: reference_rule carrier exists in carriers carrier %in% carriers$carrier_id     TRUE  FALSE     3</span></span>
+<span><span class="co">#&gt;     pass  fail   warn  error              time</span></span>
+<span><span class="co">#&gt;    &lt;int&gt; &lt;int&gt; &lt;char&gt; &lt;char&gt;        &lt;difftime&gt;</span></span>
+<span><span class="co">#&gt; 1:     2     1               5.149841e-05 secs</span></span></code></pre></div>
+<p>This returns a <code>reference_rule</code> row in <code>check_type</code>, so relational checks are visible in the same output table as schema and row rules.</p>
+</div>
+<div class="section level3">
+<h3 id="structured-yaml-v1-for-schema--rules">Structured YAML (<code>v1</code>) for schema + rules<a class="anchor" aria-label="anchor" href="#structured-yaml-v1-for-schema--rules"></a>
+</h3>
+<p><code>dataverifyr</code> supports a structured YAML format that separates metadata, schema, and rules.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">schema_rules_v1</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ruleset.html">ruleset</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="reference/rule.html">rule</a></span><span class="op">(</span><span class="va">amount</span> <span class="op">&gt;</span> <span class="fl">0</span>, name <span class="op">=</span> <span class="st">"amount is positive"</span>, allow_na <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>  data_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="reference/data_column.html">data_column</a></span><span class="op">(</span><span class="st">"order_id"</span>, type <span class="op">=</span> <span class="st">"int"</span>, optional <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="reference/data_column.html">data_column</a></span><span class="op">(</span><span class="st">"customer_tier"</span>, type <span class="op">=</span> <span class="st">"str"</span>, optional <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="reference/data_column.html">data_column</a></span><span class="op">(</span><span class="st">"amount"</span>, type <span class="op">=</span> <span class="st">"double"</span>, optional <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="reference/data_column.html">data_column</a></span><span class="op">(</span><span class="st">"paid"</span>, type <span class="op">=</span> <span class="st">"logical"</span>, optional <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="reference/data_column.html">data_column</a></span><span class="op">(</span><span class="st">"payment_method"</span>, type <span class="op">=</span> <span class="st">"str"</span>, optional <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="reference/data_column.html">data_column</a></span><span class="op">(</span><span class="st">"order_time"</span>, optional <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  meta <span class="op">=</span> <span class="fu">dataverifyr</span><span class="fu">:::</span><span class="fu">rule_meta</span><span class="op">(</span></span>
+<span>    title <span class="op">=</span> <span class="st">"Order Validation"</span>,</span>
+<span>    version <span class="op">=</span> <span class="st">"1.0"</span>,</span>
+<span>    description <span class="op">=</span> <span class="st">"Checks for order exports"</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="reference/write_rules.html">write_rules</a></span><span class="op">(</span><span class="va">schema_rules_v1</span>, <span class="st">"example_rules_v1.yaml"</span>, format <span class="op">=</span> <span class="st">"v1"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">rules_back</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/write_rules.html">read_rules</a></span><span class="op">(</span><span class="st">"example_rules_v1.yaml"</span><span class="op">)</span></span>
+<span><span class="va">rules_back</span></span>
+<span><span class="co">#&gt; &lt;Verification Ruleset with 1 elements&gt;</span></span>
+<span><span class="co">#&gt;   [1] 'amount is positive' matching `amount &gt; 0` (allow_na: TRUE)</span></span></code></pre></div>
+<p>Structured v1 example:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">meta</span><span class="kw">:</span></span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a><span class="at">  </span><span class="fu">title</span><span class="kw">:</span><span class="at"> Order Validation</span></span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a><span class="at">  </span><span class="fu">version</span><span class="kw">:</span><span class="at"> </span><span class="st">'1.0'</span></span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a><span class="at">  </span><span class="fu">description</span><span class="kw">:</span><span class="at"> Checks for order exports</span></span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a><span class="fu">data-columns</span><span class="kw">:</span></span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">col</span><span class="kw">:</span><span class="at"> order_id</span></span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a><span class="at">  </span><span class="fu">type</span><span class="kw">:</span><span class="at"> int</span></span>
+<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a><span class="at">  </span><span class="fu">optional</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a><span class="at">  </span><span class="fu">description</span><span class="kw">:</span><span class="at"> .na.character</span></span>
+<span id="cb14-10"><a href="#cb14-10" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">col</span><span class="kw">:</span><span class="at"> customer_tier</span></span>
+<span id="cb14-11"><a href="#cb14-11" tabindex="-1"></a><span class="at">  </span><span class="fu">type</span><span class="kw">:</span><span class="at"> str</span></span>
+<span id="cb14-12"><a href="#cb14-12" tabindex="-1"></a><span class="at">  </span><span class="fu">optional</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb14-13"><a href="#cb14-13" tabindex="-1"></a><span class="at">  </span><span class="fu">description</span><span class="kw">:</span><span class="at"> .na.character</span></span>
+<span id="cb14-14"><a href="#cb14-14" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">col</span><span class="kw">:</span><span class="at"> amount</span></span>
+<span id="cb14-15"><a href="#cb14-15" tabindex="-1"></a><span class="at">  </span><span class="fu">type</span><span class="kw">:</span><span class="at"> double</span></span>
+<span id="cb14-16"><a href="#cb14-16" tabindex="-1"></a><span class="at">  </span><span class="fu">optional</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb14-17"><a href="#cb14-17" tabindex="-1"></a><span class="at">  </span><span class="fu">description</span><span class="kw">:</span><span class="at"> .na.character</span></span>
+<span id="cb14-18"><a href="#cb14-18" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">col</span><span class="kw">:</span><span class="at"> paid</span></span>
+<span id="cb14-19"><a href="#cb14-19" tabindex="-1"></a><span class="at">  </span><span class="fu">type</span><span class="kw">:</span><span class="at"> logical</span></span>
+<span id="cb14-20"><a href="#cb14-20" tabindex="-1"></a><span class="at">  </span><span class="fu">optional</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb14-21"><a href="#cb14-21" tabindex="-1"></a><span class="at">  </span><span class="fu">description</span><span class="kw">:</span><span class="at"> .na.character</span></span>
+<span id="cb14-22"><a href="#cb14-22" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">col</span><span class="kw">:</span><span class="at"> payment_method</span></span>
+<span id="cb14-23"><a href="#cb14-23" tabindex="-1"></a><span class="at">  </span><span class="fu">type</span><span class="kw">:</span><span class="at"> str</span></span>
+<span id="cb14-24"><a href="#cb14-24" tabindex="-1"></a><span class="at">  </span><span class="fu">optional</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb14-25"><a href="#cb14-25" tabindex="-1"></a><span class="at">  </span><span class="fu">description</span><span class="kw">:</span><span class="at"> .na.character</span></span>
+<span id="cb14-26"><a href="#cb14-26" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">col</span><span class="kw">:</span><span class="at"> order_time</span></span>
+<span id="cb14-27"><a href="#cb14-27" tabindex="-1"></a><span class="at">  </span><span class="fu">type</span><span class="kw">:</span><span class="at"> .na.character</span></span>
+<span id="cb14-28"><a href="#cb14-28" tabindex="-1"></a><span class="at">  </span><span class="fu">optional</span><span class="kw">:</span><span class="at"> </span><span class="ch">yes</span></span>
+<span id="cb14-29"><a href="#cb14-29" tabindex="-1"></a><span class="at">  </span><span class="fu">description</span><span class="kw">:</span><span class="at"> .na.character</span></span>
+<span id="cb14-30"><a href="#cb14-30" tabindex="-1"></a><span class="fu">data-rules</span><span class="kw">:</span></span>
+<span id="cb14-31"><a href="#cb14-31" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> amount is positive</span></span>
+<span id="cb14-32"><a href="#cb14-32" tabindex="-1"></a><span class="at">  </span><span class="fu">expr</span><span class="kw">:</span><span class="at"> amount &gt; 0</span></span>
+<span id="cb14-33"><a href="#cb14-33" tabindex="-1"></a><span class="at">  </span><span class="fu">allow_na</span><span class="kw">:</span><span class="at"> </span><span class="ch">yes</span></span>
+<span id="cb14-34"><a href="#cb14-34" tabindex="-1"></a><span class="at">  </span><span class="fu">negate</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb14-35"><a href="#cb14-35" tabindex="-1"></a><span class="at">  </span><span class="fu">index</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span></code></pre></div>
+</div>
 </div>
 <div class="section level2">
 <h2 id="backends">Backends<a class="anchor" aria-label="anchor" href="#backends"></a>
 </h2>
 <p>At the moment the following backends are supported. Note that they are automatically chosen based on data type and package availability. Eg, when the dataset is a <code><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">dplyr::tbl()</a></code> connected to an <code>SQLite</code> database, the package will automatically choose <code>RSQLite</code>/<code>DBI</code>/<code>dbplyr</code> for the task. To see which backend <code>dataverifyr</code> would use for a task, you can use <code>detect_backend(data)</code>.</p>
+<p>Important: many backend packages are optional (<code>Suggests</code>) and may not be installed in all environments (for example CI runners, documentation builders, or minimal local setups). In particular, examples requiring <code>arrow</code>, <code>duckdb</code>, <code>DBI</code>, or <code>dplyr</code> may be shown but not executed unless those packages are available.</p>
 <table class="table">
 <thead class="header">
 <th style="text-align:left;">
@@ -231,7 +605,7 @@ Comment
 <p><code>data.frame</code></p>
 </td>
 <td style="text-align:left;">
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">rs</span><span class="op">)</span></span></code></pre></div>
 </td>
@@ -250,7 +624,7 @@ Comment
 <p><code>tibble</code></p>
 </td>
 <td style="text-align:left;">
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">rs</span><span class="op">)</span></span></code></pre></div>
@@ -269,7 +643,7 @@ Comment
 <p><code>data.table</code></p>
 </td>
 <td style="text-align:left;">
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-datatable.com" class="external-link">data.table</a></span><span class="op">)</span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/data.table/man/data.table.html" class="external-link">data.table</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">rs</span><span class="op">)</span></span></code></pre></div>
@@ -288,7 +662,7 @@ Comment
 <p><code>Table</code>, <code>ArrowTabular</code>, <code>ArrowObject</code></p>
 </td>
 <td style="text-align:left;">
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/apache/arrow/" class="external-link">arrow</a></span><span class="op">)</span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://arrow.apache.org/docs/r/reference/table.html" class="external-link">arrow_table</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span></span>
 <span><span class="co"># Alternatively:</span></span>
@@ -312,7 +686,7 @@ Comment
 <p><code>FileSystemDataset</code>, <code>Dataset</code>, <code>ArrowObject</code></p>
 </td>
 <td style="text-align:left;">
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/apache/arrow/" class="external-link">arrow</a></span><span class="op">)</span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://arrow.apache.org/docs/r/reference/open_dataset.html" class="external-link">open_dataset</a></span><span class="op">(</span><span class="va">dir</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">rs</span><span class="op">)</span></span></code></pre></div>
@@ -332,7 +706,7 @@ Especially handy for large datasets
 <p><code>tbl_SQLiteConnection</code>, <code>tbl_dbi</code>, <code>tbl_sql</code>, <code>tbl_lazy</code>, <code>tbl</code></p>
 </td>
 <td style="text-align:left;">
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dbi.r-dbi.org" class="external-link">DBI</a></span><span class="op">)</span></span>
 <span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">RSQLite</span><span class="fu">::</span><span class="fu"><a href="https://rsqlite.r-dbi.org/reference/SQLite.html" class="external-link">SQLite</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co"># dbWriteTable(con, tablename, data)</span></span>
@@ -356,7 +730,7 @@ Especially handy for large datasets
 <p><code>tbl_duckdb_connection</code>, <code>tbl_dbi</code>, <code>tbl_sql</code>, <code>tbl_lazy</code>, <code>tbl</code></p>
 </td>
 <td style="text-align:left;">
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dbi.r-dbi.org" class="external-link">DBI</a></span><span class="op">)</span></span>
 <span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co"># dbWriteTable(con, tablename, data)</span></span>
@@ -379,7 +753,7 @@ Especially handy for large datasets
 <p><code>tbl_PqConnection</code>, <code>tbl_dbi</code>, <code>tbl_sql</code>, <code>tbl_lazy</code>, <code>tbl</code></p>
 </td>
 <td style="text-align:left;">
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dbi.r-dbi.org" class="external-link">DBI</a></span><span class="op">)</span></span>
 <span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span></span>
 <span>  <span class="fu">RPostgres</span><span class="fu">::</span><span class="fu">Postgres</span><span class="op">(</span><span class="op">)</span>, </span>
@@ -407,67 +781,77 @@ Especially handy for large datasets
 <h3 id="id_1-download-and-prepare-data">1 Download and Prepare Data<a class="anchor" aria-label="anchor" href="#id_1-download-and-prepare-data"></a>
 </h3>
 <p>First we prepare the data by downloading it and writing the dataset to <code>.parquet</code> files. This needs to be done only once and is shown for reproducibility reasons only, the actual <code>dataverifyr</code> code is shown below the next block</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/apache/arrow/" class="external-link">arrow</a></span><span class="op">)</span></span>
 <span><span class="va">url</span> <span class="op">&lt;-</span> <span class="st">"https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2018-01.parquet"</span></span>
-<span><span class="va">file</span> <span class="op">&lt;-</span> <span class="st">"yellow_tripdata_2018-01.parquet"</span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">file</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/download.file.html" class="external-link">download.file</a></span><span class="op">(</span><span class="va">url</span>, <span class="va">file</span>, method <span class="op">=</span> <span class="st">"curl"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/file.info.html" class="external-link">file.size</a></span><span class="op">(</span><span class="va">file</span><span class="op">)</span> <span class="op">/</span> <span class="fl">1e6</span> <span class="co"># in MB</span></span>
+<span><span class="va">pq_file</span> <span class="op">&lt;-</span> <span class="st">"yellow_tripdata_2018-01.parquet"</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">pq_file</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/download.file.html" class="external-link">download.file</a></span><span class="op">(</span><span class="va">url</span>, <span class="va">file</span>, method <span class="op">=</span> <span class="st">"curl"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/file.info.html" class="external-link">file.size</a></span><span class="op">(</span><span class="va">pq_file</span><span class="op">)</span> <span class="op">/</span> <span class="fl">1e6</span> <span class="co"># in MB</span></span>
 <span><span class="co">#&gt; [1] 123.6685</span></span>
 <span></span>
-<span><span class="co"># quick check of the filesize</span></span>
-<span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://arrow.apache.org/docs/r/reference/open_dataset.html" class="external-link">open_dataset</a></span><span class="op">(</span><span class="va">file</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/describe.html">describe</a></span><span class="op">(</span><span class="va">d</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 19 × 10</span></span>
-<span><span class="co">#&gt;    var                  type  n_dis…¹    n_na most_…²     min      mean   median       max        sd</span></span>
-<span><span class="co">#&gt;    &lt;chr&gt;                &lt;chr&gt;   &lt;int&gt;   &lt;int&gt; &lt;chr&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt;  1 VendorID             inte…       2       0 2 (491…    1      1.5610    2           2     0.49508 </span></span>
-<span><span class="co">#&gt;  2 tpep_pickup_datetime POSI… 2311532       0 2018-0…   NA     NA        NA          NA    NA       </span></span>
-<span><span class="co">#&gt;  3 tpep_dropoff_dateti… POSI… 2315089       0 2018-0…   NA     NA        NA          NA    NA       </span></span>
-<span><span class="co">#&gt;  4 passenger_count      inte…      10       0 1 (624…    0      1.6068    1           9     1.2330  </span></span>
-<span><span class="co">#&gt;  5 trip_distance        nume…    4397       0 0.8 (2…    0      2.8040    1.5503 189484.    3.2532  </span></span>
-<span><span class="co">#&gt;  6 RatecodeID           inte…       7       0 1 (853…    1      1.0395    1          99     0.31301 </span></span>
-<span><span class="co">#&gt;  7 store_and_fwd_flag   char…       2       0 N (872…    1      1         1           1     0       </span></span>
-<span><span class="co">#&gt;  8 PULocationID         inte…     259       0 237 (3…    1    164.46    161.86      265    66.520   </span></span>
-<span><span class="co">#&gt;  9 DOLocationID         inte…     261       0 236 (3…    1    162.73    162.10      265    75.411   </span></span>
-<span><span class="co">#&gt; 10 payment_type         inte…       4       0 1 (610…    1      1.3106    1           4     0.45814 </span></span>
-<span><span class="co">#&gt; 11 fare_amount          nume…    1714       0 6 (473… -450     12.244     8.8357   8016     9.9255  </span></span>
-<span><span class="co">#&gt; 12 extra                nume…      42       0 0 (474…  -44.69   0.32469   0          60     0.068786</span></span>
-<span><span class="co">#&gt; 13 mta_tax              nume…      15       0 0.5 (8…   -0.5    0.49751   0.5        45.49  0.043389</span></span>
-<span><span class="co">#&gt; 14 tip_amount           nume…    3397       0 0 (289…  -88.8    1.8188    1.3968    441.71  2.2823  </span></span>
-<span><span class="co">#&gt; 15 tolls_amount         nume…     967       0 0 (833…  -15      0.30262   0         950.7   1.1501  </span></span>
-<span><span class="co">#&gt; 16 improvement_surchar… nume…       4       0 0.3 (8…   -0.3    0.29963   0.3         1     0.018442</span></span>
-<span><span class="co">#&gt; 17 total_amount         nume…   11514       0 7.3 (2… -450.3   15.491    11.321    8016.8  11.984   </span></span>
-<span><span class="co">#&gt; 18 congestion_surcharge nume…       2 8760675 NA (87…    2.5    2.5       2.5         2.5  NA       </span></span>
-<span><span class="co">#&gt; 19 airport_fee          nume…       2 8760675 NA (87…    0      0         0           0    NA       </span></span>
-<span><span class="co">#&gt; # … with abbreviated variable names ¹​n_distinct, ²​most_frequent</span></span>
+<span><span class="co"># quick check of the filesize and the structure of the file</span></span>
+<span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://arrow.apache.org/docs/r/reference/open_dataset.html" class="external-link">open_dataset</a></span><span class="op">(</span><span class="va">pq_file</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/describe.html">describe</a></span><span class="op">(</span><span class="va">d</span>, fast <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 19 × 11</span></span>
+<span><span class="co">#&gt;    var                   type            n n_distinct    n_na most_frequent        min      mean median     max       sd</span></span>
+<span><span class="co">#&gt;    &lt;chr&gt;                 &lt;chr&gt;       &lt;int&gt;      &lt;int&gt;   &lt;int&gt; &lt;chr&gt;              &lt;dbl&gt;     &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt;  1 VendorID              integer   8760687         NA       0 &lt;NA&gt;             1   e+0   1.56e+0     NA  2   e0  4.96e-1</span></span>
+<span><span class="co">#&gt;  2 tpep_pickup_datetime  POSIXct   8760687         NA       0 &lt;NA&gt;             9.79e+8   1.52e+9     NA  1.53e9  1.06e+6</span></span>
+<span><span class="co">#&gt;  3 tpep_dropoff_datetime POSIXct   8760687         NA       0 &lt;NA&gt;             9.79e+8   1.52e+9     NA  1.53e9  1.06e+6</span></span>
+<span><span class="co">#&gt;  4 passenger_count       integer   8760687         NA       0 &lt;NA&gt;             0         1.61e+0     NA  9   e0  1.26e+0</span></span>
+<span><span class="co">#&gt;  5 trip_distance         numeric   8760687         NA       0 &lt;NA&gt;             0         2.80e+0     NA  1.89e5  6.41e+1</span></span>
+<span><span class="co">#&gt;  6 RatecodeID            integer   8760687         NA       0 &lt;NA&gt;             1   e+0   1.04e+0     NA  9.9 e1  4.45e-1</span></span>
+<span><span class="co">#&gt;  7 store_and_fwd_flag    character 8760687         NA 8760687 &lt;NA&gt;            NA       NaN           NA NA      NA</span></span>
+<span><span class="co">#&gt;  8 PULocationID          integer   8760687         NA       0 &lt;NA&gt;             1   e+0   1.64e+2     NA  2.65e2  6.64e+1</span></span>
+<span><span class="co">#&gt;  9 DOLocationID          integer   8760687         NA       0 &lt;NA&gt;             1   e+0   1.63e+2     NA  2.65e2  7.03e+1</span></span>
+<span><span class="co">#&gt; 10 payment_type          integer   8760687         NA       0 &lt;NA&gt;             1   e+0   1.31e+0     NA  4   e0  4.82e-1</span></span>
+<span><span class="co">#&gt; 11 fare_amount           numeric   8760687         NA       0 &lt;NA&gt;            -4.5 e+2   1.22e+1     NA  8.02e3  1.17e+1</span></span>
+<span><span class="co">#&gt; 12 extra                 numeric   8760687         NA       0 &lt;NA&gt;            -4.47e+1   3.25e-1     NA  6   e1  4.50e-1</span></span>
+<span><span class="co">#&gt; 13 mta_tax               numeric   8760687         NA       0 &lt;NA&gt;            -5   e-1   4.98e-1     NA  4.55e1  4.33e-2</span></span>
+<span><span class="co">#&gt; 14 tip_amount            numeric   8760687         NA       0 &lt;NA&gt;            -8.88e+1   1.82e+0     NA  4.42e2  2.49e+0</span></span>
+<span><span class="co">#&gt; 15 tolls_amount          numeric   8760687         NA       0 &lt;NA&gt;            -1.5 e+1   3.03e-1     NA  9.51e2  1.74e+0</span></span>
+<span><span class="co">#&gt; 16 improvement_surcharge numeric   8760687         NA       0 &lt;NA&gt;            -3   e-1   3.00e-1     NA  1   e0  1.44e-2</span></span>
+<span><span class="co">#&gt; 17 total_amount          numeric   8760687         NA       0 &lt;NA&gt;            -4.50e+2   1.55e+1     NA  8.02e3  1.42e+1</span></span>
+<span><span class="co">#&gt; 18 congestion_surcharge  numeric   8760687         NA 8760675 &lt;NA&gt;             2.5 e+0   2.5 e+0     NA  2.5 e0  0</span></span>
+<span><span class="co">#&gt; 19 airport_fee           numeric   8760687         NA 8760675 &lt;NA&gt;             0         0           NA  0       0</span></span>
 <span></span>
 <span><span class="co"># write the dataset to disk</span></span>
-<span><span class="fu"><a href="https://arrow.apache.org/docs/r/reference/write_dataset.html" class="external-link">write_dataset</a></span><span class="op">(</span><span class="va">d</span>, <span class="st">"nyc-taxi-data"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.exists</a></span><span class="op">(</span><span class="st">"nyc-taxi-data"</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://arrow.apache.org/docs/r/reference/write_dataset.html" class="external-link">write_dataset</a></span><span class="op">(</span><span class="va">d</span>, <span class="st">"nyc-taxi-data"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="id_2-create-rules-in-yaml">2 Create Rules in <code>yaml</code>
 <a class="anchor" aria-label="anchor" href="#id_2-create-rules-in-yaml"></a>
 </h3>
 <p>Next, we can create some rules that we will use to check our data. As we saw earlier, we can create the rules in R using the <code><a href="reference/rule.html">rule()</a></code> and <code><a href="reference/ruleset.html">ruleset()</a></code> functions, there is however, the (in my opinion) preferred option to separate the code from the rules by writing the rules in a separate yaml file and reading them into R.</p>
-<p>First we display the hand-written contents of the <code>nyc_data_rules.yaml</code> file.</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">'Rule for: passenger_count'</span></span>
-<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a><span class="at">  </span><span class="fu">expr</span><span class="kw">:</span><span class="at"> passenger_count &gt;= 0 &amp; passenger_count &lt;= 10</span></span>
-<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a><span class="at">  </span><span class="fu">allow_na</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
-<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a><span class="at">  </span><span class="fu">negate</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
-<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a><span class="at">  </span><span class="fu">index</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
-<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">'Rule for: trip_distance'</span></span>
-<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a><span class="at">  </span><span class="fu">expr</span><span class="kw">:</span><span class="at"> trip_distance &gt;= 0 &amp; trip_distance &lt;= 1000</span></span>
-<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a><span class="at">  </span><span class="fu">allow_na</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
-<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a><span class="at">  </span><span class="fu">negate</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
-<span id="cb17-10"><a href="#cb17-10" tabindex="-1"></a><span class="at">  </span><span class="fu">index</span><span class="kw">:</span><span class="at"> </span><span class="dv">2</span></span>
-<span id="cb17-11"><a href="#cb17-11" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">'Rule for: payment_type'</span></span>
-<span id="cb17-12"><a href="#cb17-12" tabindex="-1"></a><span class="at">  </span><span class="fu">expr</span><span class="kw">:</span><span class="at"> payment_type %in% c(0, 1, 2, 3, 4)</span></span>
-<span id="cb17-13"><a href="#cb17-13" tabindex="-1"></a><span class="at">  </span><span class="fu">allow_na</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
-<span id="cb17-14"><a href="#cb17-14" tabindex="-1"></a><span class="at">  </span><span class="fu">negate</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
-<span id="cb17-15"><a href="#cb17-15" tabindex="-1"></a><span class="at">  </span><span class="fu">index</span><span class="kw">:</span><span class="at"> </span><span class="dv">3</span></span></code></pre></div>
+<p>First we create and write the rules to a <code>nyc_data_rules.yaml</code> file, note for larger rulesets, you would most likely write the rules directly in the yml file.</p>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">rs</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ruleset.html">ruleset</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="reference/rule.html">rule</a></span><span class="op">(</span><span class="va">passenger_count</span> <span class="op">&gt;=</span> <span class="fl">0</span> <span class="op">&amp;</span> <span class="va">passenger_count</span> <span class="op">&lt;=</span> <span class="fl">10</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="reference/rule.html">rule</a></span><span class="op">(</span><span class="va">trip_distance</span> <span class="op">&gt;=</span> <span class="fl">0</span> <span class="op">&amp;</span> <span class="va">trip_distance</span> <span class="op">&lt;=</span> <span class="fl">1000</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="reference/rule.html">rule</a></span><span class="op">(</span><span class="va">payment_type</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/write_rules.html">write_rules</a></span><span class="op">(</span><span class="va">rs</span>, <span class="st">"nyc_data_rules.yaml"</span><span class="op">)</span></span></code></pre></div>
+<p>Which looks like this in the yaml file:</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a><span class="fu">meta</span><span class="kw">:</span><span class="at"> </span><span class="ch">~</span></span>
+<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a><span class="fu">data-columns</span><span class="kw">:</span><span class="at"> </span><span class="kw">[]</span></span>
+<span id="cb25-3"><a href="#cb25-3" tabindex="-1"></a><span class="fu">data-rules</span><span class="kw">:</span></span>
+<span id="cb25-4"><a href="#cb25-4" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">'Rule for: passenger_count'</span></span>
+<span id="cb25-5"><a href="#cb25-5" tabindex="-1"></a><span class="at">  </span><span class="fu">expr</span><span class="kw">:</span><span class="at"> passenger_count &gt;= 0 &amp; passenger_count &lt;= 10</span></span>
+<span id="cb25-6"><a href="#cb25-6" tabindex="-1"></a><span class="at">  </span><span class="fu">allow_na</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb25-7"><a href="#cb25-7" tabindex="-1"></a><span class="at">  </span><span class="fu">negate</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb25-8"><a href="#cb25-8" tabindex="-1"></a><span class="at">  </span><span class="fu">index</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
+<span id="cb25-9"><a href="#cb25-9" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">'Rule for: trip_distance'</span></span>
+<span id="cb25-10"><a href="#cb25-10" tabindex="-1"></a><span class="at">  </span><span class="fu">expr</span><span class="kw">:</span><span class="at"> trip_distance &gt;= 0 &amp; trip_distance &lt;= 1000</span></span>
+<span id="cb25-11"><a href="#cb25-11" tabindex="-1"></a><span class="at">  </span><span class="fu">allow_na</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb25-12"><a href="#cb25-12" tabindex="-1"></a><span class="at">  </span><span class="fu">negate</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb25-13"><a href="#cb25-13" tabindex="-1"></a><span class="at">  </span><span class="fu">index</span><span class="kw">:</span><span class="at"> </span><span class="dv">2</span></span>
+<span id="cb25-14"><a href="#cb25-14" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">'Rule for: payment_type'</span></span>
+<span id="cb25-15"><a href="#cb25-15" tabindex="-1"></a><span class="at">  </span><span class="fu">expr</span><span class="kw">:</span><span class="at"> payment_type %in% c(0, 1, 2, 3, 4)</span></span>
+<span id="cb25-16"><a href="#cb25-16" tabindex="-1"></a><span class="at">  </span><span class="fu">allow_na</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb25-17"><a href="#cb25-17" tabindex="-1"></a><span class="at">  </span><span class="fu">negate</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb25-18"><a href="#cb25-18" tabindex="-1"></a><span class="at">  </span><span class="fu">index</span><span class="kw">:</span><span class="at"> </span><span class="dv">3</span></span></code></pre></div>
 <p>Then, we can load, display, and finally check the rules against the data</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rules</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/write_rules.html">read_rules</a></span><span class="op">(</span><span class="st">"nyc_data_rules.yaml"</span><span class="op">)</span></span>
 <span><span class="va">rules</span></span>
 <span><span class="co">#&gt; &lt;Verification Ruleset with 3 elements&gt;</span></span>
@@ -479,33 +863,34 @@ Especially handy for large datasets
 <h3 id="id_3-verify-that-the-data-matches-the-given-rules">3 Verify that the Data matches the given Rules<a class="anchor" aria-label="anchor" href="#id_3-verify-that-the-data-matches-the-given-rules"></a>
 </h3>
 <p>Now we can check if the data follows our rules or if we have unexpected data points:</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># open the dataset </span></span>
-<span><span class="va">ds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://arrow.apache.org/docs/r/reference/open_dataset.html" class="external-link">open_dataset</a></span><span class="op">(</span><span class="st">"nyc-taxi-data/"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/apache/arrow/" class="external-link">arrow</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># open the dataset</span></span>
+<span><span class="va">ds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://arrow.apache.org/docs/r/reference/open_dataset.html" class="external-link">open_dataset</a></span><span class="op">(</span><span class="va">pq_file</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># perform the data validation check</span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">ds</span>, <span class="va">rules</span><span class="op">)</span></span>
 <span><span class="va">res</span></span>
-<span><span class="co">#&gt; # A tibble: 3 × 10</span></span>
-<span><span class="co">#&gt;   name                      expr              allow…¹ negate   tests    pass  fail warn  error time </span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;                     &lt;chr&gt;             &lt;lgl&gt;   &lt;lgl&gt;    &lt;int&gt;   &lt;int&gt; &lt;int&gt; &lt;chr&gt; &lt;chr&gt; &lt;drt&gt;</span></span>
-<span><span class="co">#&gt; 1 Rule for: passenger_count passenger_count … FALSE   FALSE  8760687 8760687     0 ""    ""    0.42…</span></span>
-<span><span class="co">#&gt; 2 Rule for: trip_distance   trip_distance &gt;=… FALSE   FALSE  8760687 8760686     1 ""    ""    0.51…</span></span>
-<span><span class="co">#&gt; 3 Rule for: payment_type    payment_type %in… FALSE   FALSE  8760687 8760687     0 ""    ""    0.45…</span></span>
-<span><span class="co">#&gt; # … with abbreviated variable name ¹​allow_na</span></span>
+<span><span class="co">#&gt; # A tibble: 3 × 11</span></span>
+<span><span class="co">#&gt;   check_type name                      expr                                         allow_na negate   tests    pass  fail warn  error time</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;      &lt;chr&gt;                     &lt;chr&gt;                                        &lt;lgl&gt;    &lt;lgl&gt;    &lt;int&gt;   &lt;int&gt; &lt;int&gt; &lt;chr&gt; &lt;chr&gt; &lt;drtn&gt;</span></span>
+<span><span class="co">#&gt; 1 row_rule   Rule for: passenger_count passenger_count &gt;= 0 &amp; passenger_count &lt;= 10 FALSE    FALSE  8760687 8760687     0 ""    ""    0.4102955 secs</span></span>
+<span><span class="co">#&gt; 2 row_rule   Rule for: trip_distance   trip_distance &gt;= 0 &amp; trip_distance &lt;= 1000   FALSE    FALSE  8760687 8760686     1 ""    ""    0.3988464 secs</span></span>
+<span><span class="co">#&gt; 3 row_rule   Rule for: payment_type    payment_type %in% c(0, 1, 2, 3, 4)           FALSE    FALSE  8760687 8760687     0 ""    ""    0.3578835 secs</span></span>
 <span></span>
 <span><span class="fu"><a href="reference/plot_res.html">plot_res</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-taxi3-1.png" width="100%"></p>
+<p><img src="reference/figures/README-taxi3-1.png" alt="" width="100%"></p>
 <p>Using the power of <code>arrow</code>, we were able to scan 8+mln observations for three rules in about 1.5 seconds (YMMV). As we can see from the results, there is one unexpected value, lets quickly investigate using the <code><a href="reference/filter_fails.html">filter_fails()</a></code> function, which filters a dataset for the failed rule matches</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="reference/filter_fails.html">filter_fails</a></span><span class="op">(</span><span class="va">ds</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="reference/filter_fails.html">filter_fails</a></span><span class="op">(</span><span class="va">ds</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="co"># only select a couple of variables for brevity</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">tpep_pickup_datetime</span>, <span class="va">tpep_dropoff_datetime</span>, <span class="va">trip_distance</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 1 × 3</span></span>
 <span><span class="co">#&gt;   tpep_pickup_datetime tpep_dropoff_datetime trip_distance</span></span>
 <span><span class="co">#&gt;   &lt;dttm&gt;               &lt;dttm&gt;                        &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1 2018-01-30 12:41:02  2018-01-30 12:42:09         189484.</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 2018-01-30 11:41:02  2018-01-30 11:42:09         189484.</span></span></code></pre></div>
 <p>As we can see, this is probably a data error (a trip distance of 190k miles in 1 minute seems - ehm stellar…).</p>
 </div>
 </div>
@@ -513,59 +898,59 @@ Especially handy for large datasets
 <h2 id="using-a-dbi-backend">Using a <code>DBI</code> Backend<a class="anchor" aria-label="anchor" href="#using-a-dbi-backend"></a>
 </h2>
 <p>If you have a <code>SQLite</code> or <code>duckdb</code> database, you can use the package like this</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dbi.r-dbi.org" class="external-link">DBI</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># connect to a duckdb database</span></span>
 <span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="st">"duckdb-database.duckdb"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co"># for demo purposes write the data once</span></span>
-<span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbWriteTable.html" class="external-link">dbWriteTable</a></span><span class="op">(</span><span class="va">con</span>, <span class="st">"mtcars"</span>, <span class="va">mtcars</span><span class="op">)</span></span>
+<span><span class="co"># for demo purposes write sample_data once</span></span>
+<span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbWriteTable.html" class="external-link">dbWriteTable</a></span><span class="op">(</span><span class="va">con</span>, <span class="st">"orders"</span>, <span class="va">sample_data</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># create a tbl connection, which can be used in the checks</span></span>
-<span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">tbl</a></span><span class="op">(</span><span class="va">con</span>, <span class="st">"mtcars"</span><span class="op">)</span></span>
+<span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">tbl</a></span><span class="op">(</span><span class="va">con</span>, <span class="st">"orders"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># create rules</span></span>
 <span><span class="va">rules</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ruleset.html">ruleset</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="reference/rule.html">rule</a></span><span class="op">(</span><span class="va">mpg</span> <span class="op">&gt;</span> <span class="fl">10</span> <span class="op">&amp;</span> <span class="va">mpg</span> <span class="op">&lt;</span> <span class="fl">30</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="reference/rule.html">rule</a></span><span class="op">(</span><span class="va">cyl</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">8</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="reference/rule.html">rule</a></span><span class="op">(</span><span class="va">vs</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, allow_na <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="reference/rule.html">rule</a></span><span class="op">(</span><span class="va">amount</span> <span class="op">&gt;=</span> <span class="fl">0</span> <span class="op">&amp;</span> <span class="va">amount</span> <span class="op">&lt;=</span> <span class="fl">10000</span>, name <span class="op">=</span> <span class="st">"amount in valid range"</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="reference/rule.html">rule</a></span><span class="op">(</span><span class="va">customer_tier</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"bronze"</span>, <span class="st">"silver"</span>, <span class="st">"gold"</span><span class="op">)</span>, name <span class="op">=</span> <span class="st">"known customer tier"</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="reference/rule.html">rule</a></span><span class="op">(</span><span class="op">!</span><span class="va">paid</span> <span class="op">|</span> <span class="va">payment_method</span> <span class="op">!=</span> <span class="st">"none"</span>, name <span class="op">=</span> <span class="st">"paid orders need payment method"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># check rules</span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/check_data.html">check_data</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="va">rules</span><span class="op">)</span></span>
 <span><span class="va">res</span></span>
-<span><span class="co">#&gt; # A tibble: 3 × 10</span></span>
-<span><span class="co">#&gt;   name          expr                allow_na negate tests  pass  fail warn  error time          </span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;         &lt;chr&gt;               &lt;lgl&gt;    &lt;lgl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt; &lt;drtn&gt;        </span></span>
-<span><span class="co">#&gt; 1 Rule for: mpg mpg &gt; 10 &amp; mpg &lt; 30 FALSE    FALSE     32    28     4 ""    ""    4.4900761 secs</span></span>
-<span><span class="co">#&gt; 2 Rule for: cyl cyl %in% c(4, 8)    FALSE    FALSE     32    25     7 ""    ""    0.1926301 secs</span></span>
-<span><span class="co">#&gt; 3 Rule for: vs  vs %in% c(0, 1)     TRUE     FALSE     32    32     0 ""    ""    0.2003391 secs</span></span>
 <span></span>
 <span><span class="fu"><a href="reference/filter_fails.html">filter_fails</a></span><span class="op">(</span><span class="va">res</span>, <span class="va">tbl</span>, per_rule <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; $`mpg &gt; 10 &amp; mpg &lt; 30`</span></span>
-<span><span class="co">#&gt; # A tibble: 4 × 11</span></span>
-<span><span class="co">#&gt;     mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb</span></span>
-<span><span class="co">#&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1  32.4     4  78.7    66  4.08 2.2   19.47     1     1     4     1</span></span>
-<span><span class="co">#&gt; 2  30.4     4  75.7    52  4.93 1.615 18.52     1     1     4     2</span></span>
-<span><span class="co">#&gt; 3  33.9     4  71.1    65  4.22 1.835 19.9      1     1     4     1</span></span>
-<span><span class="co">#&gt; 4  30.4     4  95.1   113  3.77 1.513 16.9      1     1     5     2</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $`cyl %in% c(4, 8)`</span></span>
-<span><span class="co">#&gt; # A tibble: 7 × 11</span></span>
-<span><span class="co">#&gt;     mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb</span></span>
-<span><span class="co">#&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1  21       6 160     110  3.9  2.62  16.46     0     1     4     4</span></span>
-<span><span class="co">#&gt; 2  21       6 160     110  3.9  2.875 17.02     0     1     4     4</span></span>
-<span><span class="co">#&gt; 3  21.4     6 258     110  3.08 3.215 19.44     1     0     3     1</span></span>
-<span><span class="co">#&gt; 4  18.1     6 225     105  2.76 3.46  20.22     1     0     3     1</span></span>
-<span><span class="co">#&gt; 5  19.2     6 167.6   123  3.92 3.44  18.3      1     0     4     4</span></span>
-<span><span class="co">#&gt; 6  17.8     6 167.6   123  3.92 3.44  18.9      1     0     4     4</span></span>
-<span><span class="co">#&gt; 7  19.7     6 145     175  3.62 2.77  15.5      0     1     5     6</span></span>
 <span></span>
 <span><span class="co"># lastly disconnect from the database again</span></span>
 <span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span>, shutdown <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="pre-package-version-10-yaml-compatibility">Pre Package Version 1.0 YAML (Compatibility)<a class="anchor" aria-label="anchor" href="#pre-package-version-10-yaml-compatibility"></a>
+</h2>
+<p><code>dataverifyr</code> still supports the pre package version 1.0 flat-list YAML format for compatibility with existing rule files.</p>
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/write_rules.html">write_rules</a></span><span class="op">(</span><span class="va">rules</span>, <span class="st">"example_rules_pre_v1.yaml"</span>, format <span class="op">=</span> <span class="st">"pre_v1"</span><span class="op">)</span></span>
+<span><span class="va">rules_pre_v1</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/write_rules.html">read_rules</a></span><span class="op">(</span><span class="st">"example_rules_pre_v1.yaml"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="va">rules</span>, <span class="va">rules_pre_v1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] FALSE</span></span></code></pre></div>
+<p>Pre package version 1.0 YAML example:</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb31-1"><a href="#cb31-1" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">'Rule for: passenger_count'</span></span>
+<span id="cb31-2"><a href="#cb31-2" tabindex="-1"></a><span class="at">  </span><span class="fu">expr</span><span class="kw">:</span><span class="at"> passenger_count &gt;= 0 &amp; passenger_count &lt;= 10</span></span>
+<span id="cb31-3"><a href="#cb31-3" tabindex="-1"></a><span class="at">  </span><span class="fu">allow_na</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb31-4"><a href="#cb31-4" tabindex="-1"></a><span class="at">  </span><span class="fu">negate</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb31-5"><a href="#cb31-5" tabindex="-1"></a><span class="at">  </span><span class="fu">index</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
+<span id="cb31-6"><a href="#cb31-6" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">'Rule for: trip_distance'</span></span>
+<span id="cb31-7"><a href="#cb31-7" tabindex="-1"></a><span class="at">  </span><span class="fu">expr</span><span class="kw">:</span><span class="at"> trip_distance &gt;= 0 &amp; trip_distance &lt;= 1000</span></span>
+<span id="cb31-8"><a href="#cb31-8" tabindex="-1"></a><span class="at">  </span><span class="fu">allow_na</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb31-9"><a href="#cb31-9" tabindex="-1"></a><span class="at">  </span><span class="fu">negate</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb31-10"><a href="#cb31-10" tabindex="-1"></a><span class="at">  </span><span class="fu">index</span><span class="kw">:</span><span class="at"> </span><span class="dv">2</span></span>
+<span id="cb31-11"><a href="#cb31-11" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">'Rule for: payment_type'</span></span>
+<span id="cb31-12"><a href="#cb31-12" tabindex="-1"></a><span class="at">  </span><span class="fu">expr</span><span class="kw">:</span><span class="at"> payment_type %in% c(0, 1, 2, 3, 4)</span></span>
+<span id="cb31-13"><a href="#cb31-13" tabindex="-1"></a><span class="at">  </span><span class="fu">allow_na</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb31-14"><a href="#cb31-14" tabindex="-1"></a><span class="at">  </span><span class="fu">negate</span><span class="kw">:</span><span class="at"> </span><span class="ch">no</span></span>
+<span id="cb31-15"><a href="#cb31-15" tabindex="-1"></a><span class="at">  </span><span class="fu">index</span><span class="kw">:</span><span class="at"> </span><span class="dv">3</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level1">

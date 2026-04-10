@@ -11,7 +11,7 @@ than arrow or SQL-based datasets."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">dataverifyr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.10</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -45,7 +45,7 @@ than arrow or SQL-based datasets.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">describe</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">describe</span><span class="op">(</span><span class="va">x</span>, skip_ones <span class="op">=</span> <span class="cn">TRUE</span>, digits <span class="op">=</span> <span class="fl">4</span>, top_n <span class="op">=</span> <span class="fl">3</span>, fast <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -54,7 +54,26 @@ than arrow or SQL-based datasets.</p>
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
 <dd><p>a dataset, either a <code><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></code>, <code><a href="https://dplyr.tidyverse.org/reference/reexports.html" class="external-link">dplyr::tibble</a></code>, <code><a href="https://rdrr.io/pkg/data.table/man/data.table.html" class="external-link">data.table::data.table</a></code>,
-<code><a href="https://arrow.apache.org/docs/r/reference/Table-class.html" class="external-link">arrow::arrow_table</a></code>, <code><a href="https://arrow.apache.org/docs/r/reference/open_dataset.html" class="external-link">arrow::open_dataset</a></code>, or <code><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">dplyr::tbl</a></code> (SQL connection)</p></dd>
+<code><a href="https://arrow.apache.org/docs/r/reference/table.html" class="external-link">arrow::arrow_table</a></code>, <code><a href="https://arrow.apache.org/docs/r/reference/open_dataset.html" class="external-link">arrow::open_dataset</a></code>, or <code><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">dplyr::tbl</a></code> (SQL connection)</p></dd>
+
+
+<dt id="arg-skip-ones">skip_ones<a class="anchor" aria-label="anchor" href="#arg-skip-ones"></a></dt>
+<dd><p>logical, whether values that occur exactly once should be omitted
+from <code>most_frequent</code></p></dd>
+
+
+<dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
+<dd><p>integer, number of digits to round numeric values in <code>most_frequent</code></p></dd>
+
+
+<dt id="arg-top-n">top_n<a class="anchor" aria-label="anchor" href="#arg-top-n"></a></dt>
+<dd><p>integer, number of most frequent values to include in <code>most_frequent</code>;
+set to <code>0</code> to skip the <code>most_frequent</code> computation</p></dd>
+
+
+<dt id="arg-fast">fast<a class="anchor" aria-label="anchor" href="#arg-fast"></a></dt>
+<dd><p>logical, when <code>TRUE</code> skip expensive fields (<code>n_distinct</code>, <code>median</code>)
+by returning <code>NA</code> for them</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -63,8 +82,15 @@ than arrow or SQL-based datasets.</p>
 a summary of the dataset given</p>
     </div>
     <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>Numeric values in <code>most_frequent</code> are rounded to <code>digits</code> (default: 4).
+If a variable has at most 1 distinct value, <code>most_frequent</code> is left empty.
+By default, values with count 1 are omitted from <code>most_frequent</code>.</p>
+    </div>
+    <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p>Similar to <a href="https://cran.r-project.org/web/packages/skimr/vignettes/skimr.html" class="external-link">skimr::skim()</a>,
+    <div class="dont-index"><p>Similar to
+<a href="https://cran.r-project.org/web/packages/skimr/vignettes/skimr.html" class="external-link">skimr::skim()</a>,
 <a href="https://cran.r-project.org/web/packages/summarytools/vignettes/introduction.html#data-frame-summaries-dfsummary" class="external-link">summarytools::dfSummary()</a>,
 and <a href="https://jthomasmock.github.io/gtExtras/reference/gt_plt_summary.html" class="external-link">gtExtras::gt_plt_summary()</a></p></div>
     </div>
@@ -72,19 +98,19 @@ and <a href="https://jthomasmock.github.io/gtExtras/reference/gt_plt_summary.htm
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">describe</span><span class="op">(</span><span class="va">mtcars</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        var    type     n n_distinct  n_na                  most_frequent    min</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;char&gt;  &lt;char&gt; &lt;int&gt;      &lt;int&gt; &lt;int&gt;                         &lt;char&gt;  &lt;num&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  1:    mpg numeric    32         25     0     21 (2), 22.8 (2), 21.4 (2) 10.400</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  2:    cyl numeric    32          3     0          8 (14), 4 (11), 6 (7)  4.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  3:   disp numeric    32         27     0    275.8 (3), 160 (2), 360 (2) 71.100</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  4:     hp numeric    32         22     0      110 (3), 175 (3), 180 (3) 52.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  5:   drat numeric    32         22     0    3.92 (3), 3.07 (3), 3.9 (2)  2.760</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  6:     wt numeric    32         29     0   3.44 (3), 3.57 (2), 2.62 (1)  1.513</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  7:   qsec numeric    32         30     0 17.02 (2), 18.9 (2), 16.46 (1) 14.500</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  8:     vs numeric    32          2     0        0 (18), 1 (14), NA (NA)  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  9:     am numeric    32          2     0        0 (19), 1 (13), NA (NA)  0.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10:   gear numeric    32          3     0          3 (15), 4 (12), 5 (5)  3.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11:   carb numeric    32          6     0          4 (10), 2 (10), 1 (7)  1.000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        var    type     n n_distinct  n_na               most_frequent    min</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;char&gt;  &lt;char&gt; &lt;int&gt;      &lt;int&gt; &lt;int&gt;                      &lt;char&gt;  &lt;num&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  1:    mpg numeric    32         25     0  21 (2), 22.8 (2), 21.4 (2) 10.400</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  2:    cyl numeric    32          3     0       8 (14), 4 (11), 6 (7)  4.000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  3:   disp numeric    32         27     0 275.8 (3), 160 (2), 360 (2) 71.100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  4:     hp numeric    32         22     0   110 (3), 175 (3), 180 (3) 52.000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  5:   drat numeric    32         22     0 3.92 (3), 3.07 (3), 3.9 (2)  2.760</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  6:     wt numeric    32         29     0          3.44 (3), 3.57 (2)  1.513</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  7:   qsec numeric    32         30     0         17.02 (2), 18.9 (2) 14.500</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  8:     vs numeric    32          2     0              0 (18), 1 (14)  0.000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  9:     am numeric    32          2     0              0 (19), 1 (13)  0.000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10:   gear numeric    32          3     0       3 (15), 4 (12), 5 (5)  3.000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11:   carb numeric    32          6     0       4 (10), 2 (10), 1 (7)  1.000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           mean  median     max          sd</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          &lt;num&gt;   &lt;num&gt;   &lt;num&gt;       &lt;num&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  1:  20.090625  19.200  33.900   6.0269481</span>

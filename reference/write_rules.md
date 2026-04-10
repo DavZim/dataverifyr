@@ -5,7 +5,7 @@ Read and write rules to a yaml file
 ## Usage
 
 ``` r
-write_rules(x, file)
+write_rules(x, file, format = c("v1", "pre_v1"))
 
 read_rules(file)
 ```
@@ -19,6 +19,12 @@ read_rules(file)
 - file:
 
   a filename
+
+- format:
+
+  output format. `"v1"` writes structured YAML with `meta`,
+  `data-columns`, and `data-rules`. `"pre_v1"` keeps the pre package
+  version 1.0 flat-list structure.
 
 ## Value
 

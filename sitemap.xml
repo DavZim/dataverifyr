@@ -1,5 +1,6 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://davzim.github.io/dataverifyr/404.html</loc></url>
+<url><loc>https://davzim.github.io/dataverifyr/AGENTS.html</loc></url>
 <url><loc>https://davzim.github.io/dataverifyr/LICENSE-text.html</loc></url>
 <url><loc>https://davzim.github.io/dataverifyr/LICENSE.html</loc></url>
 <url><loc>https://davzim.github.io/dataverifyr/authors.html</loc></url>
@@ -7,14 +8,17 @@
 <url><loc>https://davzim.github.io/dataverifyr/news/index.html</loc></url>
 <url><loc>https://davzim.github.io/dataverifyr/reference/bind_rules.html</loc></url>
 <url><loc>https://davzim.github.io/dataverifyr/reference/check_data.html</loc></url>
+<url><loc>https://davzim.github.io/dataverifyr/reference/data_column.html</loc></url>
 <url><loc>https://davzim.github.io/dataverifyr/reference/dataverifyr_plus.html</loc></url>
 <url><loc>https://davzim.github.io/dataverifyr/reference/describe.html</loc></url>
 <url><loc>https://davzim.github.io/dataverifyr/reference/detect_backend.html</loc></url>
 <url><loc>https://davzim.github.io/dataverifyr/reference/filter_fails.html</loc></url>
 <url><loc>https://davzim.github.io/dataverifyr/reference/index.html</loc></url>
 <url><loc>https://davzim.github.io/dataverifyr/reference/plot_res.html</loc></url>
+<url><loc>https://davzim.github.io/dataverifyr/reference/reference_rule.html</loc></url>
 <url><loc>https://davzim.github.io/dataverifyr/reference/rule.html</loc></url>
 <url><loc>https://davzim.github.io/dataverifyr/reference/ruleset.html</loc></url>
+<url><loc>https://davzim.github.io/dataverifyr/reference/sample_data.html</loc></url>
 <url><loc>https://davzim.github.io/dataverifyr/reference/write_rules.html</loc></url>
 </urlset>
 

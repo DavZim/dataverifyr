@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">dataverifyr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.10</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,6 +32,21 @@
       <small>Source: <a href="https://github.com/DavZim/dataverifyr/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.10" id="dataverifyr-0110">dataverifyr 0.1.10<a class="anchor" aria-label="anchor" href="#dataverifyr-0110"></a></h2>
+<ul><li>Add <code><a href="../reference/describe.html">describe()</a></code> to describe a dataset</li>
+<li>
+<code><a href="../reference/check_data.html">check_data()</a></code> now includes schema checks in the output by default (<code>check_type</code> as first result column), including explicit rows for column existence and declared type checks</li>
+<li>add <code>stop_on_schema_fail</code> to <code><a href="../reference/check_data.html">check_data()</a></code> to optionally stop when schema checks fail</li>
+<li>update <code><a href="../reference/filter_fails.html">filter_fails()</a></code> to ignore schema/reference rows and only process row rules from <code><a href="../reference/check_data.html">check_data()</a></code> results</li>
+<li>Add explicit regression test for <code><a href="../reference/detect_backend.html">detect_backend()</a></code> fallback to <code>dplyr</code> when input is a <code>data.frame</code> and <code>data.table</code> is unavailable</li>
+<li>Add structured ruleset internals for schema metadata (<code><a href="../reference/data_column.html">data_column()</a></code>, <code>rule_meta()</code>) and reference checks (<code><a href="../reference/reference_rule.html">reference_rule()</a></code>)</li>
+<li>Extend <code><a href="../reference/ruleset.html">ruleset()</a></code>, <code><a href="../reference/check_data.html">check_data()</a></code>, <code><a href="../reference/write_rules.html">read_rules()</a></code>, and <code><a href="../reference/write_rules.html">write_rules()</a></code> for v1 schema-aware workflows; keep <code><a href="../reference/rule.html">rule()</a></code> as row-level API (no <code>col_rule()</code>)</li>
+<li>Add exported <code>sample_data</code> dataset (mixed types, NAs, datetime) for examples and tests</li>
+<li>export <code><a href="../reference/reference_rule.html">reference_rule()</a></code> and extend examples in <code><a href="../reference/ruleset.html">ruleset()</a></code>, <code><a href="../reference/check_data.html">check_data()</a></code>, <code><a href="../reference/reference_rule.html">reference_rule()</a></code>, and <code><a href="../reference/data_column.html">data_column()</a></code> to show combined schema + relational workflows</li>
+<li>Require DuckDB version <code>&gt;= 1.5.1.9002</code> in all DuckDB-backed tests via <code>skip_if_not_installed("duckdb", "1.5.1.9002")</code>
+</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.9" id="dataverifyr-019">dataverifyr 0.1.9<a class="anchor" aria-label="anchor" href="#dataverifyr-019"></a></h2>
 <ul><li>fix tests for new duckdb version (fixes <a href="https://github.com/DavZim/dataverifyr/issues/17" class="external-link">#17</a>, thanks <a href="https://github.com/krlmlr" class="external-link">@krlmlr</a> for reporting)</li>
