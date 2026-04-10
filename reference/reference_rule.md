@@ -81,9 +81,9 @@ check_data(list(flights = flights, carriers = carriers), rs)
 #>                                expr allow_na negate tests  pass  fail   warn
 #>                              <char>   <lgcl> <lgcl> <int> <int> <int> <char>
 #> 1: carrier %in% carriers$carrier_id     TRUE  FALSE     3     2     1       
-#>     error              time
-#>    <char>        <difftime>
-#> 1:        5.578995e-05 secs
+#>     error             time
+#>    <char>       <difftime>
+#> 1:        5.65052e-05 secs
 
 # negated relation: value must NOT exist in blacklist
 blacklist <- data.frame(carrier_id = c("XX", "YY"))
@@ -107,5 +107,5 @@ check_data(list(flights = flights, blacklist = blacklist), rs_neg)
 #> 1: carrier %in% blacklist$carrier_id     TRUE   TRUE     3     2     1       
 #>     error              time
 #>    <char>        <difftime>
-#> 1:        5.459785e-05 secs
+#> 1:        5.054474e-05 secs
 ```

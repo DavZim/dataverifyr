@@ -58,11 +58,10 @@ empty. By default, values with count 1 are omitted from `most_frequent`.
 
 ## See also
 
-Similar to
-[skimr::skim()](https://cran.r-project.org/web/packages/skimr/vignettes/skimr.html),
-[summarytools::dfSummary()](https://cran.r-project.org/web/packages/summarytools/vignettes/introduction.html#data-frame-summaries-dfsummary),
+Similar to [skimr::skim()](https://CRAN.R-project.org/package=skimr),
+[summarytools::dfSummary()](https://CRAN.R-project.org/package=summarytools),
 and
-[gtExtras::gt_plt_summary()](https://jthomasmock.github.io/gtExtras/reference/gt_plt_summary.html)
+[gtExtras::gt_plt_summary()](https://CRAN.R-project.org/package=gtExtras)
 
 ## Examples
 

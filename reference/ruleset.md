@@ -128,6 +128,6 @@ check_data(list(orders = orders, customers = customers), rs2)
 #> 4: 0.000000e+00 secs
 #> 5: 0.000000e+00 secs
 #> 6: 0.000000e+00 secs
-#> 7: 4.155636e-04 secs
-#> 8: 5.841255e-05 secs
+#> 7: 4.100800e-04 secs
+#> 8: 5.459785e-05 secs
 ```

@@ -93,9 +93,9 @@ check_data(mtcars, rs)
 #> 3:   row_rule Rule for: qsec qsec >= 14.5 & qsec <= 22.9    FALSE  FALSE    32
 #>     pass  fail   warn  error              time
 #>    <int> <int> <char> <char>        <difftime>
-#> 1:    32     0               0.0047128201 secs
-#> 2:    18    14               0.0024578571 secs
-#> 3:    32     0               0.0003011227 secs
+#> 1:    32     0               0.0048727989 secs
+#> 2:    18    14               0.0025248528 secs
+#> 3:    32     0               0.0003015995 secs
 
 # schema + relation checks in one output
 orders <- data.frame(order_id = 1:3, customer_id = c(10, 99, NA), amount = c(10, -5, 20))
@@ -140,12 +140,12 @@ check_data(list(orders = orders, customers = customers), rs2)
 #> 8: customer_id %in% customers$customer_id     TRUE  FALSE     3     2     1
 #>      warn  error              time
 #>    <char> <char>        <difftime>
-#> 1:               0.0000000000 secs
-#> 2:               0.0000000000 secs
-#> 3:               0.0000000000 secs
-#> 4:               0.0000000000 secs
-#> 5:               0.0000000000 secs
-#> 6:               0.0000000000 secs
-#> 7:               0.0002963543 secs
-#> 8:               0.0000500679 secs
+#> 1:               0.000000e+00 secs
+#> 2:               0.000000e+00 secs
+#> 3:               0.000000e+00 secs
+#> 4:               0.000000e+00 secs
+#> 5:               0.000000e+00 secs
+#> 6:               0.000000e+00 secs
+#> 7:               3.309250e-04 secs
+#> 8:               5.054474e-05 secs
 ```
