@@ -15,7 +15,8 @@ One of \code{base-r}, \code{data.table}, \code{dplyr}, \code{collectibles} (for 
 }
 \description{
 The detection will be made based on the class of the object as well as the packages installed.
-For example, if a \code{data.frame} is used, it will look if \code{data.table} or \code{dplyr} are installed on the system, as they provide more speed.
+For example, if a \code{data.frame} is used, it will look if \code{data.table} or \code{dplyr} are installed
+on the system, as they provide more speed.
 Note the main functions will revert the
 }
 \examples{

@@ -6,13 +6,16 @@
 #' @format A data frame with 8 rows and 6 variables:
 #' \describe{
 #'   \item{order_id}{Integer order identifier.}
-#'   \item{customer_tier}{Character tier (`"bronze"`, `"silver"`, `"gold"`, etc), includes one `NA`.}
+#'   \item{customer_tier}{Character tier (`"bronze"`, `"silver"`, `"gold"`, etc),
+#'     includes one `NA`.}
 #'   \item{amount}{Numeric order amount, includes one negative value and one `NA`.}
 #'   \item{paid}{Logical payment flag, includes one `NA`.}
 #'   \item{payment_method}{Character payment method, includes one `NA`.}
 #'   \item{order_time}{`POSIXct` order timestamp in UTC, includes one `NA`.}
 #' }
 #' @export
+#' @examples
+#' sample_data
 sample_data <- data.frame(
   order_id = as.integer(1:8),
   customer_tier = c("gold", "silver", "bronze", "gold", NA, "silver", "bronze", "unknown"),

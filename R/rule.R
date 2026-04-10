@@ -43,9 +43,8 @@ rule <- function(expr, name = NA, allow_na = FALSE, negate = FALSE, ...) {
   expr <- paste(deparse(substitute(expr)), collapse = "")
 
   # allows expressions as well as strings
-  if (substr(expr, 1, 1) == '"' &&
-      substr(expr, nchar(expr), nchar(expr)) == '"')
-    expr <- substr(expr, 2, nchar(expr) - 1)
+  use_substr <- substr(expr, 1, 1) == '"' && substr(expr, nchar(expr), nchar(expr)) == '"'
+  if (use_substr) expr <- substr(expr, 2, nchar(expr) - 1)
 
   if (is.na(name))
     name <- paste("Rule for:", paste(get_symbols(expr), collapse = ", "))
@@ -70,7 +69,8 @@ print.rule <- function(x, ...) {
               x$expr, x$name, x$allow_na, x$negate))
   nn <- setdiff(names(x), c("expr", "name", "allow_na", "negate"))
   for (n in nn) cat(sprintf("  %s: '%s'\n", n, x[[n]]))
-  return(invisible(x))
+
+  invisible(x)
 }
 
 # small helper function to extract the symbols (var names) from an expression
@@ -161,4 +161,3 @@ print.ruleset <- function(x, n = 3, ...) {
                 length(x) - nn))
   invisible(x)
 }
-

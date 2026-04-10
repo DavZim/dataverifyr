@@ -8,7 +8,8 @@
 A data frame with 8 rows and 6 variables:
 \describe{
 \item{order_id}{Integer order identifier.}
-\item{customer_tier}{Character tier (\code{"bronze"}, \code{"silver"}, \code{"gold"}, etc), includes one \code{NA}.}
+\item{customer_tier}{Character tier (\code{"bronze"}, \code{"silver"}, \code{"gold"}, etc),
+includes one \code{NA}.}
 \item{amount}{Numeric order amount, includes one negative value and one \code{NA}.}
 \item{paid}{Logical payment flag, includes one \code{NA}.}
 \item{payment_method}{Character payment method, includes one \code{NA}.}
@@ -21,5 +22,8 @@ sample_data
 \description{
 A small, human-readable dataset with mixed column types, missing values, and
 one datetime column. It is designed for documentation examples and unit tests.
+}
+\examples{
+sample_data
 }
 \keyword{datasets}

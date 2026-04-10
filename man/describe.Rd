@@ -10,11 +10,13 @@ describe(x, skip_ones = TRUE, digits = 4, top_n = 3, fast = FALSE)
 \item{x}{a dataset, either a \code{\link{data.frame}}, \code{\link[dplyr:reexports]{dplyr::tibble}}, \code{\link[data.table:data.table]{data.table::data.table}},
 \code{\link[arrow:table]{arrow::arrow_table}}, \code{\link[arrow:open_dataset]{arrow::open_dataset}}, or \code{\link[dplyr:tbl]{dplyr::tbl}} (SQL connection)}
 
-\item{skip_ones}{logical, whether values that occur exactly once should be omitted from \code{most_frequent}}
+\item{skip_ones}{logical, whether values that occur exactly once should be omitted
+from \code{most_frequent}}
 
 \item{digits}{integer, number of digits to round numeric values in \code{most_frequent}}
 
-\item{top_n}{integer, number of most frequent values to include in \code{most_frequent}}
+\item{top_n}{integer, number of most frequent values to include in \code{most_frequent};
+set to \code{0} to skip the \code{most_frequent} computation}
 
 \item{fast}{logical, when \code{TRUE} skip expensive fields (\code{n_distinct}, \code{median})
 by returning \code{NA} for them}
@@ -37,7 +39,8 @@ By default, values with count 1 are omitted from \code{most_frequent}.
 describe(mtcars)
 }
 \seealso{
-Similar to \href{https://cran.r-project.org/web/packages/skimr/vignettes/skimr.html}{skimr::skim()},
+Similar to
+\href{https://cran.r-project.org/web/packages/skimr/vignettes/skimr.html}{skimr::skim()},
 \href{https://cran.r-project.org/web/packages/summarytools/vignettes/introduction.html#data-frame-summaries-dfsummary}{summarytools::dfSummary()},
 and \href{https://jthomasmock.github.io/gtExtras/reference/gt_plt_summary.html}{gtExtras::gt_plt_summary()}
 }

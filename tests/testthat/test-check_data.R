@@ -102,7 +102,8 @@ test_that("arrow::arrow_table check_ works", {
     pass = c(32, 32, 27, 0, 0),
     fail = c(0, 0, 5, 32, 32),
     warn = c("", "", "", "", ""),
-    error = c("", "", "", "Invalid: Failed to parse string: 'asd' as a scalar of type double", "object 'does_not_exist' not found")
+    error = c("", "", "", "Invalid: Failed to parse string: 'asd' as a scalar of type double",
+              "object 'does_not_exist' not found")
   )
   expect_equal(res |> dplyr::select(-time), exp)
 })
@@ -129,7 +130,8 @@ test_that("arrow::open_dataset check_ works", {
     pass = c(32, 32, 27, 0, 0),
     fail = c(0, 0, 5, 32, 32),
     warn = c("", "", "", "", ""),
-    error = c("", "", "", "Invalid: Failed to parse string: 'asd' as a scalar of type double", "object 'does_not_exist' not found")
+    error = c("", "", "", "Invalid: Failed to parse string: 'asd' as a scalar of type double",
+              "object 'does_not_exist' not found")
   )
   expect_equal(res |> dplyr::select(-time), exp)
 })
@@ -171,7 +173,7 @@ test_that("sqlite (RSQLite) check_ works", {
 
 
 test_that("duckdb check_ works", {
-  skip_if_not_installed("duckdb", "1.5.2")
+  skip_if_not_installed("duckdb", "1.5.1.9002")
   skip_if_not(requireNamespace("DBI", quietly = TRUE) |
                 requireNamespace("dbplyr", quietly = TRUE) |
                 requireNamespace("duckdb", quietly = TRUE),

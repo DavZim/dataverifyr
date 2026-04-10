@@ -15,7 +15,7 @@ data <- data.frame(
   g = factor(sample(letters, 20, replace = TRUE)),
   # posixct
   h = as.POSIXct(
-    sample.int(365*60*60*24, 10, replace = TRUE),
+    sample.int(365 * 60 * 60 * 24, 10, replace = TRUE),
     origin = "2020-01-01",
     tz = "UTC"
   )
@@ -50,7 +50,8 @@ test_that("describe data.frame", {
   expect_equal(detect_backend(data), "data.table")
   d <- describe(data, skip_ones = FALSE)
   expect_equal(class(d), c("data.table", "data.frame"))
-  expect_equal(as.data.frame(d)[setdiff(names(d), "most_frequent")], exp[setdiff(names(exp), "most_frequent")])
+  expect_equal(as.data.frame(d)[setdiff(names(d), "most_frequent")],
+               exp[setdiff(names(exp), "most_frequent")])
   expect_equal(normalize_mf(as.data.frame(d)$most_frequent), normalize_mf(exp$most_frequent))
 
   # use dplyr
@@ -58,7 +59,8 @@ test_that("describe data.frame", {
   expect_equal(detect_backend(data), "dplyr")
   d <- describe(data, skip_ones = FALSE)
   expect_equal(class(d), c("tbl_df", "tbl", "data.frame"))
-  expect_equal(as.data.frame(d)[setdiff(names(d), "most_frequent")], exp[setdiff(names(exp), "most_frequent")])
+  expect_equal(as.data.frame(d)[setdiff(names(d), "most_frequent")],
+               exp[setdiff(names(exp), "most_frequent")])
   expect_equal(normalize_mf(as.data.frame(d)$most_frequent), normalize_mf(exp$most_frequent))
 })
 
@@ -88,7 +90,7 @@ test_that("describe sqlite", {
 
 
 test_that("describe duckdb", {
-  skip_if_not_installed("duckdb", "1.5.2")
+  skip_if_not_installed("duckdb", "1.5.1.9002")
   skip_if_not(
     requireNamespace("DBI", quietly = TRUE) &&
       requireNamespace("dplyr", quietly = TRUE) &&
@@ -113,7 +115,7 @@ test_that("describe duckdb", {
 
 
 test_that("describe duckdb supports skip_ones/digits without full-vector semantics changes", {
-  skip_if_not_installed("duckdb", "1.5.2")
+  skip_if_not_installed("duckdb", "1.5.1.9002")
   skip_if_not(
     requireNamespace("DBI", quietly = TRUE) &&
       requireNamespace("dplyr", quietly = TRUE) &&
@@ -159,6 +161,53 @@ test_that("describe arrow", {
   expect_equal(class(d), c("tbl_df", "tbl", "data.frame"))
   expect_equal(nrow(d), ncol(data))
   expect_true(all(c("var", "type", "n", "n_distinct", "n_na", "most_frequent") %in% names(d)))
+})
+
+test_that("describe_collectibles_stats works on arrow numeric columns in fast mode", {
+  skip_if_not(
+    requireNamespace("dplyr", quietly = TRUE) &&
+      requireNamespace("dbplyr", quietly = TRUE) &&
+      requireNamespace("arrow", quietly = TRUE),
+    "dplyr, dbplyr, and arrow must be installed to test the functionality"
+  )
+
+  x <- data.frame(num = c(1, 2, NA_real_, 4))
+  tmp <- tempfile()
+  arrow::write_parquet(x, tmp)
+  ds <- arrow::open_dataset(tmp)
+
+  stats <- dataverifyr:::describe_collectibles_stats(ds, "num", is_num = TRUE, fast = TRUE)
+
+  expect_equal(stats$n, 4L)
+  expect_equal(stats$n_na, 1L)
+  expect_equal(stats$min, 1)
+  expect_equal(stats$max, 4)
+  expect_equal(round(stats$mean, 6), round(mean(x$num, na.rm = TRUE), 6))
+  expect_equal(round(stats$sd, 6), round(stats::sd(x$num, na.rm = TRUE), 6))
+})
+
+test_that("describe arrow fast mode handles POSIXct columns", {
+  skip_if_not(
+    requireNamespace("dplyr", quietly = TRUE) &&
+      requireNamespace("dbplyr", quietly = TRUE) &&
+      requireNamespace("arrow", quietly = TRUE),
+    "dplyr, dbplyr, and arrow must be installed to test the functionality"
+  )
+
+  x <- data.frame(
+    ts = as.POSIXct(c("2020-01-01 00:00:00", "2020-01-01 01:00:00", NA), tz = "UTC"),
+    val = c(1, 2, 3)
+  )
+  tmp <- tempfile()
+  arrow::write_parquet(x, tmp)
+  ds <- arrow::open_dataset(tmp)
+
+  d <- describe(ds, fast = TRUE, skip_ones = FALSE)
+  ts_row <- d[d$var == "ts", , drop = FALSE]
+
+  expect_true(nrow(ts_row) == 1)
+  expect_false(is.na(ts_row$mean))
+  expect_false(is.na(ts_row$sd))
 })
 
 
@@ -224,6 +273,17 @@ test_that("describe supports configurable top_n for most_frequent", {
   expect_equal(d2$most_frequent[d2$var == "vals"], "a (2), b (2)")
 })
 
+test_that("describe supports top_n = 0 to skip most_frequent values", {
+  local_mocked_bindings(has_pkg = function(...) FALSE, .package = "dataverifyr")
+
+  x <- data.frame(
+    vals = c("a", "a", "b", "b", "c", "d")
+  )
+
+  d0 <- describe(x, skip_ones = FALSE, top_n = 0)
+  expect_equal(d0$most_frequent[d0$var == "vals"], "")
+})
+
 test_that("describe fast mode skips expensive fields", {
   local_mocked_bindings(has_pkg = function(...) FALSE, .package = "dataverifyr")
 
@@ -240,7 +300,7 @@ test_that("describe fast mode skips expensive fields", {
 })
 
 test_that("describe duckdb fast mode skips expensive fields", {
-  skip_if_not_installed("duckdb", "1.5.2")
+  skip_if_not_installed("duckdb", "1.5.1.9002")
   skip_if_not(
     requireNamespace("DBI", quietly = TRUE) &&
       requireNamespace("dplyr", quietly = TRUE) &&

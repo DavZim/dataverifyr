@@ -12,11 +12,11 @@ datavarifyr_plus <- function(a, b) {
   # [double dispatch](https://yutani.rbind.io/post/double-dispatch-of-s3-method/)
   # semantics.
 
-  if (inherits(a, "rule")  & inherits(b, "rule")) {
+  if (inherits(a, "rule") && inherits(b, "rule")) {
     out <- list(a, b)
   } else {
     if (inherits(a, "rule")) a <- list(a)
-    if (inherits(b,"rule")) b <- list(b)
+    if (inherits(b, "rule")) b <- list(b)
     out <- c(a, b)
   }
 
@@ -27,7 +27,8 @@ datavarifyr_plus <- function(a, b) {
   }
 
   class(out) <- "ruleset"
-  return(out)
+
+  out
 }
 
 #' @export

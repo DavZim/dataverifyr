@@ -86,8 +86,11 @@ read_rules <- function(file) {
   }
 
   # detect malformed structured format (has sections but not data-rules)
-  if (is.list(res) && any(c("meta", "data-columns", "data-rules") %in% names(res)) &&
-      !"data-rules" %in% names(res)) {
+  is_error <- is.list(res) &&
+    any(c("meta", "data-columns", "data-rules") %in% names(res)) &&
+    !"data-rules" %in% names(res)
+
+  if (is_error) {
     stop("Malformed v1 yaml: missing `data-rules` section.")
   }
 

@@ -6,9 +6,11 @@
 #'
 #' @param x a dataset, either a [`data.frame`], [`dplyr::tibble`], [`data.table::data.table`],
 #' [`arrow::arrow_table`], [`arrow::open_dataset`], or [`dplyr::tbl`] (SQL connection)
-#' @param skip_ones logical, whether values that occur exactly once should be omitted from `most_frequent`
+#' @param skip_ones logical, whether values that occur exactly once should be omitted
+#' from `most_frequent`
 #' @param digits integer, number of digits to round numeric values in `most_frequent`
-#' @param top_n integer, number of most frequent values to include in `most_frequent`
+#' @param top_n integer, number of most frequent values to include in `most_frequent`;
+#' set to `0` to skip the `most_frequent` computation
 #' @param fast logical, when `TRUE` skip expensive fields (`n_distinct`, `median`)
 #' by returning `NA` for them
 #'
@@ -20,9 +22,10 @@
 #' By default, values with count 1 are omitted from `most_frequent`.
 #' @export
 #'
-#' @seealso Similar to [skimr::skim()](https://cran.r-project.org/web/packages/skimr/vignettes/skimr.html),
-#'   [summarytools::dfSummary()](https://cran.r-project.org/web/packages/summarytools/vignettes/introduction.html#data-frame-summaries-dfsummary),
-#'   and [gtExtras::gt_plt_summary()](https://jthomasmock.github.io/gtExtras/reference/gt_plt_summary.html)
+#' @seealso Similar to
+#' [skimr::skim()](https://cran.r-project.org/web/packages/skimr/vignettes/skimr.html),
+#' [summarytools::dfSummary()](https://cran.r-project.org/web/packages/summarytools/vignettes/introduction.html#data-frame-summaries-dfsummary),
+#' and [gtExtras::gt_plt_summary()](https://jthomasmock.github.io/gtExtras/reference/gt_plt_summary.html)
 #'
 #' @examples
 #' describe(mtcars)
@@ -88,10 +91,10 @@ top_counts <- function(v, max_n = 3) {
   list(values = uv[od], counts = tab[od])
 }
 
-# x <- mtcars
+# eg x <- mtcars
 describe_base_r <- function(x, max_n = 3, skip_ones = TRUE, digits = 4, fast = FALSE) {
   ll <- lapply(
-    seq(ncol(x)),
+    seq_len(ncol(x)),
     function(i) {
       v <- x[[i]]
       type <- class(v)[[1]]
@@ -107,13 +110,19 @@ describe_base_r <- function(x, max_n = 3, skip_ones = TRUE, digits = 4, fast = F
         n = length(v),
         n_distinct = if (fast) NA_integer_ else length(unique(v)),
         n_na = sum(is.na(v)),
-        most_frequent = if (fast) NA_character_ else {
+        most_frequent = if (fast) {
+          NA_character_
+        } else {
           format_most_frequent(tc$values, tc$counts, skip_ones = skip_ones, digits = digits)
         },
 
         min = as.numeric(min(if (is_num) v else nz, na.rm = TRUE)),
         mean = as.numeric(mean(if (is_num) v else nz, na.rm = TRUE)),
-        median = if (fast) NA_real_ else as.numeric(stats::median(if (is_num) v else nz, na.rm = TRUE)),
+        median = if (fast) {
+          NA_real_
+        } else {
+          as.numeric(stats::median(if (is_num) v else nz, na.rm = TRUE))
+        },
         max = as.numeric(max(if (is_num) v else nz, na.rm = TRUE)),
         sd = as.numeric(stats::sd(if (is_num) v else nz, na.rm = TRUE))
       )
@@ -123,7 +132,7 @@ describe_base_r <- function(x, max_n = 3, skip_ones = TRUE, digits = 4, fast = F
   do.call(rbind, ll)
 }
 
-# x <- mtcars |> tibble::as_tibble()
+# eg x <- mtcars |> tibble::as_tibble()
 describe_dplyr <- function(x, max_n = 3, skip_ones = TRUE, digits = 4, fast = FALSE) {
   ll <- lapply(
     names(x),
@@ -133,7 +142,9 @@ describe_dplyr <- function(x, max_n = 3, skip_ones = TRUE, digits = 4, fast = FA
 
       type <- class(vv)[[1]]
       is_num <- is_numeric(vv)
-      mf <- if (fast) NA_character_ else {
+      mf <- if (fast) {
+        NA_character_
+      } else {
         format_most_frequent(tc$values, tc$counts, skip_ones = skip_ones, digits = digits)
       }
 
@@ -175,8 +186,8 @@ describe_dplyr <- function(x, max_n = 3, skip_ones = TRUE, digits = 4, fast = FA
   dplyr::bind_rows(ll)
 }
 
-# x <- mtcars |> data.table::as.data.table()
-describe_data.table <- function(x, max_n = 3, skip_ones = TRUE, digits = 4, fast = FALSE) {
+# eg x <- mtcars |> data.table::as.data.table()
+describe_data.table <- function(x, max_n = 3, skip_ones = TRUE, digits = 4, fast = FALSE) { # nolint
   ll <- lapply(
     names(x),
     function(v) {
@@ -185,7 +196,9 @@ describe_data.table <- function(x, max_n = 3, skip_ones = TRUE, digits = 4, fast
 
       type <- class(vv)[[1]]
       is_num <- is_numeric(vv)
-      mf <- if (fast) NA_character_ else {
+      mf <- if (fast) {
+        NA_character_
+      } else {
         format_most_frequent(tc$values, tc$counts, skip_ones = skip_ones, digits = digits)
       }
 
@@ -201,7 +214,11 @@ describe_data.table <- function(x, max_n = 3, skip_ones = TRUE, digits = 4, fast
 
         min = as.numeric(min(if (is_num) get(v) else nz, na.rm = TRUE)),
         mean = as.numeric(mean(if (is_num) get(v) else nz, na.rm = TRUE)),
-        median = if (fast) NA_real_ else as.numeric(stats::median(if (is_num) get(v) else nz, na.rm = TRUE)),
+        median = if (fast) {
+          NA_real_
+        } else {
+          as.numeric(stats::median(if (is_num) get(v) else nz, na.rm = TRUE))
+        },
         max = as.numeric(max(if (is_num) get(v) else nz, na.rm = TRUE)),
         sd = as.numeric(stats::sd(if (is_num) get(v) else nz, na.rm = TRUE))
       )]
@@ -341,7 +358,11 @@ describe_vector_stats <- function(vv, is_num, fast = FALSE) {
     n_na = sum(is.na(vv)),
     min = as.numeric(min(if (is_num) vv else nz, na.rm = TRUE)),
     mean = as.numeric(mean(if (is_num) vv else nz, na.rm = TRUE)),
-    median = if (fast) NA_real_ else as.numeric(stats::median(if (is_num) vv else nz, na.rm = TRUE)),
+    median = if (fast) {
+      NA_real_
+    } else {
+      as.numeric(stats::median(if (is_num) vv else nz, na.rm = TRUE))
+    },
     max = as.numeric(max(if (is_num) vv else nz, na.rm = TRUE)),
     sd = as.numeric(stats::sd(if (is_num) vv else nz, na.rm = TRUE))
   )

@@ -68,7 +68,10 @@ check_data <- function(x, rules, xname = deparse(substitute(x)),
       data_name <- names(datasets)[[1]]
     }
     if (is.null(data_name) || is.na(data_name) || !nzchar(data_name)) {
-      stop("When `x` is a list, datasets must be named or `ruleset(..., data_name=...)` must be set.")
+      stop(paste(
+        "When `x` is a list, datasets must be named or",
+        "`ruleset(..., data_name=...)` must be set."
+      ))
     }
     if (!data_name %in% names(datasets)) {
       stop(sprintf("The primary dataset '%s' was not found in `x`.", data_name))
@@ -141,7 +144,11 @@ check_data <- function(x, rules, xname = deparse(substitute(x)),
   }
 
   # stops on fail, warning and/or error
-  is_schema <- if ("check_type" %in% names(res)) res$check_type == "schema" else rep(FALSE, nrow(res))
+  is_schema <- if ("check_type" %in% names(res)) {
+    res$check_type == "schema"
+  } else {
+    rep(FALSE, nrow(res))
+  }
   is_rule <- !is_schema
 
   fail <- stop_on_fail && any(res$fail[is_rule] != 0)
@@ -167,7 +174,8 @@ check_data <- function(x, rules, xname = deparse(substitute(x)),
 #'
 #' @description
 #' The detection will be made based on the class of the object as well as the packages installed.
-#' For example, if a `data.frame` is used, it will look if `data.table` or `dplyr` are installed on the system, as they provide more speed.
+#' For example, if a `data.frame` is used, it will look if `data.table` or `dplyr` are installed
+#' on the system, as they provide more speed.
 #' Note the main functions will revert the
 #'
 #' @param x The data object, ie a data.frame, tibble, data.table, arrow, or DBI object
@@ -184,12 +192,18 @@ detect_backend <- function(x) {
   cc <- class(x)
   if ("data.table" %in% cc) {
     if (!has_pkg("data.table"))
-      stop("The data.table package needs to be installed in order to test a data.table OR you can convert the data to a data.frame first!")
+      stop(paste(
+        "The data.table package needs to be installed in order to test a data.table",
+        "OR you can convert the data to a data.frame first!"
+      ))
     backend <- "data.table"
 
   } else if (any(c("tibble", "tbl_df") %in% cc)) {
     if (!has_pkg("dplyr"))
-      stop("The dplyr package needs to be installed in order to test a tibble OR you can convert the data to a data.frame first!")
+      stop(paste(
+        "The dplyr package needs to be installed in order to test a tibble OR",
+        "you can convert the data to a data.frame first!"
+      ))
     backend <- "dplyr"
 
   } else if (length(cc) == 1 && cc == "data.frame") {
@@ -218,9 +232,10 @@ detect_backend <- function(x) {
 
   } else {
 
-    stop(sprintf(paste("Unknown class of x found: '%s'.",
-                       "x must be a data.frame/tibble/data.table or a tbl (SQL table) or ArrowObject."),
-                 paste(cc, collapse = ",  ")))
+    stop(sprintf(paste(
+      "Unknown class of x found: '%s'.",
+      "x must be a data.frame/tibble/data.table or a tbl (SQL table) or ArrowObject."
+    ), paste(cc, collapse = ",  ")))
   }
   backend
 }
@@ -232,7 +247,8 @@ has_pkg <- function(p) requireNamespace(p, quietly = TRUE)
 # helper function that collects all warnings
 get_warnings <- function(code) {
   out <- c()
-  suppressWarnings(withCallingHandlers(code, warning = function(c) out <<- c(out, conditionMessage(c))))
+  suppressWarnings(withCallingHandlers(code,
+                                       warning = function(c) out <<- c(out, conditionMessage(c))))
   strip_dplyr_errors(paste(unique(out), collapse = ", "))
 }
 
@@ -324,7 +340,7 @@ filter_data_ <- function(x, backend, e, return_n = TRUE) {
     # includes NA rows and therefore returns the wrong number of rows
     pos <- with(x, eval(parse(text = e)))
     pos <- if (return_n) sum(pos, na.rm = TRUE) else x[pos, ]
-  } else if (backend == "dplyr" | backend == "collectibles") {
+  } else if (backend == "dplyr" || backend == "collectibles") {
     rr <- dplyr::filter(x, !!str2lang(e))
     if (backend == "collectibles") {
       if (return_n) {
@@ -346,9 +362,11 @@ filter_data_ <- function(x, backend, e, return_n = TRUE) {
 }
 
 # strips a dplyr/cli error message of its formatting
+# nolint start
 # x <- "\033[37;48;5;19m\033[38;5;232mProblem while computing ... .\033[39m\n\033[1mCaused by error in xxx:\033[22m\n\033[33m!\033[39m object 'does_not_exist' not found\033[39;49m"
 # x <- "Problem while computing `..1 = eval(parse(text = e))`.\nCaused by error in `does_not_exist %in% c(\"a\", \"b\", \"c\")`:\n! object 'does_not_exist' not found"
 # x <- "\033[38;5;232mThere were 2 warnings in `dplyr::filter()`.\nThe first warning was:\033[39m\n\033[38;5;232m\033[36mℹ\033[38;5;232m In argument: `as.numeric(hp) > 0 & as.numeric(hp) < 400`.\033[39m\nCaused by warning:\n\033[33m!\033[39m NAs introduced by coercion\n\033[38;5;232m\033[36mℹ\033[38;5;232m Run \033]8;;ide:run:dplyr::last_dplyr_warnings()\adplyr::last_dplyr_warnings()\033]8;;\a to see the 1 remaining warning.\033[39m"
+# nolint end
 strip_dplyr_errors <- function(x) {
   if (substr(x, 1, 1) == "\033") {
     r <- gsub("\033.*\033\\[33m\\!\033\\[39m ", "", x)

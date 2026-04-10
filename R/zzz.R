@@ -3,5 +3,5 @@
 #' @importFrom stats setNames
 NULL
 
-.datatable.aware <- TRUE
+.datatable.aware <- TRUE # nolint
 globalVariables(c("n", ".", ".data", ".N", ":="))
